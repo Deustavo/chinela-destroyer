@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { PreloadScene } from './scenes/PreloadScene'
+import { MenuScene } from './scenes/MenuScene'
 import { MainScene } from './scenes/MainScene'
 import { GameOverScene } from './scenes/GameOverScene'
 import { WORLD } from './config/constants'
@@ -18,7 +19,7 @@ export class Game extends Phaser.Game {
           debug: false,
         },
       },
-      scene: [PreloadScene, MainScene, GameOverScene],
+      scene: [PreloadScene, MenuScene, MainScene, GameOverScene],
     })
   }
 }

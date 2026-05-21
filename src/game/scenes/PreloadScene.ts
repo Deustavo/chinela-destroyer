@@ -23,6 +23,6 @@ export class PreloadScene extends Phaser.Scene {
     g.setVisible(false)
     g.destroy()
 
-    this.scene.start('main-scene')
+    this.scene.start('menu-scene')
   }
 }

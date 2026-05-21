@@ -5,6 +5,11 @@ import type { PlayerAnim } from '../types/animations'
 export class Player {
   private sprite: Phaser.Physics.Arcade.Sprite
   private cursors: Phaser.Types.Input.Keyboard.CursorKeys
+  private wasd: {
+    up: Phaser.Input.Keyboard.Key
+    left: Phaser.Input.Keyboard.Key
+    right: Phaser.Input.Keyboard.Key
+  }
 
   constructor(scene: Phaser.Scene) {
     this.sprite = scene.physics.add.sprite(PLAYER.startX, PLAYER.startY, PLAYER.spriteKey)
@@ -13,6 +18,11 @@ export class Player {
     body.setCollideWorldBounds(false)
 
     this.cursors = scene.input.keyboard!.createCursorKeys()
+    this.wasd = {
+      up: scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.W),
+      left: scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.A),
+      right: scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.D),
+    }
 
     this.registerAnimations(scene)
   }
@@ -64,17 +74,17 @@ export class Player {
     if (this.sprite.x < 0) this.sprite.x = WORLD.width
     else if (this.sprite.x > WORLD.width) this.sprite.x = 0
 
-    if (this.cursors.left?.isDown) {
+    if (this.cursors.left?.isDown || this.wasd.left.isDown) {
       body.setVelocityX(-PLAYER.speed)
       this.sprite.setFlipX(true)
     }
 
-    if (this.cursors.right?.isDown) {
+    if (this.cursors.right?.isDown || this.wasd.right.isDown) {
       body.setVelocityX(PLAYER.speed)
       this.sprite.setFlipX(false)
     }
 
-    if (this.cursors.up?.isDown && body.blocked.down) {
+    if ((this.cursors.up?.isDown || this.wasd.up.isDown) && body.blocked.down) {
       body.setVelocityY(PLAYER.jumpVelocity)
     }
 
