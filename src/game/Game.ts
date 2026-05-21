@@ -1,21 +1,23 @@
 import Phaser from 'phaser'
+import { PreloadScene } from './scenes/PreloadScene'
 import { MainScene } from './scenes/MainScene'
+import { WORLD } from './config/constants'
 
 export class Game extends Phaser.Game {
   constructor() {
     super({
       type: Phaser.AUTO,
-      width: 1280,
-      height: 720,
-      backgroundColor: '#1d1d1d',
+      width: WORLD.width,
+      height: WORLD.height,
+      backgroundColor: WORLD.backgroundColor,
       physics: {
         default: 'arcade',
         arcade: {
-          gravity: { x: 0, y: 800 },
+          gravity: { x: 0, y: WORLD.gravity },
           debug: false,
         },
       },
-      scene: [MainScene],
+      scene: [PreloadScene, MainScene],
     })
   }
 }
