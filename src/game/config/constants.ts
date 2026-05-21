@@ -6,14 +6,37 @@ export const WORLD = {
   groundColor: 0x444444,
   groundY: 680,
   groundWidth: 1280,
-  groundHeight: 80,
+  groundHeight: 60,
+  boundsExtent: 500000,
+} as const
+
+export const PLATFORMS = {
+  width: 110,
+  height: 16,
+  color: 0x55bb55,
+  minGapY: 140,
+  maxGapY: 190,
+  minX: 20,
+  maxX: 1150,
+  maxHorizontalReach: 380,
+  initialCount: 8,
+  spawnAhead: 500,
+  despawnMargin: 150,
+} as const
+
+export const SCROLL = {
+  initialSpeed: 45,
+  speedIncrement: 1.5,
+  maxSpeed: 200,
 } as const
 
 export const PLAYER = {
-  startX: 200,
-  startY: 400,
+  startX: 640,
+  startY: 560,
   speed: 300,
-  jumpVelocity: -500,
+  jumpVelocity: -820,
+  riseGravityMultiplier: 2.0,
+  fallGravityMultiplier: 2.5,
   spriteKey: 'chinela',
   spritesheet: {
     path: '/assets/player/chinela.png',

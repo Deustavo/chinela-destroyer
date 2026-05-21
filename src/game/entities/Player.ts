@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { PLAYER } from '../config/constants'
+import { PLAYER, WORLD } from '../config/constants'
 import type { PlayerAnim } from '../types/animations'
 
 export class Player {
@@ -10,7 +10,7 @@ export class Player {
     this.sprite = scene.physics.add.sprite(PLAYER.startX, PLAYER.startY, PLAYER.spriteKey)
 
     const body = this.body
-    body.setCollideWorldBounds(true)
+    body.setCollideWorldBounds(false)
 
     this.cursors = scene.input.keyboard!.createCursorKeys()
 
@@ -61,6 +61,9 @@ export class Player {
     const body = this.body
     body.setVelocityX(0)
 
+    if (this.sprite.x < 0) this.sprite.x = WORLD.width
+    else if (this.sprite.x > WORLD.width) this.sprite.x = 0
+
     if (this.cursors.left?.isDown) {
       body.setVelocityX(-PLAYER.speed)
       this.sprite.setFlipX(true)
@@ -74,6 +77,12 @@ export class Player {
     if (this.cursors.up?.isDown && body.blocked.down) {
       body.setVelocityY(PLAYER.jumpVelocity)
     }
+
+    const multiplier = body.velocity.y > 0
+      ? PLAYER.fallGravityMultiplier
+      : PLAYER.riseGravityMultiplier
+    const extraGravity = WORLD.gravity * (multiplier - 1)
+    body.setGravityY(extraGravity)
 
     this.updateAnimation(body)
   }

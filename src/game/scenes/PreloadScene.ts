@@ -16,6 +16,13 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   create() {
+    const g = this.make.graphics()
+    g.fillStyle(0xffffff)
+    g.fillRect(0, 0, 1, 1)
+    g.generateTexture('pixel', 1, 1)
+    g.setVisible(false)
+    g.destroy()
+
     this.scene.start('main-scene')
   }
 }
