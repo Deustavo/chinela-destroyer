@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { PLAYER, WORLD } from '../config/constants'
 import type { PlayerAnim } from '../types/animations'
+import type { TouchState } from './TouchControls'
 
 export class Player {
   private sprite: Phaser.Physics.Arcade.Sprite
@@ -13,12 +14,12 @@ export class Player {
 
   constructor(scene: Phaser.Scene) {
     this.sprite = scene.physics.add.sprite(PLAYER.startX, PLAYER.startY, PLAYER.spriteKey)
-    this.sprite.setScale(2 / 3)
-
+    this.sprite.setScale(.5)
     const body = this.body
     body.setCollideWorldBounds(false)
-    body.setSize(this.sprite.width, this.sprite.height / 2)
-    body.setOffset(0, this.sprite.height / 2)
+    const hitW = this.sprite.width * 0.5
+    body.setSize(hitW, this.sprite.height / 2)
+    body.setOffset((this.sprite.width - hitW) / 2, this.sprite.height / 2)
 
     this.cursors = scene.input.keyboard!.createCursorKeys()
     this.wasd = {
@@ -70,24 +71,24 @@ export class Player {
     })
   }
 
-  update() {
+  update(touch?: TouchState) {
     const body = this.body
     body.setVelocityX(0)
 
     if (this.sprite.x < 0) this.sprite.x = WORLD.width
     else if (this.sprite.x > WORLD.width) this.sprite.x = 0
 
-    if (this.cursors.left?.isDown || this.wasd.left.isDown) {
+    if (this.cursors.left?.isDown || this.wasd.left.isDown || touch?.left) {
       body.setVelocityX(-PLAYER.speed)
       this.sprite.setFlipX(true)
     }
 
-    if (this.cursors.right?.isDown || this.wasd.right.isDown) {
+    if (this.cursors.right?.isDown || this.wasd.right.isDown || touch?.right) {
       body.setVelocityX(PLAYER.speed)
       this.sprite.setFlipX(false)
     }
 
-    if ((this.cursors.up?.isDown || this.wasd.up.isDown) && body.blocked.down) {
+    if ((this.cursors.up?.isDown || this.wasd.up.isDown || touch?.jump) && body.blocked.down) {
       body.setVelocityY(PLAYER.jumpVelocity)
     }
 

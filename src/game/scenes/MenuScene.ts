@@ -11,22 +11,22 @@ export class MenuScene extends Phaser.Scene {
     const cy = WORLD.height / 2
 
     const logo = this.add
-      .image(cx, cy, 'menu-logo')
-      .setScale(6)
+      .image(cx, cy - 60, 'menu-logo')
+      .setScale(2.2)
       .setDepth(1)
 
     const chinela = this.add
-      .image(150, 280, 'menu-chinela')
-      .setScale(8)
+      .image(cx - 80, cy + 40, 'menu-chinela')
+      .setScale(3.2)
       .setDepth(2)
 
     const pera = this.add
-      .image(1095, 195, 'menu-pera')
-      .setScale(4)
+      .image(cx + 80, cy - 180, 'menu-pera')
+      .setScale(2)
       .setDepth(2)
 
     const btn = this.add
-      .image(cx, cy + 210, 'menu-play-btn')
+      .image(cx, cy + 190, 'menu-play-btn')
       .setScale(1.8)
       .setDepth(3)
       .setInteractive({ useHandCursor: true })

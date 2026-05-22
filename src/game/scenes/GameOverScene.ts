@@ -1,7 +1,7 @@
 import Phaser from 'phaser'
 import { WORLD } from '../config/constants'
 
-const SCALE = 6
+const SCALE = 3
 
 export class GameOverScene extends Phaser.Scene {
   constructor() {
@@ -28,10 +28,10 @@ export class GameOverScene extends Phaser.Scene {
       })
     }
 
-    const fim = this.add.image(500, cy - 110, 'gameover-fim').setScale(SCALE).setOrigin(0.5)
-    const cat = this.add.image(790, cy - 130, 'gameover-chinela').setScale(SCALE).setOrigin(0.5)
-    const de = this.add.image(450, cy + 50, 'gameover-de').setScale(SCALE).setOrigin(0.5)
-    const jogo = this.add.image(760, cy + 60, 'gameover-jogo').setScale(SCALE).setOrigin(0.5)
+    const fim = this.add.image(cx - 65, cy - 80, 'gameover-fim').setScale(SCALE).setOrigin(0.5)
+    const cat = this.add.image(cx + 65, cy - 100, 'gameover-chinela').setScale(SCALE).setOrigin(0.5)
+    const de = this.add.image(cx - 85, cy, 'gameover-de').setScale(SCALE).setOrigin(0.5)
+    const jogo = this.add.image(cx + 55, cy + 5, 'gameover-jogo').setScale(SCALE).setOrigin(0.5)
 
     bob(fim, 10, 1800)
     bob(cat, 8, 2100)
@@ -39,20 +39,29 @@ export class GameOverScene extends Phaser.Scene {
     bob(jogo, 9, 2300)
 
     this.add
-      .text(cx, cy + 255, `Altura: ${data.score}`, { fontSize: '28px', color: '#ffffff' })
+      .text(cx, cy + 195, `Altura: ${data.score}`, { fontSize: '26px', color: '#ffffff' })
       .setOrigin(0.5)
 
     const bestColor = isNewBest ? '#ffd700' : '#aaaaaa'
     const bestLabel = isNewBest ? `Novo recorde: ${highScore}!` : `Recorde: ${highScore}`
     this.add
-      .text(cx, cy + 290, bestLabel, { fontSize: '20px', color: bestColor })
+      .text(cx, cy + 228, bestLabel, { fontSize: '18px', color: bestColor })
       .setOrigin(0.5)
 
+    const isTouch = this.sys.game.device.input.touch
+    const restartHint = isTouch
+      ? 'Toque para jogar novamente'
+      : 'Pressione ESPAÇO para jogar novamente'
+
     this.add
-      .text(cx, cy + 330, 'Pressione ESPAÇO para jogar novamente', { fontSize: '18px', color: '#aaaaaa' })
+      .text(cx, cy + 262, restartHint, { fontSize: '16px', color: '#aaaaaa' })
       .setOrigin(0.5)
 
     this.input.keyboard!.once('keydown-SPACE', () => {
+      this.scene.start('main-scene')
+    })
+
+    this.input.once('pointerdown', () => {
       this.scene.start('main-scene')
     })
   }
