@@ -68,6 +68,16 @@ export class MainScene extends Phaser.Scene {
 
     const platform = this.platforms.create(x, this.lastPlatformY, 'pixel') as Phaser.Physics.Arcade.Image
     platform.setDisplaySize(PLATFORMS.width, PLATFORMS.height).setTint(PLATFORMS.color).refreshBody()
+
+    if (Math.random() < 0.3) {
+      const minX2 = Math.max(PLATFORMS.minX + half, x + PLATFORMS.width + PLATFORMS.width)
+      const maxX2 = PLATFORMS.maxX - half
+      if (minX2 < maxX2) {
+        const x2 = Phaser.Math.Between(minX2, maxX2)
+        const platform2 = this.platforms.create(x2, this.lastPlatformY, 'pixel') as Phaser.Physics.Arcade.Image
+        platform2.setDisplaySize(PLATFORMS.width, PLATFORMS.height).setTint(PLATFORMS.color).refreshBody()
+      }
+    }
   }
 
   update(_time: number, delta: number) {

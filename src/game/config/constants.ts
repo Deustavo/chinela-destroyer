@@ -18,7 +18,7 @@ export const PLATFORMS = {
   maxGapY: 190,
   minX: 20,
   maxX: 1150,
-  maxHorizontalReach: 380,
+  maxHorizontalReach: 300,
   initialCount: 8,
   spawnAhead: 500,
   despawnMargin: 150,
