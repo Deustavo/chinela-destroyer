@@ -31,6 +31,31 @@ export const SCROLL = {
   upperHalfBoostFactor: 6.0,
 } as const
 
+export const ENEMY = {
+  screenY: 80,
+  speed: 140,
+  displayWidth: 128,
+  displayHeight: 128,
+  frameDuration: 0.35,
+  throwInterval: 2.2,
+  throwVelocityY: 320,
+  trapDisplaySize: 56,
+  bobAmplitude: 8,
+  bobSpeed: 1.8,
+  spriteKey: 'pera',
+  spritesheet: {
+    path: '/assets/enemy/SpriteSheetPera.png',
+    frameWidth: 128,
+    frameHeight: 128,
+  },
+  trapsKey: 'traps',
+  trapsSheet: {
+    path: '/assets/enemy/SpriteSheetTraps.png',
+    frameWidth: 128,
+    frameHeight: 128,
+  },
+} as const
+
 export const PLAYER = {
   startX: 640,
   startY: 560,
@@ -41,8 +66,8 @@ export const PLAYER = {
   spriteKey: 'chinela',
   spritesheet: {
     path: '/assets/player/chinela.png',
-    frameWidth: 64,
-    frameHeight: 64,
+    frameWidth: 128,
+    frameHeight: 128,
   },
   frames: {
     idle: [0],

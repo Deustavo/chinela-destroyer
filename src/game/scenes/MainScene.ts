@@ -1,9 +1,11 @@
 import Phaser from 'phaser'
 import { Player } from '../entities/Player'
+import { Enemy } from '../entities/Enemy'
 import { WORLD, PLATFORMS, SCROLL } from '../config/constants'
 
 export class MainScene extends Phaser.Scene {
   private player!: Player
+  private enemy!: Enemy
   private platforms!: Phaser.Physics.Arcade.StaticGroup
   private lastPlatformY!: number
   private lastPlatformX!: number
@@ -34,8 +36,15 @@ export class MainScene extends Phaser.Scene {
     }
 
     this.player = new Player(this)
+    this.enemy = new Enemy(this)
 
     this.physics.add.collider(this.player.gameObject, this.platforms)
+    this.physics.add.overlap(this.player.gameObject, this.enemy.trapGroup, () => {
+      if (!this.dead) {
+        this.dead = true
+        this.scene.start('game-over-scene', { score: this.score })
+      }
+    })
 
     this.scoreText = this.add
       .text(16, 16, 'Altura: 0', { fontSize: '22px', color: '#ffffff' })
@@ -87,6 +96,7 @@ export class MainScene extends Phaser.Scene {
     })
 
     this.player.update()
+    this.enemy.update(delta, this.cameras.main.scrollY)
 
     this.score = Math.floor(-this.cameras.main.scrollY / 10)
     this.scoreText.setText(`Altura: ${this.score}`)

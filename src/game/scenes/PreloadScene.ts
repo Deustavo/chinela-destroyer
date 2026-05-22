@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { PLAYER } from '../config/constants'
+import { PLAYER, ENEMY } from '../config/constants'
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -12,6 +12,16 @@ export class PreloadScene extends Phaser.Scene {
     this.load.spritesheet(PLAYER.spriteKey, spritesheet.path, {
       frameWidth: spritesheet.frameWidth,
       frameHeight: spritesheet.frameHeight,
+    })
+
+    this.load.spritesheet(ENEMY.spriteKey, ENEMY.spritesheet.path, {
+      frameWidth: ENEMY.spritesheet.frameWidth,
+      frameHeight: ENEMY.spritesheet.frameHeight,
+    })
+
+    this.load.spritesheet(ENEMY.trapsKey, ENEMY.trapsSheet.path, {
+      frameWidth: ENEMY.trapsSheet.frameWidth,
+      frameHeight: ENEMY.trapsSheet.frameHeight,
     })
   }
 

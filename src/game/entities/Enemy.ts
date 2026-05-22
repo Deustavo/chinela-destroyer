@@ -1,0 +1,78 @@
+import Phaser from 'phaser'
+import { WORLD, ENEMY } from '../config/constants'
+
+export class Enemy {
+  private sprite: Phaser.GameObjects.Sprite
+  private traps: Phaser.Physics.Arcade.Group
+  private scene: Phaser.Scene
+  private direction: number = 1
+  private frameTimer: number = 0
+  private currentFrame: number = 0
+  private throwTimer: number = 0
+  private bobTimer: number = 0
+
+  constructor(scene: Phaser.Scene) {
+    this.scene = scene
+
+    this.sprite = scene.add.sprite(WORLD.width / 2, ENEMY.screenY, ENEMY.spriteKey)
+    this.sprite.setScrollFactor(0)
+    this.sprite.setDisplaySize(ENEMY.displayWidth, ENEMY.displayHeight)
+    this.sprite.setDepth(10)
+    this.sprite.setFrame(0)
+
+    this.traps = scene.physics.add.group()
+  }
+
+  get trapGroup(): Phaser.Physics.Arcade.Group {
+    return this.traps
+  }
+
+  update(delta: number, cameraScrollY: number) {
+    const dt = delta / 1000
+
+    this.sprite.x += ENEMY.speed * this.direction * dt
+    if (this.sprite.x >= WORLD.width - ENEMY.displayWidth / 2) {
+      this.sprite.x = WORLD.width - ENEMY.displayWidth / 2
+      this.direction = -1
+    } else if (this.sprite.x <= ENEMY.displayWidth / 2) {
+      this.sprite.x = ENEMY.displayWidth / 2
+      this.direction = 1
+    }
+
+    this.sprite.setFlipX(this.direction < 0)
+
+    this.bobTimer += dt
+    const bob = Math.sin(this.bobTimer * ENEMY.bobSpeed * Math.PI * 2) * ENEMY.bobAmplitude
+    this.sprite.y = ENEMY.screenY + bob
+
+    this.frameTimer += dt
+    if (this.frameTimer >= ENEMY.frameDuration) {
+      this.frameTimer = 0
+      this.currentFrame = this.currentFrame === 0 ? 1 : 0
+      this.sprite.setFrame(this.currentFrame)
+    }
+
+    this.throwTimer += dt
+    if (this.throwTimer >= ENEMY.throwInterval) {
+      this.throwTimer = 0
+      this.throwTrap(cameraScrollY)
+    }
+
+    const cameraBottom = cameraScrollY + WORLD.height
+    ;(this.traps.getChildren() as Phaser.Physics.Arcade.Image[]).forEach((trap) => {
+      if (trap.y > cameraBottom + 200) trap.destroy()
+    })
+  }
+
+  private throwTrap(cameraScrollY: number) {
+    const worldX = this.sprite.x
+    const worldY = cameraScrollY + this.sprite.y + ENEMY.displayHeight / 2
+
+    const trapFrame = Phaser.Math.Between(0, 2)
+    const trap = this.traps.create(worldX, worldY, ENEMY.trapsKey, trapFrame) as Phaser.Physics.Arcade.Image
+    trap.setDisplaySize(ENEMY.trapDisplaySize, ENEMY.trapDisplaySize)
+    trap.setVelocityY(ENEMY.throwVelocityY)
+    trap.setVelocityX(Phaser.Math.Between(-180, 180))
+    ;(trap.body as Phaser.Physics.Arcade.Body).setAngularVelocity(Phaser.Math.Between(-300, 300))
+  }
+}
