@@ -100,7 +100,6 @@ export class Enemy {
     ;(trap.body as Phaser.Physics.Arcade.Body).setSize(ENEMY.trapHitboxSize, ENEMY.trapHitboxSize)
     trap.setVelocityX(vx)
     trap.setVelocityY(vy)
-    ;(trap.body as Phaser.Physics.Arcade.Body).setAngularVelocity(Phaser.Math.Between(-300, 300))
-    ;(trap.body as Phaser.Physics.Arcade.Body).setAllowGravity(false)
+;(trap.body as Phaser.Physics.Arcade.Body).setAllowGravity(false)
   }
 }

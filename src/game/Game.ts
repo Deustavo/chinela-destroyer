@@ -12,7 +12,7 @@ export class Game extends Phaser.Game {
       width: WORLD.width,
       height: WORLD.height,
       backgroundColor: WORLD.backgroundColor,
-      pixelArt: true,
+      smoothPixelArt: true,
       scale: {
         mode: Phaser.Scale.NONE,
         autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -22,6 +22,7 @@ export class Game extends Phaser.Game {
         arcade: {
           gravity: { x: 0, y: WORLD.gravity },
           debug: false,
+          fixedStep: false,
         },
       },
       scene: [PreloadScene, MenuScene, MainScene, GameOverScene],
