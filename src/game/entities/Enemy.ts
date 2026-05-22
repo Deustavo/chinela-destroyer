@@ -74,6 +74,7 @@ export class Enemy {
     const trapFrame = Phaser.Math.Between(0, 2)
     const trap = this.traps.create(worldX, worldY, ENEMY.trapsKey, trapFrame) as Phaser.Physics.Arcade.Image
     trap.setDisplaySize(ENEMY.trapDisplaySize, ENEMY.trapDisplaySize)
+    ;(trap.body as Phaser.Physics.Arcade.Body).setSize(ENEMY.trapHitboxSize, ENEMY.trapHitboxSize)
     trap.setVelocityX(vx)
     trap.setVelocityY(vy)
     ;(trap.body as Phaser.Physics.Arcade.Body).setAngularVelocity(Phaser.Math.Between(-300, 300))
