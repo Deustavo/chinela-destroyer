@@ -1,12 +1,14 @@
 import Phaser from 'phaser'
 import { Player } from '../entities/Player'
 import { Enemy } from '../entities/Enemy'
+import { TouchControls } from '../entities/TouchControls'
 import { WORLD, PLATFORMS, SCROLL } from '../config/constants'
 
 export class MainScene extends Phaser.Scene {
   private player!: Player
   private enemy!: Enemy
   private platforms!: Phaser.Physics.Arcade.StaticGroup
+  private touchControls!: TouchControls
   private lastPlatformY!: number
   private lastPlatformX!: number
   private scrollSpeed!: number
@@ -37,6 +39,7 @@ export class MainScene extends Phaser.Scene {
 
     this.player = new Player(this)
     this.enemy = new Enemy(this)
+    this.touchControls = new TouchControls(this)
 
     this.physics.add.collider(this.player.gameObject, this.platforms)
     this.physics.add.overlap(this.player.gameObject, this.enemy.trapGroup, () => {
@@ -105,7 +108,7 @@ export class MainScene extends Phaser.Scene {
       if (p.y > cameraBottom + PLATFORMS.despawnMargin) p.destroy()
     })
 
-    this.player.update()
+    this.player.update(this.touchControls.state)
     const { x: px, y: py } = this.player.gameObject
     this.enemy.update(delta, this.cameras.main.scrollY, px, py)
 

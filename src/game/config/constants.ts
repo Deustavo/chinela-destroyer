@@ -1,24 +1,24 @@
 export const WORLD = {
-  width: 1280,
+  width: 405,
   height: 720,
   gravity: 800,
   backgroundColor: '#1d1d1d',
   groundColor: 0x444444,
   groundY: 680,
-  groundWidth: 1280,
+  groundWidth: 405,
   groundHeight: 60,
   boundsExtent: 500000,
 } as const
 
 export const PLATFORMS = {
-  width: 110,
-  height: 16,
+  width: 80,
+  height: 8,
   color: 0x55bb55,
   minGapY: 140,
   maxGapY: 190,
   minX: 20,
-  maxX: 1150,
-  maxHorizontalReach: 300,
+  maxX: 385,
+  maxHorizontalReach: 130,
   initialCount: 8,
   spawnAhead: 500,
   despawnMargin: 150,
@@ -33,14 +33,14 @@ export const SCROLL = {
 
 export const ENEMY = {
   screenY: 80,
-  speed: 140,
-  displayWidth: 128,
-  displayHeight: 128,
+  speed: 100,
+  displayWidth: 96,
+  displayHeight: 96,
   frameDuration: 0.35,
   throwInterval: 2.2,
-  projectileSpeed: 380,
-  trapDisplaySize: 80,
-  trapHitboxSize: 40,
+  projectileSpeed: 300,
+  trapDisplaySize: 60,
+  trapHitboxSize: 30,
   blinkWindow: 1.0,
   blinkCount: 2,
   bobAmplitude: 8,
@@ -60,9 +60,9 @@ export const ENEMY = {
 } as const
 
 export const PLAYER = {
-  startX: 640,
+  startX: 202,
   startY: 560,
-  speed: 300,
+  speed: 200,
   jumpVelocity: -820,
   riseGravityMultiplier: 2.0,
   fallGravityMultiplier: 2.5,
