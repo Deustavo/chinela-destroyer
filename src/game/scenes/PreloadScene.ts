@@ -33,6 +33,12 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('gameover-de', '/assets/gameOverScreen/de.png')
     this.load.image('gameover-jogo', '/assets/gameOverScreen/jogo.png')
     this.load.image('gameover-chinela', '/assets/gameOverScreen/chinela.png')
+
+    this.load.image('btn-left', '/assets/buttons/left.png')
+    this.load.image('btn-right', '/assets/buttons/right.png')
+    this.load.image('btn-up', '/assets/buttons/up.png')
+    this.load.image('btn-pause', '/assets/buttons/pause.png')
+    this.load.image('btn-play', '/assets/buttons/play.png')
   }
 
   create() {

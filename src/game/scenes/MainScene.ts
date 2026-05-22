@@ -64,21 +64,16 @@ export class MainScene extends Phaser.Scene {
   private addPauseButton() {
     const x = WORLD.width - 36
     const y = 28
-
-    const gfx = this.add.graphics({ x, y })
-    gfx.fillStyle(0x000000, 0.5)
-    gfx.fillCircle(0, 0, 26)
-    gfx.lineStyle(2, 0xffffff, 0.6)
-    gfx.strokeCircle(0, 0, 26)
-    gfx.setScrollFactor(0).setDepth(20)
+    const size = 52
 
     this.add
-      .text(x, y, '⏸', { fontSize: '22px' })
-      .setOrigin(0.5)
+      .image(x, y, 'btn-pause')
+      .setDisplaySize(size, size)
       .setScrollFactor(0)
-      .setDepth(21)
+      .setDepth(20)
+      .setAlpha(0.85)
 
-    const zone = this.add.zone(x, y, 52, 52).setScrollFactor(0).setDepth(22).setInteractive()
+    const zone = this.add.zone(x, y, size, size).setScrollFactor(0).setDepth(22).setInteractive()
     zone.on('pointerdown', () => this.pauseGame())
   }
 

@@ -19,20 +19,19 @@ export class PauseScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(1)
 
-    const btnBg = this.add.rectangle(cx, cy + 20, 200, 56, 0x336633).setDepth(1)
-    const btnText = this.add
-      .text(cx, cy + 20, 'CONTINUAR', { fontSize: '24px', color: '#ffffff' })
-      .setOrigin(0.5)
-      .setDepth(2)
+    const btnSize = 80
+    const btnImg = this.add
+      .image(cx, cy + 20, 'btn-play')
+      .setDisplaySize(btnSize, btnSize)
+      .setDepth(1)
+      .setInteractive({ cursor: 'pointer' })
 
-    btnBg.setInteractive({ cursor: 'pointer' })
-    btnBg.on('pointerover', () => btnBg.setFillStyle(0x44aa44))
-    btnBg.on('pointerout', () => btnBg.setFillStyle(0x336633))
-    btnBg.on('pointerdown', () => this.startCountdown())
+    btnImg.on('pointerover', () => btnImg.setAlpha(1))
+    btnImg.on('pointerout', () => btnImg.setAlpha(0.85))
+    btnImg.on('pointerdown', () => this.startCountdown())
+    btnImg.setAlpha(0.85)
 
     this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC).once('down', () => this.startCountdown())
-
-    void btnText
   }
 
   private startCountdown() {

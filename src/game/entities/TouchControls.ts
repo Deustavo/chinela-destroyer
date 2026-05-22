@@ -16,35 +16,27 @@ export class TouchControls {
     if (!isTouchDevice()) return
 
     const y = WORLD.height - 70
-    const leftBtn = this.createButton(scene, 80, y, '◄')
-    const rightBtn = this.createButton(scene, 200, y, '►')
-    const jumpBtn = this.createButton(scene, WORLD.width - 90, y, '▲')
+    const leftBtn = this.createButton(scene, 80, y, 'btn-left')
+    const rightBtn = this.createButton(scene, 200, y, 'btn-right')
+    const jumpBtn = this.createButton(scene, WORLD.width - 90, y, 'btn-up')
 
     this.bind(leftBtn, 'left')
     this.bind(rightBtn, 'right')
     this.bind(jumpBtn, 'jump')
   }
 
-  private createButton(scene: Phaser.Scene, x: number, y: number, icon: string): Phaser.GameObjects.Zone {
-    const radius = 46
-
-    // Position the graphics object at (x, y) and draw the circle at local (0, 0)
-    // to avoid scroll-factor coordinate issues
-    const gfx = scene.add.graphics({ x, y })
-    gfx.fillStyle(0x000000, 0.55)
-    gfx.fillCircle(0, 0, radius)
-    gfx.lineStyle(3, 0xffffff, 0.75)
-    gfx.strokeCircle(0, 0, radius)
-    gfx.setScrollFactor(0).setDepth(20)
+  private createButton(scene: Phaser.Scene, x: number, y: number, textureKey: string): Phaser.GameObjects.Zone {
+    const size = 180
 
     scene.add
-      .text(x, y, icon, { fontSize: '36px', color: '#ffffff' })
-      .setOrigin(0.5)
+      .image(x, y, textureKey)
+      .setDisplaySize(size, size)
       .setScrollFactor(0)
-      .setDepth(21)
+      .setDepth(20)
+      .setAlpha(0.8)
 
     const zone = scene.add
-      .zone(x, y, radius * 2, radius * 2)
+      .zone(x, y, size, size)
       .setScrollFactor(0)
       .setDepth(22)
       .setInteractive()
