@@ -16,8 +16,8 @@ export class MenuScene extends Phaser.Scene {
       .setDepth(1)
 
     const chinela = this.add
-      .image(50, 400, 'menu-chinela')
-      .setScale(6)
+      .image(150, 280, 'menu-chinela')
+      .setScale(8)
       .setDepth(2)
 
     const pera = this.add
