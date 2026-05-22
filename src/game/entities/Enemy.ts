@@ -4,7 +4,6 @@ import { WORLD, ENEMY } from '../config/constants'
 export class Enemy {
   private sprite: Phaser.GameObjects.Sprite
   private traps: Phaser.Physics.Arcade.Group
-  private scene: Phaser.Scene
   private direction: number = 1
   private frameTimer: number = 0
   private currentFrame: number = 0
@@ -12,8 +11,6 @@ export class Enemy {
   private bobTimer: number = 0
 
   constructor(scene: Phaser.Scene) {
-    this.scene = scene
-
     this.sprite = scene.add.sprite(WORLD.width / 2, ENEMY.screenY, ENEMY.spriteKey)
     this.sprite.setScrollFactor(0)
     this.sprite.setDisplaySize(ENEMY.displayWidth, ENEMY.displayHeight)
