@@ -96,7 +96,8 @@ export class MainScene extends Phaser.Scene {
     })
 
     this.player.update()
-    this.enemy.update(delta, this.cameras.main.scrollY)
+    const { x: px, y: py } = this.player.gameObject
+    this.enemy.update(delta, this.cameras.main.scrollY, px, py)
 
     this.score = Math.floor(-this.cameras.main.scrollY / 10)
     this.scoreText.setText(`Altura: ${this.score}`)

@@ -27,7 +27,7 @@ export class Enemy {
     return this.traps
   }
 
-  update(delta: number, cameraScrollY: number) {
+  update(delta: number, cameraScrollY: number, playerX: number, playerY: number) {
     const dt = delta / 1000
 
     this.sprite.x += ENEMY.speed * this.direction * dt
@@ -55,7 +55,7 @@ export class Enemy {
     this.throwTimer += dt
     if (this.throwTimer >= ENEMY.throwInterval) {
       this.throwTimer = 0
-      this.throwTrap(cameraScrollY)
+      this.throwTrap(cameraScrollY, playerX, playerY)
     }
 
     const cameraBottom = cameraScrollY + WORLD.height
@@ -64,15 +64,22 @@ export class Enemy {
     })
   }
 
-  private throwTrap(cameraScrollY: number) {
+  private throwTrap(cameraScrollY: number, playerX: number, playerY: number) {
     const worldX = this.sprite.x
     const worldY = cameraScrollY + this.sprite.y + ENEMY.displayHeight / 2
+
+    const dx = playerX - worldX
+    const dy = playerY - worldY
+    const len = Math.sqrt(dx * dx + dy * dy) || 1
+    const vx = (dx / len) * ENEMY.projectileSpeed
+    const vy = (dy / len) * ENEMY.projectileSpeed
 
     const trapFrame = Phaser.Math.Between(0, 2)
     const trap = this.traps.create(worldX, worldY, ENEMY.trapsKey, trapFrame) as Phaser.Physics.Arcade.Image
     trap.setDisplaySize(ENEMY.trapDisplaySize, ENEMY.trapDisplaySize)
-    trap.setVelocityY(ENEMY.throwVelocityY)
-    trap.setVelocityX(Phaser.Math.Between(-180, 180))
+    trap.setVelocityX(vx)
+    trap.setVelocityY(vy)
     ;(trap.body as Phaser.Physics.Arcade.Body).setAngularVelocity(Phaser.Math.Between(-300, 300))
+    ;(trap.body as Phaser.Physics.Arcade.Body).setAllowGravity(false)
   }
 }
