@@ -3,6 +3,7 @@ import { PreloadScene } from './scenes/PreloadScene'
 import { MenuScene } from './scenes/MenuScene'
 import { MainScene } from './scenes/MainScene'
 import { GameOverScene } from './scenes/GameOverScene'
+import { PauseScene } from './scenes/PauseScene'
 import { WORLD } from './config/constants'
 
 export class Game extends Phaser.Game {
@@ -28,7 +29,7 @@ export class Game extends Phaser.Game {
           fixedStep: false,
         },
       },
-      scene: [PreloadScene, MenuScene, MainScene, GameOverScene],
+      scene: [PreloadScene, MenuScene, MainScene, GameOverScene, PauseScene],
     })
   }
 }

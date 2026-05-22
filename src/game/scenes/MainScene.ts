@@ -15,6 +15,7 @@ export class MainScene extends Phaser.Scene {
   private score!: number
   private scoreText!: Phaser.GameObjects.Text
   private dead!: boolean
+  private onEscKey!: (e: KeyboardEvent) => void
 
   constructor() {
     super('main-scene')
@@ -52,6 +53,39 @@ export class MainScene extends Phaser.Scene {
     this.scoreText = this.add
       .text(16, 16, 'Altura: 0', { fontSize: '22px', color: '#ffffff' })
       .setScrollFactor(0)
+
+    this.addPauseButton()
+
+    this.onEscKey = (e: KeyboardEvent) => { if (e.key === 'Escape') this.pauseGame() }
+    window.addEventListener('keydown', this.onEscKey)
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener('keydown', this.onEscKey))
+  }
+
+  private addPauseButton() {
+    const x = WORLD.width - 36
+    const y = 28
+
+    const gfx = this.add.graphics({ x, y })
+    gfx.fillStyle(0x000000, 0.5)
+    gfx.fillCircle(0, 0, 26)
+    gfx.lineStyle(2, 0xffffff, 0.6)
+    gfx.strokeCircle(0, 0, 26)
+    gfx.setScrollFactor(0).setDepth(20)
+
+    this.add
+      .text(x, y, '⏸', { fontSize: '22px' })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(21)
+
+    const zone = this.add.zone(x, y, 52, 52).setScrollFactor(0).setDepth(22).setInteractive()
+    zone.on('pointerdown', () => this.pauseGame())
+  }
+
+  private pauseGame() {
+    if (this.dead) return
+    this.scene.pause()
+    this.scene.launch('pause-scene')
   }
 
   private spawnGround() {
