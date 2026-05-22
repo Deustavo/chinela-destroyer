@@ -3,6 +3,7 @@ import { WORLD, ENEMY } from '../config/constants'
 
 export class Enemy {
   private sprite: Phaser.GameObjects.Sprite
+  private glowSprite: Phaser.GameObjects.Sprite
   private traps: Phaser.Physics.Arcade.Group
   private direction: number = 1
   private frameTimer: number = 0
@@ -16,6 +17,14 @@ export class Enemy {
     this.sprite.setDisplaySize(ENEMY.displayWidth, ENEMY.displayHeight)
     this.sprite.setDepth(10)
     this.sprite.setFrame(0)
+
+    this.glowSprite = scene.add.sprite(WORLD.width / 2, ENEMY.screenY, ENEMY.spriteKey)
+    this.glowSprite.setScrollFactor(0)
+    this.glowSprite.setDisplaySize(ENEMY.displayWidth, ENEMY.displayHeight)
+    this.glowSprite.setDepth(11)
+    this.glowSprite.setBlendMode(Phaser.BlendModes.ADD)
+    this.glowSprite.setAlpha(0)
+    this.glowSprite.setFrame(0)
 
     this.traps = scene.physics.add.group()
   }
@@ -37,6 +46,9 @@ export class Enemy {
     }
 
     this.sprite.setFlipX(this.direction < 0)
+    this.glowSprite.x = this.sprite.x
+    this.glowSprite.y = this.sprite.y
+    this.glowSprite.setFlipX(this.direction < 0)
 
     this.bobTimer += dt
     const bob = Math.sin(this.bobTimer * ENEMY.bobSpeed * Math.PI * 2) * ENEMY.bobAmplitude
@@ -47,12 +59,23 @@ export class Enemy {
       this.frameTimer = 0
       this.currentFrame = this.currentFrame === 0 ? 1 : 0
       this.sprite.setFrame(this.currentFrame)
+      this.glowSprite.setFrame(this.currentFrame)
     }
 
     this.throwTimer += dt
     if (this.throwTimer >= ENEMY.throwInterval) {
       this.throwTimer = 0
+      this.glowSprite.setAlpha(0)
       this.throwTrap(cameraScrollY, playerX, playerY)
+    }
+
+    const timeLeft = ENEMY.throwInterval - this.throwTimer
+    if (timeLeft <= ENEMY.blinkWindow) {
+      const progress = (ENEMY.blinkWindow - timeLeft) / ENEMY.blinkWindow
+      const alpha = Math.abs(Math.sin(progress * ENEMY.blinkCount * Math.PI)) * 0.8
+      this.glowSprite.setAlpha(alpha)
+    } else {
+      this.glowSprite.setAlpha(0)
     }
 
     const cameraBottom = cameraScrollY + WORLD.height

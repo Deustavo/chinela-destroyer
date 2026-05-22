@@ -41,6 +41,8 @@ export const ENEMY = {
   projectileSpeed: 380,
   trapDisplaySize: 80,
   trapHitboxSize: 40,
+  blinkWindow: 1.0,
+  blinkCount: 2,
   bobAmplitude: 8,
   bobSpeed: 1.8,
   spriteKey: 'pera',
