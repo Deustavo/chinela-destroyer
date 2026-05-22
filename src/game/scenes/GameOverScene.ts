@@ -28,10 +28,10 @@ export class GameOverScene extends Phaser.Scene {
       })
     }
 
-    const fim = this.add.image(cx - 55, cy - 100, 'gameover-fim').setScale(SCALE).setOrigin(0.5)
-    const cat = this.add.image(cx + 55, cy - 120, 'gameover-chinela').setScale(SCALE).setOrigin(0.5)
-    const de = this.add.image(cx - 55, cy + 60, 'gameover-de').setScale(SCALE).setOrigin(0.5)
-    const jogo = this.add.image(cx + 55, cy + 75, 'gameover-jogo').setScale(SCALE).setOrigin(0.5)
+    const fim = this.add.image(cx - 65, cy - 80, 'gameover-fim').setScale(SCALE).setOrigin(0.5)
+    const cat = this.add.image(cx + 65, cy - 100, 'gameover-chinela').setScale(SCALE).setOrigin(0.5)
+    const de = this.add.image(cx - 85, cy, 'gameover-de').setScale(SCALE).setOrigin(0.5)
+    const jogo = this.add.image(cx + 55, cy + 5, 'gameover-jogo').setScale(SCALE).setOrigin(0.5)
 
     bob(fim, 10, 1800)
     bob(cat, 8, 2100)

@@ -4,7 +4,7 @@ export const WORLD = {
   gravity: 800,
   backgroundColor: '#1d1d1d',
   groundColor: 0x444444,
-  groundY: 680,
+  groundY: 580,
   groundWidth: 405,
   groundHeight: 60,
   boundsExtent: 500000,
@@ -61,7 +61,7 @@ export const ENEMY = {
 
 export const PLAYER = {
   startX: 202,
-  startY: 560,
+  startY: 460,
   speed: 200,
   jumpVelocity: -820,
   riseGravityMultiplier: 2.0,
