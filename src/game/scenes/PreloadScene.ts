@@ -23,6 +23,11 @@ export class PreloadScene extends Phaser.Scene {
       frameWidth: ENEMY.trapsSheet.frameWidth,
       frameHeight: ENEMY.trapsSheet.frameHeight,
     })
+
+    this.load.image('menu-logo', '/assets/homeScreen/logo.png')
+    this.load.image('menu-chinela', '/assets/homeScreen/chinela.png')
+    this.load.image('menu-pera', '/assets/homeScreen/pera.png')
+    this.load.image('menu-play-btn', '/assets/homeScreen/play.png')
   }
 
   create() {

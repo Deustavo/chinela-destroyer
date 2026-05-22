@@ -10,49 +10,54 @@ export class MenuScene extends Phaser.Scene {
     const cx = WORLD.width / 2
     const cy = WORLD.height / 2
 
-    this.add
-      .text(cx, cy - 100, 'CHINELA', {
-        fontSize: '96px',
-        fontStyle: 'bold',
-        color: '#f5a623',
-        stroke: '#000000',
-        strokeThickness: 6,
-      })
-      .setOrigin(0.5)
+    const logo = this.add
+      .image(cx, cy, 'menu-logo')
+      .setScale(6)
+      .setDepth(1)
 
-    this.add
-      .text(cx, cy - 10, 'DESTROYER', {
-        fontSize: '64px',
-        fontStyle: 'bold',
-        color: '#ffffff',
-        stroke: '#000000',
-        strokeThickness: 5,
-      })
-      .setOrigin(0.5)
+    const chinela = this.add
+      .image(50, 400, 'menu-chinela')
+      .setScale(6)
+      .setDepth(2)
+
+    const pera = this.add
+      .image(1095, 195, 'menu-pera')
+      .setScale(4)
+      .setDepth(2)
 
     const btn = this.add
-      .text(cx, cy + 130, '[ INICIAR ]', {
-        fontSize: '38px',
-        fontStyle: 'bold',
-        color: '#1d1d1d',
-        backgroundColor: '#f5a623',
-        padding: { x: 28, y: 14 },
-      })
-      .setOrigin(0.5)
+      .image(cx, cy + 210, 'menu-play-btn')
+      .setScale(1.8)
+      .setDepth(3)
       .setInteractive({ useHandCursor: true })
 
-    btn.on('pointerover', () => btn.setStyle({ color: '#ffffff', backgroundColor: '#c47d0e' }))
-    btn.on('pointerout', () => btn.setStyle({ color: '#1d1d1d', backgroundColor: '#f5a623' }))
+    btn.on('pointerover', () => btn.setScale(2.0))
+    btn.on('pointerout', () => btn.setScale(1.8))
     btn.on('pointerdown', () => this.scene.start('main-scene'))
 
     this.input.keyboard?.once('keydown-SPACE', () => this.scene.start('main-scene'))
     this.input.keyboard?.once('keydown-ENTER', () => this.scene.start('main-scene'))
 
-    this.add
-      .text(cx, cy + 220, 'Pressione SPACE ou ENTER para começar', {
-        fontSize: '18px',
-        color: '#888888',
-      })
-      .setOrigin(0.5)
+    this.addFloat(logo, 8, 2000, 0)
+    this.addFloat(chinela, 12, 1800, 300)
+    this.addFloat(pera, 10, 2200, 600)
+    this.addFloat(btn, 6, 1600, 150)
+  }
+
+  private addFloat(
+    obj: Phaser.GameObjects.Image | Phaser.GameObjects.Sprite,
+    amplitude: number,
+    duration: number,
+    delay: number,
+  ) {
+    this.tweens.add({
+      targets: obj,
+      y: obj.y - amplitude,
+      duration,
+      delay,
+      ease: 'Sine.easeInOut',
+      yoyo: true,
+      repeat: -1,
+    })
   }
 }

@@ -12,6 +12,11 @@ export class Game extends Phaser.Game {
       width: WORLD.width,
       height: WORLD.height,
       backgroundColor: WORLD.backgroundColor,
+      pixelArt: true,
+      scale: {
+        mode: Phaser.Scale.NONE,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+      },
       physics: {
         default: 'arcade',
         arcade: {
