@@ -28,6 +28,7 @@ export const SCROLL = {
   initialSpeed: 45,
   speedIncrement: 1.5,
   maxSpeed: 200,
+  upperHalfBoostFactor: 6.0,
 } as const
 
 export const PLAYER = {

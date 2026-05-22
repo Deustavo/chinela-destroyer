@@ -67,9 +67,16 @@ export class MainScene extends Phaser.Scene {
     const dt = delta / 1000
 
     this.scrollSpeed = Math.min(this.scrollSpeed + SCROLL.speedIncrement * dt, SCROLL.maxSpeed)
-    this.cameras.main.scrollY -= this.scrollSpeed * dt
 
     const cameraTop = this.cameras.main.scrollY
+    const screenMidY = cameraTop + WORLD.height / 2
+    let effectiveSpeed = this.scrollSpeed
+    if (this.player.gameObject.y < screenMidY) {
+      const linear = (screenMidY - this.player.gameObject.y) / (WORLD.height / 2)
+      const ratio = Math.pow(linear, 0.3)
+      effectiveSpeed += this.scrollSpeed * SCROLL.upperHalfBoostFactor * ratio
+    }
+    this.cameras.main.scrollY -= effectiveSpeed * dt
     while (this.lastPlatformY > cameraTop - PLATFORMS.spawnAhead) {
       this.spawnPlatform()
     }
