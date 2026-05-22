@@ -13,9 +13,12 @@ export class Player {
 
   constructor(scene: Phaser.Scene) {
     this.sprite = scene.physics.add.sprite(PLAYER.startX, PLAYER.startY, PLAYER.spriteKey)
+    this.sprite.setScale(2 / 3)
 
     const body = this.body
     body.setCollideWorldBounds(false)
+    body.setSize(this.sprite.width, this.sprite.height / 2)
+    body.setOffset(0, this.sprite.height / 2)
 
     this.cursors = scene.input.keyboard!.createCursorKeys()
     this.wasd = {
