@@ -15,11 +15,11 @@ export class Player {
   constructor(scene: Phaser.Scene) {
     this.sprite = scene.physics.add.sprite(PLAYER.startX, PLAYER.startY, PLAYER.spriteKey)
     this.sprite.setScale(.5)
-
     const body = this.body
     body.setCollideWorldBounds(false)
-    body.setSize(this.sprite.width, this.sprite.height / 2)
-    body.setOffset(0, this.sprite.height / 2)
+    const hitW = this.sprite.width * 0.5
+    body.setSize(hitW, this.sprite.height / 2)
+    body.setOffset((this.sprite.width - hitW) / 2, this.sprite.height / 2)
 
     this.cursors = scene.input.keyboard!.createCursorKeys()
     this.wasd = {
