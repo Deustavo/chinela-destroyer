@@ -35,26 +35,52 @@ export class MenuScene extends Phaser.Scene {
     btn.on('pointerout', () => btn.setScale(1.8))
     btn.on('pointerdown', () => this.scene.start('main-scene'))
 
+    const btnCredits = this.add
+      .image(cx, cy + 250, 'menu-credits-btn')
+      .setScale(1.5)
+      .setDepth(3)
+      .setInteractive({ useHandCursor: true })
+
+    btnCredits.on('pointerover', () => btnCredits.setScale(1.65))
+    btnCredits.on('pointerout', () => btnCredits.setScale(1.5))
+    btnCredits.on('pointerdown', () => this.scene.start('credits-scene'))
+
     this.input.keyboard?.once('keydown-SPACE', () => this.scene.start('main-scene'))
     this.input.keyboard?.once('keydown-ENTER', () => this.scene.start('main-scene'))
 
-    this.addFloat(logo, 8, 2000, 0)
-    this.addFloat(chinela, 12, 1800, 300)
-    this.addFloat(pera, 10, 2200, 600)
-    this.addFloat(btn, 6, 1600, 150)
+    this.dropIn(logo,       { amplitude: 8,  floatDuration: 2000, delay: 0   })
+    this.dropIn(chinela,    { amplitude: 12, floatDuration: 1800, delay: 120 })
+    this.dropIn(pera,       { amplitude: 10, floatDuration: 2200, delay: 240 })
+    this.dropIn(btn,        { amplitude: 6,  floatDuration: 1600, delay: 360 })
+    this.dropIn(btnCredits, { amplitude: 5,  floatDuration: 1700, delay: 440 })
+  }
+
+  private dropIn(
+    obj: Phaser.GameObjects.Image,
+    opts: { amplitude: number; floatDuration: number; delay: number },
+  ) {
+    const finalY = obj.y
+    obj.y = -obj.displayHeight
+
+    this.tweens.add({
+      targets: obj,
+      y: finalY,
+      duration: 900,
+      delay: opts.delay,
+      ease: 'Cubic.easeOut',
+      onComplete: () => this.addFloat(obj, opts.amplitude, opts.floatDuration),
+    })
   }
 
   private addFloat(
     obj: Phaser.GameObjects.Image | Phaser.GameObjects.Sprite,
     amplitude: number,
     duration: number,
-    delay: number,
   ) {
     this.tweens.add({
       targets: obj,
       y: obj.y - amplitude,
       duration,
-      delay,
       ease: 'Sine.easeInOut',
       yoyo: true,
       repeat: -1,
