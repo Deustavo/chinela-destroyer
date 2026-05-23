@@ -37,6 +37,13 @@ export class MenuScene extends Phaser.Scene {
       .setDepth(3)
       .setInteractive({ useHandCursor: true })
 
+    const btnTrophy = this.add
+      .image(WORLD.width - 44, WORLD.height - 44, 'btn-trophy')
+      .setDisplaySize(56, 56)
+      .setDepth(3)
+      .setInteractive({ useHandCursor: true })
+      .setAlpha(0.9)
+
     // Reduce hitbox height: play = 1/3, credits = 1/2 (both centered)
     const haBtn = btn.input!.hitArea as Phaser.Geom.Rectangle
     haBtn.y += haBtn.height / 3
@@ -47,7 +54,7 @@ export class MenuScene extends Phaser.Scene {
     haCredits.height /= 2
 
 
-    const all = [logo, chinela, pera, btn, btnCredits]
+    const all = [logo, chinela, pera, btn, btnCredits, btnTrophy]
 
     btn.on('pointerover', () => btn.setScale(2.0))
     btn.on('pointerout', () => btn.setScale(1.8))
@@ -57,6 +64,10 @@ export class MenuScene extends Phaser.Scene {
     btnCredits.on('pointerout', () => btnCredits.setScale(1.5))
     btnCredits.on('pointerdown', () => this.exitTo('credits-scene', all))
 
+    btnTrophy.on('pointerover', () => btnTrophy.setAlpha(1))
+    btnTrophy.on('pointerout', () => btnTrophy.setAlpha(0.9))
+    btnTrophy.on('pointerdown', () => this.exitTo('achievements-scene', all))
+
     this.input.keyboard?.once('keydown-SPACE', () => this.exitTo('main-scene', all))
     this.input.keyboard?.once('keydown-ENTER', () => this.exitTo('main-scene', all))
 
@@ -65,6 +76,7 @@ export class MenuScene extends Phaser.Scene {
     this.dropIn(pera,       { amplitude: 10, floatDuration: 2200, delay: 240 })
     this.dropIn(btn,        { amplitude: 6,  floatDuration: 1600, delay: 360 })
     this.dropIn(btnCredits, { amplitude: 5,  floatDuration: 1700, delay: 440 })
+    this.dropIn(btnTrophy,  { amplitude: 4,  floatDuration: 1900, delay: 520 })
   }
 
   private exitTo(scene: string, elements: Phaser.GameObjects.Image[]) {

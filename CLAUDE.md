@@ -14,7 +14,7 @@ There is no test runner configured in this project.
 
 ## UI Conventions
 
-- All in-game text must use `fontFamily: '"Comic Sans MS", cursive'`.
+- All in-game text must use `fontFamily: '"Comic Neue", "Comic Sans MS", cursive'`.
 
 ## Stack
 

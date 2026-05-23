@@ -7,6 +7,10 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   preload() {
+    this.load.on('loaderror', (file: Phaser.Loader.File) => {
+      this.textures.remove(file.key)
+    })
+
     const { spritesheet } = PLAYER
 
     this.load.spritesheet(PLAYER.spriteKey, spritesheet.path, {
@@ -44,6 +48,15 @@ export class PreloadScene extends Phaser.Scene {
 
     this.load.image('credits-gatas', '/assets/creditsScreen/gatasbobas.png')
     this.load.image('credits-github', '/assets/creditsScreen/github.png')
+
+    this.load.image('btn-trophy', '/assets/achievements/trophy.png')
+    this.load.image('achievement-locked', '/assets/achievements/medal-blocked.png')
+    this.load.image('achievement-1', '/assets/achievements/medal-100.png')
+    this.load.image('achievement-2', '/assets/achievements/medal-200.png')
+    this.load.image('achievement-3', '/assets/achievements/medal-500.png')
+    this.load.image('achievement-4', '/assets/achievements/meda-1000.png')
+    this.load.image('achievement-5', '/assets/achievements/medal-2000.png')
+    this.load.image('achievement-6', '/assets/achievements/medal-5000.png')
 
     this.load.image(PLATFORMS.textureKey, PLATFORMS.texturePath)
   }
