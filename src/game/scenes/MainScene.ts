@@ -98,18 +98,25 @@ export class MainScene extends Phaser.Scene {
     const x = Phaser.Math.Between(minX, maxX)
     this.lastPlatformX = x
 
-    const platform = this.platforms.create(x, this.lastPlatformY, 'pixel') as Phaser.Physics.Arcade.Image
-    platform.setDisplaySize(PLATFORMS.width, PLATFORMS.height).setTint(PLATFORMS.color).refreshBody()
+    const platform = this.platforms.create(x, this.lastPlatformY, PLATFORMS.textureKey) as Phaser.Physics.Arcade.Image
+    this.configurePlatformBody(platform)
 
     if (Math.random() < 0.3) {
       const minX2 = Math.max(PLATFORMS.minX + half, x + PLATFORMS.width + PLATFORMS.width)
       const maxX2 = PLATFORMS.maxX - half
       if (minX2 < maxX2) {
         const x2 = Phaser.Math.Between(minX2, maxX2)
-        const platform2 = this.platforms.create(x2, this.lastPlatformY, 'pixel') as Phaser.Physics.Arcade.Image
-        platform2.setDisplaySize(PLATFORMS.width, PLATFORMS.height).setTint(PLATFORMS.color).refreshBody()
+        const platform2 = this.platforms.create(x2, this.lastPlatformY, PLATFORMS.textureKey) as Phaser.Physics.Arcade.Image
+        this.configurePlatformBody(platform2, x2, this.lastPlatformY)
       }
     }
+  }
+
+  private configurePlatformBody(platform: Phaser.Physics.Arcade.Image) {
+    const body = platform.body as Phaser.Physics.Arcade.StaticBody
+    body.setSize(PLATFORMS.width, PLATFORMS.height, false)
+    body.setOffset(0, PLATFORMS.textureDrawingOffset)
+    body.checkCollision.down = false
   }
 
   update(_time: number, delta: number) {

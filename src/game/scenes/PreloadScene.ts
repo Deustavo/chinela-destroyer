@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { PLAYER, ENEMY } from '../config/constants'
+import { PLAYER, ENEMY, PLATFORMS } from '../config/constants'
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -44,6 +44,8 @@ export class PreloadScene extends Phaser.Scene {
 
     this.load.image('credits-gatas', '/assets/creditsScreen/gatasbobas.png')
     this.load.image('credits-github', '/assets/creditsScreen/github.png')
+
+    this.load.image(PLATFORMS.textureKey, PLATFORMS.texturePath)
   }
 
   create() {

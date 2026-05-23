@@ -13,7 +13,10 @@ export const WORLD = {
 export const PLATFORMS = {
   width: 80,
   height: 8,
-  color: 0x55bb55,
+  textureKey: 'platform-grass1',
+  texturePath: '/assets/platforms/grass1.png',
+  textureHeight: 40,
+  textureDrawingOffset: 32,
   minGapY: 140,
   maxGapY: 190,
   minX: 20,
