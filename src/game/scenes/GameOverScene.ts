@@ -23,13 +23,13 @@ export class GameOverScene extends Phaser.Scene {
     const jogo = this.add.image(cx + 55, cy - 45,  'gameover-jogo').setScale(SCALE).setOrigin(0.5)
 
     const scoreText = this.add
-      .text(cx, cy + 105, `Altura: ${data.score}`, { fontSize: '26px', color: '#ffffff', fontFamily: '"Comic Sans MS", cursive' })
+      .text(cx, cy + 105, `Altura: ${data.score}`, { fontSize: '26px', color: '#ffffff', fontFamily: '"Comic Neue", "Comic Sans MS", cursive' })
       .setOrigin(0.5)
 
     const bestColor = isNewBest ? '#ffd700' : '#aaaaaa'
     const bestLabel = isNewBest ? `Novo recorde: ${highScore}!` : `Recorde: ${highScore}`
     const bestText = this.add
-      .text(cx, cy + 138, bestLabel, { fontSize: '18px', color: bestColor, fontFamily: '"Comic Sans MS", cursive' })
+      .text(cx, cy + 138, bestLabel, { fontSize: '18px', color: bestColor, fontFamily: '"Comic Neue", "Comic Sans MS", cursive' })
       .setOrigin(0.5)
 
     const btnSize = 80
@@ -47,7 +47,7 @@ export class GameOverScene extends Phaser.Scene {
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
-    const labelStyle = { fontSize: '16px', color: '#ffffff', fontFamily: '"Comic Sans MS", cursive' }
+    const labelStyle = { fontSize: '16px', color: '#ffffff', fontFamily: '"Comic Neue", "Comic Sans MS", cursive' }
 
     const labelHome = this.add
       .text(cx - btnSize / 2 - gap / 2, cy + 180 + btnSize / 2 + 10, 'Inicio', labelStyle)

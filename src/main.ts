@@ -1,4 +1,6 @@
 import './style.css'
 import { Game } from './game/Game'
 
-new Game()
+document.fonts.load('bold 16px "Comic Neue"').then(() => {
+  new Game()
+})
