@@ -14,7 +14,7 @@ export class CreditsScene extends Phaser.Scene {
       .text(cx, cy - 240, 'Créditos', {
         fontSize: '48px',
         color: '#ffffff',
-        fontFamily: 'Patrick Hand, cursive',
+        fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
       })
       .setOrigin(0.5)
 
@@ -22,7 +22,7 @@ export class CreditsScene extends Phaser.Scene {
       .text(cx, cy - 140, 'Feito por Deustavo. Siga meu github para mais projetos como esse <3', {
         fontSize: '20px',
         color: '#ffffff',
-        fontFamily: 'Patrick Hand, cursive',
+        fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
         align: 'center',
         wordWrap: { width: 320 },
       })
@@ -38,7 +38,7 @@ export class CreditsScene extends Phaser.Scene {
       .text(cx - 76 + 20, cy - 78, '/Deustavo/chinela-destroyer', {
         fontSize: '14px',
         color: '#aaaaaa',
-        fontFamily: 'Patrick Hand, cursive',
+        fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
       })
       .setOrigin(0, 0.5)
       .setInteractive({ cursor: 'pointer' })
@@ -52,7 +52,7 @@ export class CreditsScene extends Phaser.Scene {
       .text(cx, cy + 180, 'as protagonistas são essas gatas endeotas', {
         fontSize: '22px',
         color: '#ffffff',
-        fontFamily: 'Patrick Hand, cursive',
+        fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
         align: 'center',
         wordWrap: { width: 320 },
       })
