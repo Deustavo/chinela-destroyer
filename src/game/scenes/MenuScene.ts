@@ -26,16 +26,23 @@ export class MenuScene extends Phaser.Scene {
       .setDepth(2)
 
     const btn = this.add
-      .image(cx, cy + 190, 'menu-play-btn')
+      .image(cx, cy + 180, 'menu-play-btn')
       .setScale(1.8)
       .setDepth(3)
       .setInteractive({ useHandCursor: true })
 
     const btnCredits = this.add
-      .image(cx, cy + 305, 'menu-credits-btn')
-      .setScale(1.5)
+      .image(cx, cy + 270, 'menu-credits-btn')
+      .setScale(1.8)
       .setDepth(3)
       .setInteractive({ useHandCursor: true })
+
+    // Halve hitbox height for both buttons (centered)
+    for (const b of [btn, btnCredits]) {
+      const ha = b.input!.hitArea as Phaser.Geom.Rectangle
+      ha.y += ha.height / 4
+      ha.height /= 2
+    }
 
     const all = [logo, chinela, pera, btn, btnCredits]
 
