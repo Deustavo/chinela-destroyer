@@ -15,7 +15,7 @@ export class PauseScene extends Phaser.Scene {
     overlay.setDepth(0)
 
     this.add
-      .text(cx, cy - 80, 'PAUSADO', { fontSize: '42px', color: '#ffffff', fontStyle: 'bold', fontFamily: 'Patrick Hand, cursive' })
+      .text(cx, cy - 80, 'PAUSADO', { fontSize: '42px', color: '#ffffff', fontStyle: 'bold', fontFamily: '"Comic Sans MS", cursive' })
       .setOrigin(0.5)
       .setDepth(1)
 
@@ -44,7 +44,7 @@ export class PauseScene extends Phaser.Scene {
     overlay.setDepth(0)
 
     const countText = this.add
-      .text(cx, cy, '3', { fontSize: '100px', color: '#ffffff', fontStyle: 'bold', fontFamily: 'Patrick Hand, cursive' })
+      .text(cx, cy, '3', { fontSize: '100px', color: '#ffffff', fontStyle: 'bold', fontFamily: '"Comic Sans MS", cursive' })
       .setOrigin(0.5)
       .setDepth(1)
 

@@ -51,7 +51,7 @@ export class MainScene extends Phaser.Scene {
     })
 
     this.scoreText = this.add
-      .text(16, 16, 'Altura: 0', { fontSize: '22px', color: '#ffffff', fontFamily: 'Patrick Hand, cursive' })
+      .text(16, 16, 'Altura: 0', { fontSize: '22px', color: '#ffffff', fontFamily: '"Comic Sans MS", cursive' })
       .setScrollFactor(0)
 
     this.addPauseButton()

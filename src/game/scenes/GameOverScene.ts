@@ -23,13 +23,13 @@ export class GameOverScene extends Phaser.Scene {
     const jogo = this.add.image(cx + 55, cy - 45,  'gameover-jogo').setScale(SCALE).setOrigin(0.5)
 
     const scoreText = this.add
-      .text(cx, cy + 105, `Altura: ${data.score}`, { fontSize: '26px', color: '#ffffff', fontFamily: 'Patrick Hand, cursive' })
+      .text(cx, cy + 105, `Altura: ${data.score}`, { fontSize: '26px', color: '#ffffff', fontFamily: '"Comic Sans MS", cursive' })
       .setOrigin(0.5)
 
     const bestColor = isNewBest ? '#ffd700' : '#aaaaaa'
     const bestLabel = isNewBest ? `Novo recorde: ${highScore}!` : `Recorde: ${highScore}`
     const bestText = this.add
-      .text(cx, cy + 138, bestLabel, { fontSize: '18px', color: bestColor, fontFamily: 'Patrick Hand, cursive' })
+      .text(cx, cy + 138, bestLabel, { fontSize: '18px', color: bestColor, fontFamily: '"Comic Sans MS", cursive' })
       .setOrigin(0.5)
 
     const btnSize = 80
@@ -47,7 +47,21 @@ export class GameOverScene extends Phaser.Scene {
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
-    const allElements = [fim, cat, de, jogo, scoreText, bestText, btnHome, btnPlay]
+    const labelStyle = { fontSize: '16px', color: '#ffffff', fontFamily: '"Comic Sans MS", cursive' }
+
+    const labelHome = this.add
+      .text(cx - btnSize / 2 - gap / 2, cy + 180 + btnSize / 2 + 10, 'Inicio', labelStyle)
+      .setOrigin(0.5, 0)
+      .setInteractive({ cursor: 'pointer' })
+      .setAlpha(0.85)
+
+    const labelPlay = this.add
+      .text(cx + btnSize / 2 + gap / 2, cy + 180 + btnSize / 2 + 10, 'Jogar novamente', labelStyle)
+      .setOrigin(0.5, 0)
+      .setInteractive({ cursor: 'pointer' })
+      .setAlpha(0.85)
+
+    const allElements = [fim, cat, de, jogo, scoreText, bestText, btnHome, btnPlay, labelHome, labelPlay]
 
     this.dropIn(fim,       { amplitude: 10, floatDuration: 1800, delay: 0   })
     this.dropIn(cat,       { amplitude: 8,  floatDuration: 2100, delay: 100 })
@@ -57,14 +71,24 @@ export class GameOverScene extends Phaser.Scene {
     this.dropIn(bestText,  { amplitude: 0,  floatDuration: 0,    delay: 400 })
     this.dropIn(btnHome,   { amplitude: 0,  floatDuration: 0,    delay: 450 })
     this.dropIn(btnPlay,   { amplitude: 0,  floatDuration: 0,    delay: 500 })
+    this.dropIn(labelHome, { amplitude: 0,  floatDuration: 0,    delay: 450 })
+    this.dropIn(labelPlay, { amplitude: 0,  floatDuration: 0,    delay: 500 })
 
-    btnHome.on('pointerover', () => btnHome.setAlpha(1))
-    btnHome.on('pointerout',  () => btnHome.setAlpha(0.85))
+    btnHome.on('pointerover', () => { btnHome.setAlpha(1); labelHome.setAlpha(1) })
+    btnHome.on('pointerout',  () => { btnHome.setAlpha(0.85); labelHome.setAlpha(0.85) })
     btnHome.on('pointerdown', () => this.exitTo('menu-scene', allElements))
 
-    btnPlay.on('pointerover', () => btnPlay.setAlpha(1))
-    btnPlay.on('pointerout',  () => btnPlay.setAlpha(0.85))
+    btnPlay.on('pointerover', () => { btnPlay.setAlpha(1); labelPlay.setAlpha(1) })
+    btnPlay.on('pointerout',  () => { btnPlay.setAlpha(0.85); labelPlay.setAlpha(0.85) })
     btnPlay.on('pointerdown', () => this.scene.start('main-scene'))
+
+    labelHome.on('pointerover', () => { btnHome.setAlpha(1); labelHome.setAlpha(1) })
+    labelHome.on('pointerout',  () => { btnHome.setAlpha(0.85); labelHome.setAlpha(0.85) })
+    labelHome.on('pointerdown', () => this.exitTo('menu-scene', allElements))
+
+    labelPlay.on('pointerover', () => { btnPlay.setAlpha(1); labelPlay.setAlpha(1) })
+    labelPlay.on('pointerout',  () => { btnPlay.setAlpha(0.85); labelPlay.setAlpha(0.85) })
+    labelPlay.on('pointerdown', () => this.scene.start('main-scene'))
 
   }
 
