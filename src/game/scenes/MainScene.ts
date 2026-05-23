@@ -10,6 +10,7 @@ export class MainScene extends Phaser.Scene {
   private player!: Player
   private enemy!: Enemy
   private platforms!: Phaser.Physics.Arcade.StaticGroup
+  private movingPlatforms!: Phaser.Physics.Arcade.Group
   private touchControls!: TouchControls
   private lastPlatformY!: number
   private lastPlatformX!: number
@@ -41,6 +42,7 @@ export class MainScene extends Phaser.Scene {
     this.physics.world.setBounds(0, -WORLD.boundsExtent, WORLD.width, WORLD.boundsExtent + 50000)
 
     this.platforms = this.physics.add.staticGroup()
+    this.movingPlatforms = this.physics.add.group()
 
     this.spawnGround()
 
@@ -53,6 +55,7 @@ export class MainScene extends Phaser.Scene {
     this.touchControls = new TouchControls(this)
 
     this.physics.add.collider(this.player.gameObject, this.platforms)
+    this.physics.add.collider(this.player.gameObject, this.movingPlatforms)
     this.physics.add.overlap(this.player.gameObject, this.enemy.trapGroup, () => {
       if (!this.dead) {
         this.dead = true
@@ -108,6 +111,11 @@ export class MainScene extends Phaser.Scene {
     const x = Phaser.Math.Between(minX, maxX)
     this.lastPlatformX = x
 
+    if (Math.random() < PLATFORMS.movingChance) {
+      this.spawnMovingPlatform(x, this.lastPlatformY)
+      return
+    }
+
     const platform = this.platforms.create(x, this.lastPlatformY, PLATFORMS.textureKey) as Phaser.Physics.Arcade.Image
     this.configurePlatformBody(platform)
 
@@ -120,6 +128,17 @@ export class MainScene extends Phaser.Scene {
         this.configurePlatformBody(platform2)
       }
     }
+  }
+
+  private spawnMovingPlatform(x: number, y: number) {
+    const platform = this.movingPlatforms.create(x, y, PLATFORMS.movingTextureKey) as Phaser.Physics.Arcade.Image
+    const body = platform.body as Phaser.Physics.Arcade.Body
+    body.setSize(PLATFORMS.width, PLATFORMS.height)
+    body.setOffset(0, PLATFORMS.textureDrawingOffset)
+    body.allowGravity = false
+    body.immovable = true
+    body.checkCollision.down = false
+    body.setVelocityX(Math.random() < 0.5 ? PLATFORMS.movingSpeed : -PLATFORMS.movingSpeed)
   }
 
   private configurePlatformBody(platform: Phaser.Physics.Arcade.Image) {
@@ -152,6 +171,17 @@ export class MainScene extends Phaser.Scene {
     const cameraBottom = cameraTop + WORLD.height
     ;(this.platforms.getChildren() as Phaser.Physics.Arcade.Image[]).forEach((p) => {
       if (p.y > cameraBottom + PLATFORMS.despawnMargin) p.destroy()
+    })
+
+    const half = PLATFORMS.width / 2
+    ;(this.movingPlatforms.getChildren() as Phaser.Physics.Arcade.Image[]).forEach((p) => {
+      if (p.y > cameraBottom + PLATFORMS.despawnMargin) { p.destroy(); return }
+      const body = p.body as Phaser.Physics.Arcade.Body
+      if (p.x <= PLATFORMS.minX + half) {
+        body.setVelocityX(Math.abs(body.velocity.x))
+      } else if (p.x >= PLATFORMS.maxX - half) {
+        body.setVelocityX(-Math.abs(body.velocity.x))
+      }
     })
 
     this.player.update(this.touchControls.state)

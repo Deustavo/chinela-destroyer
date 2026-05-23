@@ -15,6 +15,8 @@ export const PLATFORMS = {
   height: 8,
   textureKey: 'platform-grass1',
   texturePath: '/assets/platforms/grass1.png',
+  movingTextureKey: 'platform-grass2',
+  movingTexturePath: '/assets/platforms/grass2.png',
   textureHeight: 40,
   textureDrawingOffset: 32,
   minGapY: 140,
@@ -25,6 +27,8 @@ export const PLATFORMS = {
   initialCount: 8,
   spawnAhead: 500,
   despawnMargin: 150,
+  movingChance: 0.3,
+  movingSpeed: 80,
 } as const
 
 export const SCROLL = {

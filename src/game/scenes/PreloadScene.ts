@@ -59,6 +59,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('achievement-6', '/assets/achievements/medal-5000.png')
 
     this.load.image(PLATFORMS.textureKey, PLATFORMS.texturePath)
+    this.load.image(PLATFORMS.movingTextureKey, PLATFORMS.movingTexturePath)
   }
 
   create() {
