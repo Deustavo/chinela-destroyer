@@ -39,13 +39,13 @@ export class GameOverScene extends Phaser.Scene {
     bob(jogo, 9, 2300)
 
     this.add
-      .text(cx, cy + 105, `Altura: ${data.score}`, { fontSize: '26px', color: '#ffffff' })
+      .text(cx, cy + 105, `Altura: ${data.score}`, { fontSize: '26px', color: '#ffffff', fontFamily: 'Patrick Hand, cursive' })
       .setOrigin(0.5)
 
     const bestColor = isNewBest ? '#ffd700' : '#aaaaaa'
     const bestLabel = isNewBest ? `Novo recorde: ${highScore}!` : `Recorde: ${highScore}`
     this.add
-      .text(cx, cy + 138, bestLabel, { fontSize: '18px', color: bestColor })
+      .text(cx, cy + 138, bestLabel, { fontSize: '18px', color: bestColor, fontFamily: 'Patrick Hand, cursive' })
       .setOrigin(0.5)
 
     const btnSize = 80
