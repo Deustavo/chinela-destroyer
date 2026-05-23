@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/assets/homeScreen/logo.png" alt="Chinela Destroyer" width="280" />
+  <img src="public/assets/homeScreen/logo.png" alt="Chinela Destroyer" width="480" />
 </p>
 
 ---

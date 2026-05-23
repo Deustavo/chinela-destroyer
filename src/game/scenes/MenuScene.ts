@@ -32,7 +32,7 @@ export class MenuScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
 
     const btnCredits = this.add
-      .image(cx, cy + 250, 'menu-credits-btn')
+      .image(cx, cy + 305, 'menu-credits-btn')
       .setScale(1.5)
       .setDepth(3)
       .setInteractive({ useHandCursor: true })

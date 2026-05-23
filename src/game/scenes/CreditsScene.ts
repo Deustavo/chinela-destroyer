@@ -29,8 +29,18 @@ export class CreditsScene extends Phaser.Scene {
       .setOrigin(0.5)
 
     const btnGithub = this.add
-      .image(cx, cy - 80, 'credits-github')
-      .setDisplaySize(64, 64)
+      .image(cx - 76, cy - 80, 'credits-github')
+      .setDisplaySize(48, 48)
+      .setInteractive({ cursor: 'pointer' })
+      .setAlpha(0.85)
+
+    const repoText = this.add
+      .text(cx - 76 + 20, cy - 78, '/Deustavo/chinela-destroyer', {
+        fontSize: '14px',
+        color: '#aaaaaa',
+        fontFamily: 'Patrick Hand, cursive',
+      })
+      .setOrigin(0, 0.5)
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
@@ -54,17 +64,24 @@ export class CreditsScene extends Phaser.Scene {
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
-    btnGithub.on('pointerover', () => btnGithub.setAlpha(1))
-    btnGithub.on('pointerout', () => btnGithub.setAlpha(0.85))
-    btnGithub.on('pointerdown', () => window.open('https://github.com/Deustavo/chinela-destroyer', '_blank'))
+    const openRepo = () => window.open('https://github.com/Deustavo/chinela-destroyer', '_blank')
+
+    btnGithub.on('pointerover', () => { btnGithub.setAlpha(1); repoText.setAlpha(1).setColor('#ffffff') })
+    btnGithub.on('pointerout', () => { btnGithub.setAlpha(0.85); repoText.setAlpha(0.85).setColor('#aaaaaa') })
+    btnGithub.on('pointerdown', openRepo)
+
+    repoText.on('pointerover', () => { repoText.setAlpha(1).setColor('#ffffff'); btnGithub.setAlpha(1) })
+    repoText.on('pointerout', () => { repoText.setAlpha(0.85).setColor('#aaaaaa'); btnGithub.setAlpha(0.85) })
+    repoText.on('pointerdown', openRepo)
 
     btnBack.on('pointerover', () => btnBack.setAlpha(1))
     btnBack.on('pointerout', () => btnBack.setAlpha(0.85))
-    btnBack.on('pointerdown', () => this.exitTo('menu-scene', [title, devText, btnGithub, gatas, caption, btnBack]))
+    btnBack.on('pointerdown', () => this.exitTo('menu-scene', [title, devText, btnGithub, repoText, gatas, caption, btnBack]))
 
     this.dropIn(title,     0)
     this.dropIn(devText,   80)
     this.dropIn(btnGithub, 160)
+    this.dropIn(repoText,  160)
     this.dropIn(gatas,     240)
     this.dropIn(caption,   320)
     this.dropIn(btnBack,   400)
