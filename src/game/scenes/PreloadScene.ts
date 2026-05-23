@@ -41,6 +41,9 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('btn-pause', '/assets/buttons/pause.png')
     this.load.image('btn-play', '/assets/buttons/play.png')
     this.load.image('btn-home', '/assets/buttons/home.png')
+
+    this.load.image('credits-gatas', '/assets/creditsScreen/gatasbobas.png')
+    this.load.image('credits-github', '/assets/creditsScreen/github.png')
   }
 
   create() {

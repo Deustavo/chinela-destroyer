@@ -31,28 +31,44 @@ export class MenuScene extends Phaser.Scene {
       .setDepth(3)
       .setInteractive({ useHandCursor: true })
 
-    btn.on('pointerover', () => btn.setScale(2.0))
-    btn.on('pointerout', () => btn.setScale(1.8))
-    btn.on('pointerdown', () => this.scene.start('main-scene'))
-
     const btnCredits = this.add
       .image(cx, cy + 250, 'menu-credits-btn')
       .setScale(1.5)
       .setDepth(3)
       .setInteractive({ useHandCursor: true })
 
+    const all = [logo, chinela, pera, btn, btnCredits]
+
+    btn.on('pointerover', () => btn.setScale(2.0))
+    btn.on('pointerout', () => btn.setScale(1.8))
+    btn.on('pointerdown', () => this.exitTo('main-scene', all))
+
     btnCredits.on('pointerover', () => btnCredits.setScale(1.65))
     btnCredits.on('pointerout', () => btnCredits.setScale(1.5))
-    btnCredits.on('pointerdown', () => this.scene.start('credits-scene'))
+    btnCredits.on('pointerdown', () => this.exitTo('credits-scene', all))
 
-    this.input.keyboard?.once('keydown-SPACE', () => this.scene.start('main-scene'))
-    this.input.keyboard?.once('keydown-ENTER', () => this.scene.start('main-scene'))
+    this.input.keyboard?.once('keydown-SPACE', () => this.exitTo('main-scene', all))
+    this.input.keyboard?.once('keydown-ENTER', () => this.exitTo('main-scene', all))
 
     this.dropIn(logo,       { amplitude: 8,  floatDuration: 2000, delay: 0   })
     this.dropIn(chinela,    { amplitude: 12, floatDuration: 1800, delay: 120 })
     this.dropIn(pera,       { amplitude: 10, floatDuration: 2200, delay: 240 })
     this.dropIn(btn,        { amplitude: 6,  floatDuration: 1600, delay: 360 })
     this.dropIn(btnCredits, { amplitude: 5,  floatDuration: 1700, delay: 440 })
+  }
+
+  private exitTo(scene: string, elements: Phaser.GameObjects.Image[]) {
+    elements.forEach((el, i) => {
+      this.tweens.killTweensOf(el)
+      this.tweens.add({
+        targets: el,
+        y: -WORLD.height,
+        duration: 600,
+        delay: i * 40,
+        ease: 'Cubic.easeIn',
+        onComplete: i === elements.length - 1 ? () => this.scene.start(scene) : undefined,
+      })
+    })
   }
 
   private dropIn(
