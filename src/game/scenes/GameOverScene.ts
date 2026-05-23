@@ -66,7 +66,6 @@ export class GameOverScene extends Phaser.Scene {
     btnPlay.on('pointerout',  () => btnPlay.setAlpha(0.85))
     btnPlay.on('pointerdown', () => this.scene.start('main-scene'))
 
-    this.input.keyboard!.once('keydown-SPACE', () => this.scene.start('main-scene'))
   }
 
   private dropIn(
