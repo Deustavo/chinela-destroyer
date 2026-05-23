@@ -19,8 +19,7 @@ export class MainScene extends Phaser.Scene {
   private dead!: boolean
   private onEscKey!: (e: KeyboardEvent) => void
   private sessionUnlocked!: Set<string>
-  private toastQueue!: { iconKey: string; name: string }[]
-  private toastActive!: boolean
+  private newlyUnlockedThisRun!: { iconKey: string; name: string }[]
 
   constructor() {
     super('main-scene')
@@ -33,8 +32,7 @@ export class MainScene extends Phaser.Scene {
     this.lastPlatformY = WORLD.groundY - WORLD.groundHeight / 2
     this.lastPlatformX = WORLD.width / 2
     this.sessionUnlocked = AchievementManager.getUnlocked()
-    this.toastQueue = []
-    this.toastActive = false
+    this.newlyUnlockedThisRun = []
 
     this.physics.world.setBounds(0, -WORLD.boundsExtent, WORLD.width, WORLD.boundsExtent + 50000)
 
@@ -54,7 +52,7 @@ export class MainScene extends Phaser.Scene {
     this.physics.add.overlap(this.player.gameObject, this.enemy.trapGroup, () => {
       if (!this.dead) {
         this.dead = true
-        this.scene.start('game-over-scene', { score: this.score })
+        this.scene.start('game-over-scene', { score: this.score, newAchievements: this.newlyUnlockedThisRun })
       }
     })
 
@@ -163,7 +161,7 @@ export class MainScene extends Phaser.Scene {
 
     if (this.player.gameObject.y > cameraBottom + 50) {
       this.dead = true
-      this.scene.start('game-over-scene', { score: this.score })
+      this.scene.start('game-over-scene', { score: this.score, newAchievements: this.newlyUnlockedThisRun })
     }
   }
 
@@ -172,51 +170,9 @@ export class MainScene extends Phaser.Scene {
       if (!this.sessionUnlocked.has(achievement.id) && this.score >= achievement.heightThreshold) {
         this.sessionUnlocked.add(achievement.id)
         AchievementManager.checkHeight(this.score)
-        this.toastQueue.push({ iconKey: achievement.unlockedIconKey, name: achievement.name })
-        if (!this.toastActive) this.showNextToast()
+        this.newlyUnlockedThisRun.push({ iconKey: achievement.unlockedIconKey, name: achievement.name })
       }
     }
   }
 
-  private showNextToast() {
-    const next = this.toastQueue.shift()
-    if (!next) { this.toastActive = false; return }
-    this.toastActive = true
-
-    const panelW = 260
-    const panelH = 56
-    const targetX = WORLD.width / 2
-    const startX = WORLD.width + panelW / 2 + 10
-    const panelY = 90
-    const FONT = '"Comic Neue", "Comic Sans MS", cursive'
-
-    const container = this.add.container(startX, panelY).setScrollFactor(0).setDepth(50)
-
-    const panel = this.add.rectangle(0, 0, panelW, panelH, 0x222222, 0.88).setStrokeStyle(2, 0xffd700)
-    const icon = this.add.image(-panelW / 2 + 34, 0, next.iconKey).setDisplaySize(40, 40)
-    const label = this.add.text(-panelW / 2 + 62, -13, 'Conquista desbloqueada!', { fontSize: '10px', color: '#ffd700', fontFamily: FONT })
-    const nameText = this.add.text(-panelW / 2 + 62, 2, next.name, { fontSize: '14px', color: '#ffffff', fontFamily: FONT })
-    container.add([panel, icon, label, nameText])
-
-    this.tweens.add({
-      targets: container,
-      x: targetX,
-      duration: 400,
-      ease: 'Cubic.easeOut',
-      onComplete: () => {
-        this.time.delayedCall(2200, () => {
-          this.tweens.add({
-            targets: container,
-            x: -(panelW / 2 + 10),
-            duration: 350,
-            ease: 'Cubic.easeIn',
-            onComplete: () => {
-              container.destroy()
-              this.showNextToast()
-            },
-          })
-        })
-      },
-    })
-  }
 }

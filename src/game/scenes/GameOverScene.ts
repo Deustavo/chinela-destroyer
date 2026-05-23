@@ -2,13 +2,17 @@ import Phaser from 'phaser'
 import { WORLD } from '../config/constants'
 
 const SCALE = 3
+const FONT = '"Comic Neue", "Comic Sans MS", cursive'
 
 export class GameOverScene extends Phaser.Scene {
+  private achievementQueue!: { iconKey: string; name: string }[]
+
   constructor() {
     super('game-over-scene')
   }
 
-  create(data: { score: number }) {
+  create(data: { score: number; newAchievements?: { iconKey: string; name: string }[] }) {
+    this.achievementQueue = [...(data.newAchievements ?? [])]
     const cx = WORLD.width / 2
     const cy = WORLD.height / 2
 
@@ -74,6 +78,10 @@ export class GameOverScene extends Phaser.Scene {
     this.dropIn(labelHome, { amplitude: 0,  floatDuration: 0,    delay: 450 })
     this.dropIn(labelPlay, { amplitude: 0,  floatDuration: 0,    delay: 500 })
 
+    if (this.achievementQueue.length > 0) {
+      this.time.delayedCall(1500, () => this.showNextAchievementToast())
+    }
+
     btnHome.on('pointerover', () => { btnHome.setAlpha(1); labelHome.setAlpha(1) })
     btnHome.on('pointerout',  () => { btnHome.setAlpha(0.85); labelHome.setAlpha(0.85) })
     btnHome.on('pointerdown', () => this.exitTo('menu-scene', allElements))
@@ -116,6 +124,45 @@ export class GameOverScene extends Phaser.Scene {
             ease: 'Sine.easeInOut',
           })
         }
+      },
+    })
+  }
+
+  private showNextAchievementToast() {
+    const next = this.achievementQueue.shift()
+    if (!next) return
+
+    const panelW = 270
+    const panelH = 60
+    const targetX = WORLD.width / 2
+    const startX = WORLD.width + panelW / 2 + 10
+    const panelY = 46
+
+    const container = this.add.container(startX, panelY).setDepth(100)
+    const panel = this.add.rectangle(0, 0, panelW, panelH, 0x222222, 0.92).setStrokeStyle(2, 0xffd700)
+    const icon = this.add.image(-panelW / 2 + 36, 0, next.iconKey).setDisplaySize(42, 42)
+    const label = this.add.text(-panelW / 2 + 64, -14, 'Conquista desbloqueada!', { fontSize: '10px', color: '#ffd700', fontFamily: FONT })
+    const nameText = this.add.text(-panelW / 2 + 64, 2, next.name, { fontSize: '15px', color: '#ffffff', fontFamily: FONT })
+    container.add([panel, icon, label, nameText])
+
+    this.tweens.add({
+      targets: container,
+      x: targetX,
+      duration: 400,
+      ease: 'Cubic.easeOut',
+      onComplete: () => {
+        this.time.delayedCall(2400, () => {
+          this.tweens.add({
+            targets: container,
+            x: -(panelW / 2 + 10),
+            duration: 350,
+            ease: 'Cubic.easeIn',
+            onComplete: () => {
+              container.destroy()
+              this.showNextAchievementToast()
+            },
+          })
+        })
       },
     })
   }
