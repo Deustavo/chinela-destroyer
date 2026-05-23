@@ -20,6 +20,8 @@ export class MainScene extends Phaser.Scene {
   private onEscKey!: (e: KeyboardEvent) => void
   private sessionUnlocked!: Set<string>
   private newlyUnlockedThisRun!: { iconKey: string; name: string }[]
+  private toastQueue!: { iconKey: string }[]
+  private toastActive!: boolean
 
   constructor() {
     super('main-scene')
@@ -33,6 +35,8 @@ export class MainScene extends Phaser.Scene {
     this.lastPlatformX = WORLD.width / 2
     this.sessionUnlocked = AchievementManager.getUnlocked()
     this.newlyUnlockedThisRun = []
+    this.toastQueue = []
+    this.toastActive = false
 
     this.physics.world.setBounds(0, -WORLD.boundsExtent, WORLD.width, WORLD.boundsExtent + 50000)
 
@@ -166,13 +170,52 @@ export class MainScene extends Phaser.Scene {
   }
 
   private checkAchievements() {
-    for (const achievement of ACHIEVEMENTS) {
+    for (let i = 0; i < ACHIEVEMENTS.length; i++) {
+      const achievement = ACHIEVEMENTS[i]
       if (!this.sessionUnlocked.has(achievement.id) && this.score >= achievement.heightThreshold) {
         this.sessionUnlocked.add(achievement.id)
         AchievementManager.checkHeight(this.score)
         this.newlyUnlockedThisRun.push({ iconKey: achievement.unlockedIconKey, name: achievement.name })
+        this.toastQueue.push({ iconKey: achievement.unlockedIconKey })
+        if (!this.toastActive) this.showNextToast()
       }
     }
   }
 
+  private showNextToast() {
+    const next = this.toastQueue.shift()
+    if (!next) { this.toastActive = false; return }
+    this.toastActive = true
+
+    const iconSize = 28
+    const padding = 4
+    const panelW = iconSize + padding * 2
+    const panelH = iconSize + padding
+    const finalX = panelW / 2 + 8
+    const startX = -(panelW + 10)
+    const panelY = 28
+
+    const container = this.add.container(startX, panelY).setScrollFactor(0).setDepth(50)
+    const panel = this.add.rectangle(0, 0, panelW, panelH, 0x111111, 0.82).setStrokeStyle(1, 0xffd700)
+    const icon = this.add.image(0, 0, next.iconKey).setDisplaySize(iconSize, iconSize)
+    container.add([panel, icon])
+
+    this.tweens.add({
+      targets: container,
+      x: finalX,
+      duration: 300,
+      ease: 'Cubic.easeOut',
+      onComplete: () => {
+        this.time.delayedCall(1800, () => {
+          this.tweens.add({
+            targets: container,
+            x: -(panelW + 10),
+            duration: 250,
+            ease: 'Cubic.easeIn',
+            onComplete: () => { container.destroy(); this.showNextToast() },
+          })
+        })
+      },
+    })
+  }
 }
