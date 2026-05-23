@@ -28,10 +28,10 @@ export class GameOverScene extends Phaser.Scene {
       })
     }
 
-    const fim = this.add.image(cx - 65, cy - 80, 'gameover-fim').setScale(SCALE).setOrigin(0.5)
-    const cat = this.add.image(cx + 65, cy - 100, 'gameover-chinela').setScale(SCALE).setOrigin(0.5)
-    const de = this.add.image(cx - 85, cy, 'gameover-de').setScale(SCALE).setOrigin(0.5)
-    const jogo = this.add.image(cx + 55, cy + 5, 'gameover-jogo').setScale(SCALE).setOrigin(0.5)
+    const fim = this.add.image(cx - 65, cy - 130, 'gameover-fim').setScale(SCALE).setOrigin(0.5)
+    const cat = this.add.image(cx + 65, cy - 150, 'gameover-chinela').setScale(SCALE).setOrigin(0.5)
+    const de = this.add.image(cx - 85, cy - 50, 'gameover-de').setScale(SCALE).setOrigin(0.5)
+    const jogo = this.add.image(cx + 55, cy - 45, 'gameover-jogo').setScale(SCALE).setOrigin(0.5)
 
     bob(fim, 10, 1800)
     bob(cat, 8, 2100)
@@ -39,29 +39,39 @@ export class GameOverScene extends Phaser.Scene {
     bob(jogo, 9, 2300)
 
     this.add
-      .text(cx, cy + 195, `Altura: ${data.score}`, { fontSize: '26px', color: '#ffffff' })
+      .text(cx, cy + 105, `Altura: ${data.score}`, { fontSize: '26px', color: '#ffffff' })
       .setOrigin(0.5)
 
     const bestColor = isNewBest ? '#ffd700' : '#aaaaaa'
     const bestLabel = isNewBest ? `Novo recorde: ${highScore}!` : `Recorde: ${highScore}`
     this.add
-      .text(cx, cy + 228, bestLabel, { fontSize: '18px', color: bestColor })
+      .text(cx, cy + 138, bestLabel, { fontSize: '18px', color: bestColor })
       .setOrigin(0.5)
 
-    const isTouch = this.sys.game.device.input.touch
-    const restartHint = isTouch
-      ? 'Toque para jogar novamente'
-      : 'Pressione ESPAÇO para jogar novamente'
+    const btnSize = 80
+    const gap = 40
 
-    this.add
-      .text(cx, cy + 262, restartHint, { fontSize: '16px', color: '#aaaaaa' })
-      .setOrigin(0.5)
+    const btnHome = this.add
+      .image(cx - btnSize / 2 - gap / 2, cy + 205, 'btn-home')
+      .setDisplaySize(btnSize, btnSize)
+      .setInteractive({ cursor: 'pointer' })
+      .setAlpha(0.85)
+
+    btnHome.on('pointerover', () => btnHome.setAlpha(1))
+    btnHome.on('pointerout', () => btnHome.setAlpha(0.85))
+    btnHome.on('pointerdown', () => this.scene.start('menu-scene'))
+
+    const btnPlay = this.add
+      .image(cx + btnSize / 2 + gap / 2, cy + 205, 'btn-play')
+      .setDisplaySize(btnSize, btnSize)
+      .setInteractive({ cursor: 'pointer' })
+      .setAlpha(0.85)
+
+    btnPlay.on('pointerover', () => btnPlay.setAlpha(1))
+    btnPlay.on('pointerout', () => btnPlay.setAlpha(0.85))
+    btnPlay.on('pointerdown', () => this.scene.start('main-scene'))
 
     this.input.keyboard!.once('keydown-SPACE', () => {
-      this.scene.start('main-scene')
-    })
-
-    this.input.once('pointerdown', () => {
       this.scene.start('main-scene')
     })
   }
