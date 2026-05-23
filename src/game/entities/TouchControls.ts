@@ -35,8 +35,16 @@ export class TouchControls {
       .setDepth(20)
       .setAlpha(0.8)
 
+    const hitSize = size / 2
+    const radius = hitSize * 0.5
+    const gfx = scene.add.graphics()
+    gfx.fillStyle(0xffffff, 0.15)
+    gfx.fillRoundedRect(x - hitSize / 2, y - hitSize / 2, hitSize, hitSize, radius)
+    gfx.setScrollFactor(0)
+    gfx.setDepth(21)
+
     const zone = scene.add
-      .zone(x, y, size, size)
+      .zone(x, y, hitSize, hitSize)
       .setScrollFactor(0)
       .setDepth(22)
       .setInteractive()
