@@ -147,7 +147,18 @@ export class GameOverScene extends Phaser.Scene {
     const icon = this.add.image(-panelW / 2 + 36, 0, next.iconKey).setDisplaySize(42, 42)
     const label = this.add.text(-panelW / 2 + 64, -14, 'Conquista desbloqueada!', { fontSize: '10px', color: '#ffd700', fontFamily: FONT })
     const nameText = this.add.text(-panelW / 2 + 64, 2, next.name, { fontSize: '15px', color: '#ffffff', fontFamily: FONT })
-    container.add([panel, icon, label, nameText])
+    const hint = this.add.text(panelW / 2 - 8, panelH / 2 - 12, 'ver ›', { fontSize: '10px', color: '#ffd700', fontFamily: FONT }).setOrigin(1, 1)
+    container.add([panel, icon, label, nameText, hint])
+
+    container.setSize(panelW, panelH)
+    container.setInteractive({ useHandCursor: true })
+    container.on('pointerover', () => panel.setStrokeStyle(2, 0xffffff))
+    container.on('pointerout', () => panel.setStrokeStyle(2, 0xffd700))
+    container.on('pointerdown', () => {
+      this.tweens.killTweensOf(container)
+      this.time.removeAllEvents()
+      this.scene.start('achievements-scene')
+    })
 
     this.tweens.add({
       targets: container,
