@@ -74,7 +74,15 @@ export class Enemy {
     if (this.throwTimer >= ENEMY.throwInterval) {
       this.throwTimer = 0
       this.glowSprite.setAlpha(0)
-      if (score >= 500) {
+      if (score >= 1900) {
+        this.throwTrap(cameraScrollY, playerX, playerY, -0.5)
+        this.scene.time.delayedCall(300, () => {
+          this.throwTrap(this.lastCameraScrollY, this.lastPlayerX, this.lastPlayerY, 0)
+        })
+        this.scene.time.delayedCall(600, () => {
+          this.throwTrap(this.lastCameraScrollY, this.lastPlayerX, this.lastPlayerY, 0.5)
+        })
+      } else if (score >= 500) {
         this.throwTrap(cameraScrollY, playerX, playerY, 0)
         this.scene.time.delayedCall(300, () => {
           this.throwTrap(this.lastCameraScrollY, this.lastPlayerX, this.lastPlayerY, 0.5)
