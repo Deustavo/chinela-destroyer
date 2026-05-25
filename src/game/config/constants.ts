@@ -80,6 +80,16 @@ export const BOSS_SHIP = {
   arenaScreenY: 520,
 } as const
 
+export const SHOT = {
+  spriteKey: 'simple-shot',
+  spritePath: '/assets/player/simple-shot.png',
+  btnKey: 'btn-shot',
+  btnPath: '/assets/buttons/shot.png',
+  speed: 600,
+  displaySize: 32,
+  cooldown: 1.0,
+} as const
+
 export const PLAYER = {
   startX: 202,
   startY: 460,

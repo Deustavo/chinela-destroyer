@@ -12,17 +12,22 @@ const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints
 export class TouchControls {
   readonly state: TouchState = { left: false, right: false, jump: false }
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, onShot?: () => void) {
     if (!isTouchDevice()) return
 
     const y = WORLD.height - 70
     const leftBtn = this.createButton(scene, 80, y, 'btn-left')
     const rightBtn = this.createButton(scene, 200, y, 'btn-right')
     const jumpBtn = this.createButton(scene, WORLD.width - 90, y, 'btn-up')
+    const shotBtn = this.createButton(scene, WORLD.width - 90, y - 130, 'btn-shot')
 
     this.bind(leftBtn, 'left')
     this.bind(rightBtn, 'right')
     this.bind(jumpBtn, 'jump')
+
+    if (onShot) {
+      shotBtn.on('pointerdown', onShot)
+    }
   }
 
   private createButton(scene: Phaser.Scene, x: number, y: number, textureKey: string): Phaser.GameObjects.Zone {

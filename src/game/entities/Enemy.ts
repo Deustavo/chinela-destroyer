@@ -113,6 +113,20 @@ export class Enemy {
     })
   }
 
+  flyBack() {
+    this.sprite.y = -120
+    this.glowSprite.y = -120
+    this.sprite.setVisible(true)
+    this.glowSprite.setVisible(true)
+    this.throwTimer = 0
+    this.scene.tweens.add({
+      targets: [this.sprite, this.glowSprite],
+      y: ENEMY.screenY,
+      duration: 700,
+      ease: 'Cubic.easeOut',
+    })
+  }
+
   private throwTrap(cameraScrollY: number, playerX: number, playerY: number, angleOffset: number = 0) {
     const worldX = this.sprite.x
     const worldY = cameraScrollY + this.sprite.y + ENEMY.displayHeight / 2
