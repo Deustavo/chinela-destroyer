@@ -47,6 +47,10 @@ export class Player {
     return this.sprite.body as Phaser.Physics.Arcade.Body
   }
 
+  getShotCooldownRatio(): number {
+    return this.shotCooldown / SHOT.cooldown
+  }
+
   requestShot() {
     if (this.shotCooldown > 0) return
     this.shotCooldown = SHOT.cooldown

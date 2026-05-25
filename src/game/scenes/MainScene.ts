@@ -380,6 +380,7 @@ export class MainScene extends Phaser.Scene {
     })
 
     this.player.update(delta, this.touchControls.state)
+    this.touchControls.update(this.player.getShotCooldownRatio())
     this.checkBossVitalHits()
     const { x: px, y: py } = this.player.gameObject
     this.enemy.update(delta, this.cameras.main.scrollY, px, py, this.score)

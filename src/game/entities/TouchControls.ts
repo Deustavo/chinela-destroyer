@@ -11,27 +11,59 @@ const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints
 
 export class TouchControls {
   readonly state: TouchState = { left: false, right: false, jump: false }
+  private shotImage: Phaser.GameObjects.Image | null = null
+  private cooldownBar: Phaser.GameObjects.Graphics | null = null
+  private shotBtnX: number = 0
+  private shotBtnY: number = 0
+  private readonly shotBtnDisplaySize: number = 80
 
   constructor(scene: Phaser.Scene, onShot?: () => void) {
-    if (!isTouchDevice()) return
-
     const y = WORLD.height - 45
-    const leftBtn = this.createButton(scene, 55, y, 'btn-left', 140)
-    const rightBtn = this.createButton(scene, 160, y, 'btn-right', 140)
-    const jumpBtn = this.createButton(scene, WORLD.width - 65, y, 'btn-up', 140)
-    const shotBtn = this.createButton(scene, WORLD.width - 65, y - 75, 'btn-shot', 80, 0.7)
 
-    this.bind(leftBtn, 'left')
-    this.bind(rightBtn, 'right')
-    this.bind(jumpBtn, 'jump')
+    if (isTouchDevice()) {
+      const { zone: leftBtn } = this.createButton(scene, 55, y, 'btn-left', 140)
+      const { zone: rightBtn } = this.createButton(scene, 160, y, 'btn-right', 140)
+      const { zone: jumpBtn } = this.createButton(scene, WORLD.width - 65, y, 'btn-up', 140)
+      this.bind(leftBtn, 'left')
+      this.bind(rightBtn, 'right')
+      this.bind(jumpBtn, 'jump')
+    }
+
+    this.shotBtnX = WORLD.width - 65
+    this.shotBtnY = y - 75
+    const { image: shotImage, zone: shotBtn } = this.createButton(scene, this.shotBtnX, this.shotBtnY, 'btn-shot', this.shotBtnDisplaySize, 0.7)
+    this.shotImage = shotImage
+
+    this.cooldownBar = scene.add.graphics().setScrollFactor(0).setDepth(23)
 
     if (onShot) {
       shotBtn.on('pointerdown', onShot)
     }
   }
 
-  private createButton(scene: Phaser.Scene, x: number, y: number, textureKey: string, size = 180, alpha = 0.8): Phaser.GameObjects.Zone {
-    scene.add
+  update(cooldownRatio: number) {
+    if (!this.shotImage || !this.cooldownBar) return
+
+    const onCooldown = cooldownRatio > 0
+    this.shotImage.setAlpha(onCooldown ? 0.3 : 0.7)
+
+    this.cooldownBar.clear()
+    if (!onCooldown) return
+
+    const barW = this.shotBtnDisplaySize * 0.7
+    const barH = 5
+    const barX = this.shotBtnX - barW / 2
+    const barY = this.shotBtnY - this.shotBtnDisplaySize / 2 - barH - 4
+
+    this.cooldownBar.fillStyle(0x000000, 0.6)
+    this.cooldownBar.fillRect(barX, barY, barW, barH)
+
+    this.cooldownBar.fillStyle(0x00dd44, 0.9)
+    this.cooldownBar.fillRect(barX, barY, barW * (1 - cooldownRatio), barH)
+  }
+
+  private createButton(scene: Phaser.Scene, x: number, y: number, textureKey: string, size = 180, alpha = 0.8): { image: Phaser.GameObjects.Image, zone: Phaser.GameObjects.Zone } {
+    const image = scene.add
       .image(x, y, textureKey)
       .setDisplaySize(size, size)
       .setScrollFactor(0)
@@ -52,7 +84,7 @@ export class TouchControls {
       .setDepth(22)
       .setInteractive()
 
-    return zone
+    return { image, zone }
   }
 
   private bind(zone: Phaser.GameObjects.Zone, key: keyof TouchState) {
