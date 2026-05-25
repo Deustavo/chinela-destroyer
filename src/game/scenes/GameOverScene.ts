@@ -16,6 +16,8 @@ export class GameOverScene extends Phaser.Scene {
     const cx = WORLD.width / 2
     const cy = WORLD.height / 2
 
+    this.cameras.main.fadeIn(600, 0, 0, 0)
+
     const prevBest = parseInt(localStorage.getItem('highScore') ?? '0', 10)
     const isNewBest = data.score > prevBest
     if (isNewBest) localStorage.setItem('highScore', String(data.score))

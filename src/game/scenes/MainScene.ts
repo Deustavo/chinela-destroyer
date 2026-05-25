@@ -23,6 +23,7 @@ export class MainScene extends Phaser.Scene {
   private newlyUnlockedThisRun!: { iconKey: string; name: string }[]
   private toastQueue!: { iconKey: string }[]
   private toastActive!: boolean
+  private bgTile!: Phaser.GameObjects.TileSprite
 
   constructor() {
     super('main-scene')
@@ -39,8 +40,8 @@ export class MainScene extends Phaser.Scene {
     this.toastQueue = []
     this.toastActive = false
 
-    this.add.image(WORLD.width / 2, WORLD.height / 2, 'bg')
-      .setDisplaySize(WORLD.width, WORLD.height)
+    this.bgTile = this.add.tileSprite(0, 0, WORLD.width, WORLD.height, 'bg')
+      .setOrigin(0, 0)
       .setScrollFactor(0)
       .setDepth(0)
 
@@ -169,6 +170,8 @@ export class MainScene extends Phaser.Scene {
       effectiveSpeed += this.scrollSpeed * SCROLL.upperHalfBoostFactor * ratio
     }
     this.cameras.main.scrollY -= effectiveSpeed * dt
+    this.bgTile.tilePositionY -= effectiveSpeed * dt * 0.3
+
     while (this.lastPlatformY > cameraTop - PLATFORMS.spawnAhead) {
       this.spawnPlatform()
     }
