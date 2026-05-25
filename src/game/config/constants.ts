@@ -66,6 +66,20 @@ export const ENEMY = {
   },
 } as const
 
+export const BOSS_SHIP = {
+  spriteKey: 'boss-ship',
+  spritesheet: {
+    path: '/assets/enemy/SpriteSheetShip.png',
+    frameWidth: 640,
+    frameHeight: 180,
+  },
+  displayWidth: 405,
+  displayHeight: Math.round(180 * (405 / 640)),
+  frameDuration: 0.5,
+  triggerHeight: 99,
+  arenaScreenY: 520,
+} as const
+
 export const PLAYER = {
   startX: 202,
   startY: 460,

@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 import { Player } from '../entities/Player'
 import { Enemy } from '../entities/Enemy'
 import { TouchControls } from '../entities/TouchControls'
-import { WORLD, PLATFORMS } from '../config/constants'
+import { WORLD, PLATFORMS, BOSS_SHIP } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
 import { ACHIEVEMENTS } from '../achievements/achievements'
 
@@ -23,6 +23,13 @@ export class MainScene extends Phaser.Scene {
   private toastQueue!: { iconKey: string }[]
   private toastActive!: boolean
   private bgTile!: Phaser.GameObjects.TileSprite
+  private bossFightActive: boolean = false
+  private bossDefeated: boolean = false
+  private mothershipSprite: Phaser.GameObjects.Sprite | null = null
+  private mothershipFrameTimer: number = 0
+  private mothershipFrame: number = 0
+  private bossArenaSpawned: boolean = false
+  private lockedArenaPlatforms: Phaser.Physics.Arcade.Image[] = []
 
   constructor() {
     super('main-scene')
@@ -31,6 +38,13 @@ export class MainScene extends Phaser.Scene {
   create() {
     this.dead = false
     this.score = 0
+    this.bossFightActive = false
+    this.bossDefeated = false
+    this.mothershipSprite = null
+    this.mothershipFrameTimer = 0
+    this.mothershipFrame = 0
+    this.bossArenaSpawned = false
+    this.lockedArenaPlatforms = []
     this.lastPlatformY = WORLD.groundY - WORLD.groundHeight / 2
     this.lastPlatformX = WORLD.width / 2
     this.sessionUnlocked = AchievementManager.getUnlocked()
@@ -105,7 +119,31 @@ export class MainScene extends Phaser.Scene {
     ground.setDisplaySize(WORLD.width, WORLD.groundHeight).setTint(WORLD.groundColor).refreshBody()
   }
 
+  private spawnBossArena() {
+    const arenaY = -(BOSS_SHIP.triggerHeight * 10 - BOSS_SHIP.arenaScreenY)
+    this.lastPlatformY = arenaY
+    this.lastPlatformX = WORLD.width / 2
+
+    const gap = 100
+    const leftX = WORLD.width / 2 - PLATFORMS.width / 2 - gap / 2
+    const rightX = WORLD.width / 2 + PLATFORMS.width / 2 + gap / 2
+
+    const left = this.platforms.create(leftX, arenaY, PLATFORMS.textureKey) as Phaser.Physics.Arcade.Image
+    this.configurePlatformBody(left)
+    const right = this.platforms.create(rightX, arenaY, PLATFORMS.textureKey) as Phaser.Physics.Arcade.Image
+    this.configurePlatformBody(right)
+  }
+
   private spawnPlatform() {
+    if (!this.bossArenaSpawned) {
+      const gapY = Phaser.Math.Between(PLATFORMS.minGapY, PLATFORMS.maxGapY)
+      if (this.lastPlatformY - gapY <= -(BOSS_SHIP.triggerHeight * 10 - BOSS_SHIP.arenaScreenY)) {
+        this.bossArenaSpawned = true
+        this.spawnBossArena()
+        return
+      }
+    }
+
     const gapY = Phaser.Math.Between(PLATFORMS.minGapY, PLATFORMS.maxGapY)
     this.lastPlatformY -= gapY
 
@@ -114,6 +152,15 @@ export class MainScene extends Phaser.Scene {
     const maxX = Math.min(PLATFORMS.maxX - half, this.lastPlatformX + PLATFORMS.maxHorizontalReach)
     const x = Phaser.Math.Between(minX, maxX)
     this.lastPlatformX = x
+
+    if (this.bossArenaSpawned && !this.bossDefeated) {
+      const platform = this.platforms.create(x, this.lastPlatformY, PLATFORMS.textureKey) as Phaser.Physics.Arcade.Image
+      this.configurePlatformBody(platform)
+      platform.setAlpha(0)
+      ;(platform.body as Phaser.Physics.Arcade.StaticBody).enable = false
+      this.lockedArenaPlatforms.push(platform)
+      return
+    }
 
     const heightScore = Math.floor(-this.lastPlatformY / 10)
     if (heightScore > 1001 && Math.random() < PLATFORMS.movingChance) {
@@ -135,6 +182,17 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
+  public onBossDefeated() {
+    this.bossDefeated = true
+    for (const p of this.lockedArenaPlatforms) {
+      if (p.active) {
+        p.setAlpha(1)
+        ;(p.body as Phaser.Physics.Arcade.StaticBody).enable = true
+      }
+    }
+    this.lockedArenaPlatforms = []
+  }
+
   private spawnMovingPlatform(x: number, y: number) {
     const platform = this.movingPlatforms.create(x, y, PLATFORMS.movingTextureKey) as Phaser.Physics.Arcade.Image
     const body = platform.body as Phaser.Physics.Arcade.Body
@@ -153,14 +211,53 @@ export class MainScene extends Phaser.Scene {
     body.checkCollision.down = false
   }
 
+  private triggerBossFight() {
+    this.bossFightActive = true
+    this.enemy.flyAway(() => {
+      this.time.delayedCall(200, () => this.spawnMothership())
+    })
+  }
+
+  private spawnMothership() {
+    const displayH = BOSS_SHIP.displayHeight
+    this.mothershipSprite = this.add
+      .sprite(WORLD.width / 2, -displayH / 2, BOSS_SHIP.spriteKey)
+      .setScrollFactor(0)
+      .setDisplaySize(BOSS_SHIP.displayWidth, displayH)
+      .setDepth(15)
+      .setFrame(0)
+
+    this.tweens.add({
+      targets: this.mothershipSprite,
+      y: displayH / 2,
+      duration: 900,
+      ease: 'Cubic.easeOut',
+    })
+  }
+
   update(_time: number, delta: number) {
     if (this.dead) return
 
-    const prevScrollY = this.cameras.main.scrollY
-    const upperThreshold = this.cameras.main.scrollY + WORLD.height * 0.5
+    if (!this.bossFightActive && this.score >= BOSS_SHIP.triggerHeight) {
+      this.triggerBossFight()
+    }
 
-    if (this.player.gameObject.y < upperThreshold) {
-      this.cameras.main.scrollY = this.player.gameObject.y - WORLD.height * 0.5
+    if (this.mothershipSprite) {
+      this.mothershipFrameTimer += delta / 1000
+      if (this.mothershipFrameTimer >= BOSS_SHIP.frameDuration) {
+        this.mothershipFrameTimer = 0
+        this.mothershipFrame = this.mothershipFrame === 0 ? 1 : 0
+        this.mothershipSprite.setFrame(this.mothershipFrame)
+      }
+    }
+
+    const prevScrollY = this.cameras.main.scrollY
+
+    if (!this.bossFightActive) {
+      const upperThreshold = this.cameras.main.scrollY + WORLD.height * 0.5
+      if (this.player.gameObject.y < upperThreshold) {
+        this.cameras.main.scrollY = this.player.gameObject.y - WORLD.height * 0.5
+      }
     }
 
     const scrollDelta = this.cameras.main.scrollY - prevScrollY

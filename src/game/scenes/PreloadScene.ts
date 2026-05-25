@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { PLAYER, ENEMY, PLATFORMS } from '../config/constants'
+import { PLAYER, ENEMY, PLATFORMS, BOSS_SHIP } from '../config/constants'
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -59,6 +59,11 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('achievement-4', '/assets/achievements/meda-1000.png')
     this.load.image('achievement-5', '/assets/achievements/medal-2000.png')
     this.load.image('achievement-6', '/assets/achievements/medal-3000.png')
+
+    this.load.spritesheet(BOSS_SHIP.spriteKey, BOSS_SHIP.spritesheet.path, {
+      frameWidth: BOSS_SHIP.spritesheet.frameWidth,
+      frameHeight: BOSS_SHIP.spritesheet.frameHeight,
+    })
 
     this.load.image(PLATFORMS.textureKey, PLATFORMS.texturePath)
     this.load.image(PLATFORMS.movingTextureKey, PLATFORMS.movingTexturePath)

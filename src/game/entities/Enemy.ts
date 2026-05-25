@@ -99,6 +99,20 @@ export class Enemy {
     })
   }
 
+  flyAway(onComplete?: () => void) {
+    this.scene.tweens.add({
+      targets: [this.sprite, this.glowSprite],
+      y: -120,
+      duration: 700,
+      ease: 'Cubic.easeIn',
+      onComplete: () => {
+        this.sprite.setVisible(false)
+        this.glowSprite.setVisible(false)
+        onComplete?.()
+      },
+    })
+  }
+
   private throwTrap(cameraScrollY: number, playerX: number, playerY: number, angleOffset: number = 0) {
     const worldX = this.sprite.x
     const worldY = cameraScrollY + this.sprite.y + ENEMY.displayHeight / 2
