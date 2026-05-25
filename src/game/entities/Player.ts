@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { PLAYER, WORLD } from '../config/constants'
+import { PLAYER, WORLD, SHOT } from '../config/constants'
 import type { PlayerAnim } from '../types/animations'
 import type { TouchState } from './TouchControls'
 
@@ -11,8 +11,13 @@ export class Player {
     left: Phaser.Input.Keyboard.Key
     right: Phaser.Input.Keyboard.Key
   }
+  private spaceKey: Phaser.Input.Keyboard.Key
+  private shotCooldown: number = 0
+  private scene: Phaser.Scene
+  readonly projectiles: Phaser.Physics.Arcade.Group
 
   constructor(scene: Phaser.Scene) {
+    this.scene = scene
     this.sprite = scene.physics.add.sprite(PLAYER.startX, PLAYER.startY, PLAYER.spriteKey)
     this.sprite.setScale(.5)
     const body = this.body
@@ -27,6 +32,9 @@ export class Player {
       left: scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.A),
       right: scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.D),
     }
+    this.spaceKey = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
+
+    this.projectiles = scene.physics.add.group({ allowGravity: false })
 
     this.registerAnimations(scene)
   }
@@ -37,6 +45,34 @@ export class Player {
 
   get body(): Phaser.Physics.Arcade.Body {
     return this.sprite.body as Phaser.Physics.Arcade.Body
+  }
+
+  requestShot() {
+    if (this.shotCooldown > 0) return
+    this.shotCooldown = SHOT.cooldown
+    this.fireProjectile()
+  }
+
+  private fireProjectile() {
+    const proj = this.scene.physics.add.image(
+      this.sprite.x,
+      this.sprite.y - 20,
+      SHOT.spriteKey,
+    ) as Phaser.Physics.Arcade.Image
+
+    proj.setDisplaySize(SHOT.displaySize, SHOT.displaySize)
+    proj.setDepth(10)
+    proj.setScrollFactor(1)
+
+    this.projectiles.add(proj)
+
+    const projBody = proj.body as Phaser.Physics.Arcade.Body
+    projBody.setAllowGravity(false)
+    projBody.setVelocityY(-SHOT.speed)
+
+    this.scene.time.delayedCall(3000, () => {
+      if (proj.active) proj.destroy()
+    })
   }
 
   private registerAnimations(scene: Phaser.Scene) {
@@ -71,7 +107,13 @@ export class Player {
     })
   }
 
-  update(touch?: TouchState) {
+  update(delta: number, touch?: TouchState) {
+    this.shotCooldown = Math.max(0, this.shotCooldown - delta / 1000)
+
+    if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+      this.requestShot()
+    }
+
     const body = this.body
     body.setVelocityX(0)
 

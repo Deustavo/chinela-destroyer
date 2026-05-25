@@ -74,7 +74,15 @@ export class Enemy {
     if (this.throwTimer >= ENEMY.throwInterval) {
       this.throwTimer = 0
       this.glowSprite.setAlpha(0)
-      if (score >= 500) {
+      if (score >= 1900) {
+        this.throwTrap(cameraScrollY, playerX, playerY, -0.5)
+        this.scene.time.delayedCall(300, () => {
+          this.throwTrap(this.lastCameraScrollY, this.lastPlayerX, this.lastPlayerY, 0)
+        })
+        this.scene.time.delayedCall(600, () => {
+          this.throwTrap(this.lastCameraScrollY, this.lastPlayerX, this.lastPlayerY, 0.5)
+        })
+      } else if (score >= 500) {
         this.throwTrap(cameraScrollY, playerX, playerY, 0)
         this.scene.time.delayedCall(300, () => {
           this.throwTrap(this.lastCameraScrollY, this.lastPlayerX, this.lastPlayerY, 0.5)
@@ -96,6 +104,34 @@ export class Enemy {
     const cameraBottom = cameraScrollY + WORLD.height
     ;(this.traps.getChildren() as Phaser.Physics.Arcade.Image[]).forEach((trap) => {
       if (trap.y > cameraBottom + 200) trap.destroy()
+    })
+  }
+
+  flyAway(onComplete?: () => void) {
+    this.scene.tweens.add({
+      targets: [this.sprite, this.glowSprite],
+      y: -120,
+      duration: 700,
+      ease: 'Cubic.easeIn',
+      onComplete: () => {
+        this.sprite.setVisible(false)
+        this.glowSprite.setVisible(false)
+        onComplete?.()
+      },
+    })
+  }
+
+  flyBack() {
+    this.sprite.y = -120
+    this.glowSprite.y = -120
+    this.sprite.setVisible(true)
+    this.glowSprite.setVisible(true)
+    this.throwTimer = 0
+    this.scene.tweens.add({
+      targets: [this.sprite, this.glowSprite],
+      y: ENEMY.screenY,
+      duration: 700,
+      ease: 'Cubic.easeOut',
     })
   }
 

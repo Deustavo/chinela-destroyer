@@ -12,28 +12,31 @@ const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints
 export class TouchControls {
   readonly state: TouchState = { left: false, right: false, jump: false }
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, onShot?: () => void) {
     if (!isTouchDevice()) return
 
-    const y = WORLD.height - 70
-    const leftBtn = this.createButton(scene, 80, y, 'btn-left')
-    const rightBtn = this.createButton(scene, 200, y, 'btn-right')
-    const jumpBtn = this.createButton(scene, WORLD.width - 90, y, 'btn-up')
+    const y = WORLD.height - 45
+    const leftBtn = this.createButton(scene, 55, y, 'btn-left', 140)
+    const rightBtn = this.createButton(scene, 160, y, 'btn-right', 140)
+    const jumpBtn = this.createButton(scene, WORLD.width - 65, y, 'btn-up', 140)
+    const shotBtn = this.createButton(scene, WORLD.width - 65, y - 75, 'btn-shot', 80, 0.7)
 
     this.bind(leftBtn, 'left')
     this.bind(rightBtn, 'right')
     this.bind(jumpBtn, 'jump')
+
+    if (onShot) {
+      shotBtn.on('pointerdown', onShot)
+    }
   }
 
-  private createButton(scene: Phaser.Scene, x: number, y: number, textureKey: string): Phaser.GameObjects.Zone {
-    const size = 180
-
+  private createButton(scene: Phaser.Scene, x: number, y: number, textureKey: string, size = 180, alpha = 0.8): Phaser.GameObjects.Zone {
     scene.add
       .image(x, y, textureKey)
       .setDisplaySize(size, size)
       .setScrollFactor(0)
       .setDepth(20)
-      .setAlpha(0.8)
+      .setAlpha(alpha)
 
     const hitSize = size / 2
     const radius = hitSize * 0.5

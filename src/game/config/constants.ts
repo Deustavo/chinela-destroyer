@@ -66,6 +66,36 @@ export const ENEMY = {
   },
 } as const
 
+export const BOSS_SHIP = {
+  spriteKey: 'boss-ship',
+  spritesheet: {
+    path: '/assets/enemy/SpriteSheetShip.png',
+    frameWidth: 640,
+    frameHeight: 180,
+  },
+  displayWidth: 405,
+  displayHeight: Math.round(180 * (405 / 640)),
+  frameDuration: 0.5,
+  triggerHeight: 999,
+  arenaScreenY: 520,
+} as const
+
+export const BOSSES = [
+  { triggerHeight: 999,  vitalsCount: 3, arenaType: 'two-static' },
+  { triggerHeight: 1999, vitalsCount: 5, arenaType: 'two-static' },
+  { triggerHeight: 2999, vitalsCount: 5, arenaType: 'moving'     },
+] as const
+
+export const SHOT = {
+  spriteKey: 'simple-shot',
+  spritePath: '/assets/player/simple-shot.png',
+  btnKey: 'btn-shot',
+  btnPath: '/assets/buttons/shot.png',
+  speed: 600,
+  displaySize: 32,
+  cooldown: 1.0,
+} as const
+
 export const PLAYER = {
   startX: 202,
   startY: 460,

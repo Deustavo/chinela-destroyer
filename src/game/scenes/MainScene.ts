@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 import { Player } from '../entities/Player'
 import { Enemy } from '../entities/Enemy'
 import { TouchControls } from '../entities/TouchControls'
-import { WORLD, PLATFORMS } from '../config/constants'
+import { WORLD, PLATFORMS, BOSS_SHIP, BOSSES } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
 import { ACHIEVEMENTS } from '../achievements/achievements'
 
@@ -23,6 +23,14 @@ export class MainScene extends Phaser.Scene {
   private toastQueue!: { iconKey: string }[]
   private toastActive!: boolean
   private bgTile!: Phaser.GameObjects.TileSprite
+  private activeBossIdx: number = -1
+  private bossesDefeated: Set<number> = new Set()
+  private nextBossArenaIdx: number = 0
+  private mothershipSprite: Phaser.GameObjects.Sprite | null = null
+  private mothershipFrameTimer: number = 0
+  private mothershipFrame: number = 0
+  private currentLockedPlatforms: Phaser.Physics.Arcade.Image[] = []
+  private bossVitals: Array<{ screenX: number; screenY: number; hit: boolean; circle: Phaser.GameObjects.Arc }> = []
 
   constructor() {
     super('main-scene')
@@ -31,6 +39,13 @@ export class MainScene extends Phaser.Scene {
   create() {
     this.dead = false
     this.score = 0
+    this.activeBossIdx = -1
+    this.bossesDefeated = new Set()
+    this.nextBossArenaIdx = 0
+    this.currentLockedPlatforms = []
+    this.mothershipSprite = null
+    this.mothershipFrameTimer = 0
+    this.mothershipFrame = 0
     this.lastPlatformY = WORLD.groundY - WORLD.groundHeight / 2
     this.lastPlatformX = WORLD.width / 2
     this.sessionUnlocked = AchievementManager.getUnlocked()
@@ -56,7 +71,7 @@ export class MainScene extends Phaser.Scene {
 
     this.player = new Player(this)
     this.enemy = new Enemy(this)
-    this.touchControls = new TouchControls(this)
+    this.touchControls = new TouchControls(this, () => this.player.requestShot())
 
     this.physics.add.collider(this.player.gameObject, this.platforms)
     this.physics.add.collider(this.player.gameObject, this.movingPlatforms)
@@ -66,6 +81,15 @@ export class MainScene extends Phaser.Scene {
         this.scene.start('game-over-scene', { score: this.score, newAchievements: this.newlyUnlockedThisRun })
       }
     })
+
+    this.physics.add.overlap(
+      this.player.projectiles,
+      this.enemy.trapGroup,
+      (_shot, _trap) => {
+        (_shot as Phaser.Physics.Arcade.Image).destroy()
+        ;(_trap as Phaser.Physics.Arcade.Image).destroy()
+      },
+    )
 
     this.scoreText = this.add
       .text(16, 16, 'Altura: 0', { fontSize: '22px', color: '#ffffff', fontFamily: '"Comic Neue", "Comic Sans MS", cursive' })
@@ -105,7 +129,35 @@ export class MainScene extends Phaser.Scene {
     ground.setDisplaySize(WORLD.width, WORLD.groundHeight).setTint(WORLD.groundColor).refreshBody()
   }
 
+  private spawnBossArenaFor(bossIdx: number) {
+    const arenaY = -(BOSSES[bossIdx].triggerHeight * 10 - BOSS_SHIP.arenaScreenY)
+    this.lastPlatformY = arenaY
+    this.lastPlatformX = WORLD.width / 2
+
+    if (BOSSES[bossIdx].arenaType === 'moving') {
+      this.spawnMovingPlatform(WORLD.width / 2, arenaY)
+    } else {
+      const gap = 100
+      const leftX = WORLD.width / 2 - PLATFORMS.width / 2 - gap / 2
+      const rightX = WORLD.width / 2 + PLATFORMS.width / 2 + gap / 2
+      const left = this.platforms.create(leftX, arenaY, PLATFORMS.textureKey) as Phaser.Physics.Arcade.Image
+      this.configurePlatformBody(left)
+      const right = this.platforms.create(rightX, arenaY, PLATFORMS.textureKey) as Phaser.Physics.Arcade.Image
+      this.configurePlatformBody(right)
+    }
+  }
+
   private spawnPlatform() {
+    if (this.nextBossArenaIdx < BOSSES.length) {
+      const arenaY = -(BOSSES[this.nextBossArenaIdx].triggerHeight * 10 - BOSS_SHIP.arenaScreenY)
+      const gapY = Phaser.Math.Between(PLATFORMS.minGapY, PLATFORMS.maxGapY)
+      if (this.lastPlatformY - gapY <= arenaY) {
+        this.spawnBossArenaFor(this.nextBossArenaIdx)
+        this.nextBossArenaIdx++
+        return
+      }
+    }
+
     const gapY = Phaser.Math.Between(PLATFORMS.minGapY, PLATFORMS.maxGapY)
     this.lastPlatformY -= gapY
 
@@ -115,7 +167,21 @@ export class MainScene extends Phaser.Scene {
     const x = Phaser.Math.Between(minX, maxX)
     this.lastPlatformX = x
 
+    const lastArenaIdx = this.nextBossArenaIdx - 1
+    if (lastArenaIdx >= 0 && !this.bossesDefeated.has(lastArenaIdx)) {
+      const platform = this.platforms.create(x, this.lastPlatformY, PLATFORMS.textureKey) as Phaser.Physics.Arcade.Image
+      this.configurePlatformBody(platform)
+      platform.setAlpha(0)
+      ;(platform.body as Phaser.Physics.Arcade.StaticBody).enable = false
+      this.currentLockedPlatforms.push(platform)
+      return
+    }
+
     const heightScore = Math.floor(-this.lastPlatformY / 10)
+    if (heightScore >= 2900 && heightScore <= 3000) {
+      this.spawnMovingPlatform(x, this.lastPlatformY)
+      return
+    }
     if (heightScore > 1001 && Math.random() < PLATFORMS.movingChance) {
       this.spawnMovingPlatform(x, this.lastPlatformY)
       return
@@ -133,6 +199,16 @@ export class MainScene extends Phaser.Scene {
         this.configurePlatformBody(platform2)
       }
     }
+  }
+
+  public onBossDefeated() {
+    for (const p of this.currentLockedPlatforms) {
+      if (p.active) {
+        p.setAlpha(1)
+        ;(p.body as Phaser.Physics.Arcade.StaticBody).enable = true
+      }
+    }
+    this.currentLockedPlatforms = []
   }
 
   private spawnMovingPlatform(x: number, y: number) {
@@ -153,14 +229,129 @@ export class MainScene extends Phaser.Scene {
     body.checkCollision.down = false
   }
 
+  private triggerBossFight(bossIdx: number) {
+    this.activeBossIdx = bossIdx
+    this.enemy.flyAway(() => {
+      this.time.delayedCall(200, () => this.spawnMothership(bossIdx))
+    })
+  }
+
+  private spawnMothership(bossIdx: number) {
+    const displayH = BOSS_SHIP.displayHeight
+    this.mothershipSprite = this.add
+      .sprite(WORLD.width / 2, -displayH / 2, BOSS_SHIP.spriteKey)
+      .setScrollFactor(0)
+      .setDisplaySize(BOSS_SHIP.displayWidth, displayH)
+      .setDepth(15)
+      .setFrame(0)
+
+    this.tweens.add({
+      targets: this.mothershipSprite,
+      y: displayH / 2,
+      duration: 900,
+      ease: 'Cubic.easeOut',
+      onComplete: () => this.spawnBossVitals(bossIdx, displayH / 2),
+    })
+  }
+
+  private spawnBossVitals(bossIdx: number, shipScreenY: number) {
+    const count = BOSSES[bossIdx].vitalsCount
+    const margin = 55
+    const usable = BOSS_SHIP.displayWidth - margin * 2
+    const xs = Array.from({ length: count }, (_, i) => margin + (usable / (count - 1)) * i)
+    this.bossVitals = xs.map(screenX => {
+      const circle = this.add.arc(screenX, shipScreenY, 14, 0, 360, false, 0xff2222)
+        .setScrollFactor(0)
+        .setDepth(16)
+        .setStrokeStyle(2, 0xff8888)
+
+      this.tweens.add({
+        targets: circle,
+        scaleX: 1.3,
+        scaleY: 1.3,
+        duration: 500,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      })
+
+      return { screenX, screenY: shipScreenY, hit: false, circle }
+    })
+  }
+
+  private checkBossVitalHits() {
+    if (this.bossVitals.length === 0 || this.activeBossIdx === -1) return
+
+    const cameraY = this.cameras.main.scrollY
+    const hitRadius = 22
+
+    for (const proj of this.player.projectiles.getChildren() as Phaser.Physics.Arcade.Image[]) {
+      if (!proj.active) continue
+      for (const vital of this.bossVitals) {
+        if (vital.hit) continue
+        const dx = proj.x - vital.screenX
+        const dy = proj.y - (cameraY + vital.screenY)
+        if (Math.abs(dx) < hitRadius && Math.abs(dy) < hitRadius) {
+          vital.hit = true
+          vital.circle.setFillStyle(0x333333).setStrokeStyle(0)
+          this.tweens.killTweensOf(vital.circle)
+          proj.destroy()
+          if (this.bossVitals.every(v => v.hit)) this.defeatBoss()
+          break
+        }
+      }
+    }
+  }
+
+  private defeatBoss() {
+    this.bossesDefeated.add(this.activeBossIdx)
+    this.onBossDefeated()
+    if (this.mothershipSprite) {
+      this.tweens.add({
+        targets: this.mothershipSprite,
+        y: -BOSS_SHIP.displayHeight,
+        duration: 800,
+        ease: 'Cubic.easeIn',
+        onComplete: () => {
+          this.mothershipSprite?.destroy()
+          this.mothershipSprite = null
+          this.bossVitals.forEach(v => v.circle.destroy())
+          this.bossVitals = []
+          this.activeBossIdx = -1
+          this.enemy.flyBack()
+        },
+      })
+    }
+  }
+
   update(_time: number, delta: number) {
     if (this.dead) return
 
-    const prevScrollY = this.cameras.main.scrollY
-    const upperThreshold = this.cameras.main.scrollY + WORLD.height * 0.5
+    if (this.activeBossIdx === -1) {
+      for (let i = 0; i < BOSSES.length; i++) {
+        if (!this.bossesDefeated.has(i) && this.score >= BOSSES[i].triggerHeight) {
+          this.triggerBossFight(i)
+          break
+        }
+      }
+    }
 
-    if (this.player.gameObject.y < upperThreshold) {
-      this.cameras.main.scrollY = this.player.gameObject.y - WORLD.height * 0.5
+    if (this.mothershipSprite) {
+      this.mothershipFrameTimer += delta / 1000
+      if (this.mothershipFrameTimer >= BOSS_SHIP.frameDuration) {
+        this.mothershipFrameTimer = 0
+        this.mothershipFrame = this.mothershipFrame === 0 ? 1 : 0
+        this.mothershipSprite.setFrame(this.mothershipFrame)
+      }
+    }
+
+    const prevScrollY = this.cameras.main.scrollY
+
+    if (this.activeBossIdx === -1) {
+      const upperThreshold = this.cameras.main.scrollY + WORLD.height * 0.5
+      if (this.player.gameObject.y < upperThreshold) {
+        this.cameras.main.scrollY = this.player.gameObject.y - WORLD.height * 0.5
+      }
     }
 
     const scrollDelta = this.cameras.main.scrollY - prevScrollY
@@ -188,7 +379,8 @@ export class MainScene extends Phaser.Scene {
       }
     })
 
-    this.player.update(this.touchControls.state)
+    this.player.update(delta, this.touchControls.state)
+    this.checkBossVitalHits()
     const { x: px, y: py } = this.player.gameObject
     this.enemy.update(delta, this.cameras.main.scrollY, px, py, this.score)
 
