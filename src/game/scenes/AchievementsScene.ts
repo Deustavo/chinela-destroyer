@@ -19,7 +19,7 @@ export class AchievementsScene extends Phaser.Scene {
     const unlocked = AchievementManager.getUnlocked()
     const all = AchievementManager.getAll()
 
-    this.add.rectangle(cx, WORLD.height / 2, WORLD.width, WORLD.height, 0x1d1d1d).setDepth(0)
+    this.add.image(cx, WORLD.height / 2, 'bg').setDisplaySize(WORLD.width, WORLD.height).setDepth(0)
 
     const title = this.add
       .text(cx, 60, 'Conquistas', {

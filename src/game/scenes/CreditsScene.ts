@@ -10,6 +10,8 @@ export class CreditsScene extends Phaser.Scene {
     const cx = WORLD.width / 2
     const cy = WORLD.height / 2
 
+    this.add.image(cx, cy, 'bg').setDisplaySize(WORLD.width, WORLD.height).setDepth(0)
+
     const title = this.add
       .text(cx, cy - 240, 'Créditos', {
         fontSize: '48px',

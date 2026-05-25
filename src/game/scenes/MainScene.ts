@@ -39,6 +39,11 @@ export class MainScene extends Phaser.Scene {
     this.toastQueue = []
     this.toastActive = false
 
+    this.add.image(WORLD.width / 2, WORLD.height / 2, 'bg')
+      .setDisplaySize(WORLD.width, WORLD.height)
+      .setScrollFactor(0)
+      .setDepth(0)
+
     this.physics.world.setBounds(0, -WORLD.boundsExtent, WORLD.width, WORLD.boundsExtent + 50000)
 
     this.platforms = this.physics.add.staticGroup()

@@ -10,6 +10,8 @@ export class MenuScene extends Phaser.Scene {
     const cx = WORLD.width / 2
     const cy = WORLD.height / 2
 
+    this.add.image(cx, cy, 'bg').setDisplaySize(WORLD.width, WORLD.height).setDepth(0)
+
     const logo = this.add
       .image(cx, cy - 60, 'menu-logo')
       .setScale(2.2)

@@ -28,6 +28,8 @@ export class PreloadScene extends Phaser.Scene {
       frameHeight: ENEMY.trapsSheet.frameHeight,
     })
 
+    this.load.image('bg', '/assets/homeScreen/background.png')
+
     this.load.image('menu-logo', '/assets/homeScreen/logo.png')
     this.load.image('menu-chinela', '/assets/homeScreen/chinela.png')
     this.load.image('menu-pera', '/assets/homeScreen/pera.png')

@@ -21,6 +21,8 @@ export class GameOverScene extends Phaser.Scene {
     if (isNewBest) localStorage.setItem('highScore', String(data.score))
     const highScore = isNewBest ? data.score : prevBest
 
+    this.add.image(cx, cy, 'bg').setDisplaySize(WORLD.width, WORLD.height).setDepth(0)
+
     const fim  = this.add.image(cx - 65, cy - 130, 'gameover-fim').setScale(SCALE).setOrigin(0.5)
     const cat  = this.add.image(cx + 65, cy - 150, 'gameover-chinela').setScale(SCALE).setOrigin(0.5)
     const de   = this.add.image(cx - 85, cy - 50,  'gameover-de').setScale(SCALE).setOrigin(0.5)
