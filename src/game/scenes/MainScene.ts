@@ -178,6 +178,10 @@ export class MainScene extends Phaser.Scene {
     }
 
     const heightScore = Math.floor(-this.lastPlatformY / 10)
+    if (heightScore >= 2900 && heightScore <= 3000) {
+      this.spawnMovingPlatform(x, this.lastPlatformY)
+      return
+    }
     if (heightScore > 1001 && Math.random() < PLATFORMS.movingChance) {
       this.spawnMovingPlatform(x, this.lastPlatformY)
       return
