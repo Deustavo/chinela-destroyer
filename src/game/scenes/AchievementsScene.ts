@@ -76,11 +76,26 @@ export class AchievementsScene extends Phaser.Scene {
       .setAlpha(0.85)
       .setInteractive({ useHandCursor: true })
 
-    elements.push(backBtn)
+    const labelBack = this.add
+      .text(cx, WORLD.height - 30 , 'Inicio', {
+        fontSize: '16px',
+        color: '#ffffff',
+        fontFamily: FONT,
+      })
+      .setOrigin(0.5)
+      .setDepth(3)
+      .setInteractive({ cursor: 'pointer' })
+      .setAlpha(0.85)
 
-    backBtn.on('pointerover', () => backBtn.setAlpha(1))
-    backBtn.on('pointerout', () => backBtn.setAlpha(0.85))
+    elements.push(backBtn, labelBack)
+
+    backBtn.on('pointerover', () => { backBtn.setAlpha(1); labelBack.setAlpha(1) })
+    backBtn.on('pointerout', () => { backBtn.setAlpha(0.85); labelBack.setAlpha(0.85) })
     backBtn.on('pointerdown', () => this.exitTo('menu-scene', elements))
+
+    labelBack.on('pointerover', () => { backBtn.setAlpha(1); labelBack.setAlpha(1) })
+    labelBack.on('pointerout', () => { backBtn.setAlpha(0.85); labelBack.setAlpha(0.85) })
+    labelBack.on('pointerdown', () => this.exitTo('menu-scene', elements))
 
     elements.forEach((el, i) => this.dropIn(el, i * 40))
   }

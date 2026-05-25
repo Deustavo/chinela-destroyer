@@ -66,6 +66,16 @@ export class CreditsScene extends Phaser.Scene {
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
+    const labelBack = this.add
+      .text(cx, cy + 245 + 32 + 10, 'Inicio', {
+        fontSize: '16px',
+        color: '#ffffff',
+        fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
+      })
+      .setOrigin(0.5)
+      .setInteractive({ cursor: 'pointer' })
+      .setAlpha(0.85)
+
     const openRepo = () => window.open('https://github.com/Deustavo/chinela-destroyer', '_blank')
 
     btnGithub.on('pointerover', () => { btnGithub.setAlpha(1); repoText.setAlpha(1).setColor('#ffffff') })
@@ -76,17 +86,22 @@ export class CreditsScene extends Phaser.Scene {
     repoText.on('pointerout', () => { repoText.setAlpha(0.85).setColor('#aaaaaa'); btnGithub.setAlpha(0.85) })
     repoText.on('pointerdown', openRepo)
 
-    btnBack.on('pointerover', () => btnBack.setAlpha(1))
-    btnBack.on('pointerout', () => btnBack.setAlpha(0.85))
-    btnBack.on('pointerdown', () => this.exitTo('menu-scene', [title, devText, btnGithub, repoText, gatas, caption, btnBack]))
+    btnBack.on('pointerover', () => { btnBack.setAlpha(1); labelBack.setAlpha(1) })
+    btnBack.on('pointerout', () => { btnBack.setAlpha(0.85); labelBack.setAlpha(0.85) })
+    btnBack.on('pointerdown', () => this.exitTo('menu-scene', [title, devText, btnGithub, repoText, gatas, caption, btnBack, labelBack]))
 
-    this.dropIn(title,     0)
-    this.dropIn(devText,   80)
-    this.dropIn(btnGithub, 160)
-    this.dropIn(repoText,  160)
-    this.dropIn(gatas,     240)
-    this.dropIn(caption,   320)
-    this.dropIn(btnBack,   400)
+    labelBack.on('pointerover', () => { btnBack.setAlpha(1); labelBack.setAlpha(1) })
+    labelBack.on('pointerout', () => { btnBack.setAlpha(0.85); labelBack.setAlpha(0.85) })
+    labelBack.on('pointerdown', () => this.exitTo('menu-scene', [title, devText, btnGithub, repoText, gatas, caption, btnBack, labelBack]))
+
+    this.dropIn(title,      0)
+    this.dropIn(devText,    80)
+    this.dropIn(btnGithub,  160)
+    this.dropIn(repoText,   160)
+    this.dropIn(gatas,      240)
+    this.dropIn(caption,    320)
+    this.dropIn(btnBack,    400)
+    this.dropIn(labelBack,  450)
   }
 
   private dropIn(obj: Phaser.GameObjects.Image | Phaser.GameObjects.Text, delay: number) {
