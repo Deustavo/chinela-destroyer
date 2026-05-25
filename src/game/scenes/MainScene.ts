@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 import { Player } from '../entities/Player'
 import { Enemy } from '../entities/Enemy'
 import { TouchControls } from '../entities/TouchControls'
-import { WORLD, PLATFORMS, SCROLL } from '../config/constants'
+import { WORLD, PLATFORMS } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
 import { ACHIEVEMENTS } from '../achievements/achievements'
 
@@ -14,7 +14,6 @@ export class MainScene extends Phaser.Scene {
   private touchControls!: TouchControls
   private lastPlatformY!: number
   private lastPlatformX!: number
-  private scrollSpeed!: number
   private score!: number
   private scoreText!: Phaser.GameObjects.Text
   private dead!: boolean
@@ -31,7 +30,6 @@ export class MainScene extends Phaser.Scene {
 
   create() {
     this.dead = false
-    this.scrollSpeed = SCROLL.initialSpeed
     this.score = 0
     this.lastPlatformY = WORLD.groundY - WORLD.groundHeight / 2
     this.lastPlatformX = WORLD.width / 2
@@ -117,7 +115,8 @@ export class MainScene extends Phaser.Scene {
     const x = Phaser.Math.Between(minX, maxX)
     this.lastPlatformX = x
 
-    if (Math.random() < PLATFORMS.movingChance) {
+    const heightScore = Math.floor(-this.lastPlatformY / 10)
+    if (heightScore > 1001 && Math.random() < PLATFORMS.movingChance) {
       this.spawnMovingPlatform(x, this.lastPlatformY)
       return
     }
@@ -157,20 +156,17 @@ export class MainScene extends Phaser.Scene {
   update(_time: number, delta: number) {
     if (this.dead) return
 
-    const dt = delta / 1000
+    const prevScrollY = this.cameras.main.scrollY
+    const upperThreshold = this.cameras.main.scrollY + WORLD.height * 0.5
 
-    this.scrollSpeed = Math.min(this.scrollSpeed + SCROLL.speedIncrement * dt, SCROLL.maxSpeed)
+    if (this.player.gameObject.y < upperThreshold) {
+      this.cameras.main.scrollY = this.player.gameObject.y - WORLD.height * 0.5
+    }
+
+    const scrollDelta = this.cameras.main.scrollY - prevScrollY
+    this.bgTile.tilePositionY += scrollDelta * 0.3
 
     const cameraTop = this.cameras.main.scrollY
-    const screenMidY = cameraTop + WORLD.height * 0.6
-    let effectiveSpeed = this.scrollSpeed
-    if (this.player.gameObject.y < screenMidY) {
-      const linear = (screenMidY - this.player.gameObject.y) / (WORLD.height * 0.6)
-      const ratio = Math.pow(linear, 0.3)
-      effectiveSpeed += this.scrollSpeed * SCROLL.upperHalfBoostFactor * ratio
-    }
-    this.cameras.main.scrollY -= effectiveSpeed * dt
-    this.bgTile.tilePositionY -= effectiveSpeed * dt * 0.3
 
     while (this.lastPlatformY > cameraTop - PLATFORMS.spawnAhead) {
       this.spawnPlatform()
