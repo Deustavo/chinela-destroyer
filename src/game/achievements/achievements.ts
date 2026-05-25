@@ -43,10 +43,10 @@ export const ACHIEVEMENTS: Achievement[] = [
     unlockedIconKey: 'achievement-5',
   },
   {
-    id: 'height_5000',
+    id: 'height_3000',
     name: 'Além dos Céus',
-    description: 'Alcance altura 5000',
-    heightThreshold: 5000,
+    description: 'Alcance altura 3000',
+    heightThreshold: 3000,
     unlockedIconKey: 'achievement-6',
   },
 ]
