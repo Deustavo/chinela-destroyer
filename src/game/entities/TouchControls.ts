@@ -36,6 +36,37 @@ export class TouchControls {
 
     this.cooldownBar = scene.add.graphics().setScrollFactor(0).setDepth(23)
 
+    if (!isTouchDevice()) {
+      const labelY = this.shotBtnY + this.shotBtnDisplaySize / 2 + 16
+      const label = scene.add
+        .text(this.shotBtnX, labelY, 'aperte\nespaço', {
+          fontSize: '11px',
+          color: '#ffffff',
+          fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
+        })
+        .setOrigin(0.5, 0.5)
+        .setScrollFactor(0)
+        .setDepth(23)
+        .setAlpha(1)
+
+      const tween = scene.tweens.add({
+        targets: label,
+        y: labelY + 5,
+        duration: 500,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: -1,
+      })
+
+      const hide = () => {
+        if (!label.active) return
+        tween.stop()
+        label.destroy()
+      }
+
+      scene.input.keyboard?.once('keydown-SPACE', hide)
+    }
+
     if (onShot) {
       shotBtn.on('pointerdown', onShot)
     }
