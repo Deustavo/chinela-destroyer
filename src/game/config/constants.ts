@@ -53,8 +53,11 @@ export const ENEMY = {
   bobAmplitude: 8,
   bobSpeed: 1.8,
   spriteKey: 'pera',
+  hitFrame: 2,
+  hitDuration: 0.25,
+  hitRadius: 40,
   spritesheet: {
-    path: '/assets/enemy/SpriteSheetPera.png',
+    path: '/assets/player/SpriteSheetPera.png',
     frameWidth: 128,
     frameHeight: 128,
   },

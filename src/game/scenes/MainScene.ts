@@ -368,6 +368,24 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
+  private checkEnemyHits() {
+    if (!this.enemy.isVisibleTarget) return
+    const cameraY = this.cameras.main.scrollY
+    const ex = this.enemy.screenX
+    const ey = this.enemy.screenY
+    const r = ENEMY.hitRadius
+
+    for (const proj of this.player.projectiles.getChildren() as Phaser.Physics.Arcade.Sprite[]) {
+      if (!proj.active) continue
+      const dx = proj.x - ex
+      const dy = proj.y - (cameraY + ey)
+      if (Math.abs(dx) < r && Math.abs(dy) < r) {
+        this.enemy.showHit()
+        this.playShotImpact(proj)
+      }
+    }
+  }
+
   private defeatBoss() {
     this.bossesDefeated.add(this.activeBossIdx)
     this.onBossDefeated()
@@ -473,6 +491,7 @@ export class MainScene extends Phaser.Scene {
     this.playerPlatformVelX = 0
     this.touchControls.update(this.player.getShotCooldownRatio())
     this.checkBossVitalHits()
+    this.checkEnemyHits()
     const { x: px, y: py } = this.player.gameObject
     this.enemy.update(delta, this.cameras.main.scrollY, px, py, this.score)
 

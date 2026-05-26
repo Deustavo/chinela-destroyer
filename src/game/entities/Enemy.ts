@@ -11,6 +11,7 @@ export class Enemy {
   private currentFrame: number = 0
   private throwTimer: number = 0
   private bobTimer: number = 0
+  private hitTimer: number = 0
   private lastCameraScrollY: number = 0
   private lastPlayerX: number = 0
   private lastPlayerY: number = 0
@@ -39,6 +40,24 @@ export class Enemy {
     return this.traps
   }
 
+  get screenX(): number {
+    return this.sprite.x
+  }
+
+  get screenY(): number {
+    return this.sprite.y
+  }
+
+  get isVisibleTarget(): boolean {
+    return !this.isFlying && this.sprite.visible
+  }
+
+  showHit() {
+    this.hitTimer = ENEMY.hitDuration
+    this.sprite.setFrame(ENEMY.hitFrame)
+    this.glowSprite.setFrame(ENEMY.hitFrame)
+  }
+
   update(delta: number, cameraScrollY: number, playerX: number, playerY: number, score: number = 0) {
     if (this.isFlying) return
 
@@ -65,12 +84,21 @@ export class Enemy {
     const bob = Math.sin(this.bobTimer * ENEMY.bobSpeed * Math.PI * 2) * ENEMY.bobAmplitude
     this.sprite.y = ENEMY.screenY + bob
 
-    this.frameTimer += dt
-    if (this.frameTimer >= ENEMY.frameDuration) {
-      this.frameTimer = 0
-      this.currentFrame = this.currentFrame === 0 ? 1 : 0
-      this.sprite.setFrame(this.currentFrame)
-      this.glowSprite.setFrame(this.currentFrame)
+    if (this.hitTimer > 0) {
+      this.hitTimer -= dt
+      if (this.hitTimer <= 0) {
+        this.hitTimer = 0
+        this.sprite.setFrame(this.currentFrame)
+        this.glowSprite.setFrame(this.currentFrame)
+      }
+    } else {
+      this.frameTimer += dt
+      if (this.frameTimer >= ENEMY.frameDuration) {
+        this.frameTimer = 0
+        this.currentFrame = this.currentFrame === 0 ? 1 : 0
+        this.sprite.setFrame(this.currentFrame)
+        this.glowSprite.setFrame(this.currentFrame)
+      }
     }
 
     this.throwTimer += dt
