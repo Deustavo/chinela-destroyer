@@ -15,22 +15,22 @@ export class TouchControls {
   private cooldownBar: Phaser.GameObjects.Graphics | null = null
   private shotBtnX: number = 0
   private shotBtnY: number = 0
-  private readonly shotBtnDisplaySize: number = 80
+  private readonly shotBtnDisplaySize: number = 88
 
   constructor(scene: Phaser.Scene, onShot?: () => void) {
-    const y = WORLD.height - 45
+    const y = WORLD.height - 60
 
     if (isTouchDevice()) {
-      const { zone: leftBtn } = this.createButton(scene, 55, y, 'btn-left', 140)
-      const { zone: rightBtn } = this.createButton(scene, 160, y, 'btn-right', 140)
-      const { zone: jumpBtn } = this.createButton(scene, WORLD.width - 65, y, 'btn-up', 140)
+      const { zone: leftBtn } = this.createButton(scene, 60, y, 'btn-left', 200)
+      const { zone: rightBtn } = this.createButton(scene, 175, y, 'btn-right', 200)
+      const { zone: jumpBtn } = this.createButton(scene, WORLD.width - 60, y, 'btn-up', 200)
       this.bind(leftBtn, 'left')
       this.bind(rightBtn, 'right')
       this.bind(jumpBtn, 'jump')
     }
 
-    this.shotBtnX = WORLD.width - 65
-    this.shotBtnY = y - 75
+    this.shotBtnX = WORLD.width - 60
+    this.shotBtnY = y - 95
     const { image: shotImage, zone: shotBtn } = this.createButton(scene, this.shotBtnX, this.shotBtnY, 'btn-shot', this.shotBtnDisplaySize, 0.7)
     this.shotImage = shotImage
 
@@ -96,7 +96,7 @@ export class TouchControls {
     this.cooldownBar.fillRect(barX, barY, barW * (1 - cooldownRatio), barH)
   }
 
-  private createButton(scene: Phaser.Scene, x: number, y: number, textureKey: string, size = 180, alpha = 0.8): { image: Phaser.GameObjects.Image, zone: Phaser.GameObjects.Zone } {
+  private createButton(scene: Phaser.Scene, x: number, y: number, textureKey: string, size = 200, alpha = 0.8): { image: Phaser.GameObjects.Image, zone: Phaser.GameObjects.Zone } {
     const image = scene.add
       .image(x, y, textureKey)
       .setDisplaySize(size, size)
