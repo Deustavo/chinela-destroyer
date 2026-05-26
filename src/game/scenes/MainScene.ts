@@ -166,8 +166,13 @@ export class MainScene extends Phaser.Scene {
   }
 
   private spawnGround() {
+    const floorTop = WORLD.groundY - WORLD.groundHeight / 2
+    this.add.tileSprite(0, floorTop, WORLD.width, WORLD.height - floorTop, WORLD.floorTextureKey)
+      .setOrigin(0, 0)
+      .setDepth(1)
+
     const ground = this.platforms.create(WORLD.width / 2, WORLD.groundY, 'pixel') as Phaser.Physics.Arcade.Image
-    ground.setDisplaySize(WORLD.width, WORLD.groundHeight).setTint(WORLD.groundColor).refreshBody()
+    ground.setDisplaySize(WORLD.width, WORLD.groundHeight).setAlpha(0).refreshBody()
   }
 
   private spawnBossArenaFor(bossIdx: number) {

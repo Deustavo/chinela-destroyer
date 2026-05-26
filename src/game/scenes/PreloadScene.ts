@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { PLAYER, ENEMY, PLATFORMS, BOSS_SHIP, SHOT } from '../config/constants'
+import { PLAYER, ENEMY, PLATFORMS, BOSS_SHIP, SHOT, WORLD } from '../config/constants'
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -72,6 +72,7 @@ export class PreloadScene extends Phaser.Scene {
 
     this.load.image(PLATFORMS.textureKey, PLATFORMS.texturePath)
     this.load.image(PLATFORMS.movingTextureKey, PLATFORMS.movingTexturePath)
+    this.load.image(WORLD.floorTextureKey, WORLD.floorTexturePath)
   }
 
   create() {
