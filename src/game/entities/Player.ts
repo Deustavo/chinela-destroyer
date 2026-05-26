@@ -130,6 +130,31 @@ export class Player {
     }
   }
 
+  die(onComplete: () => void) {
+    this.body.enable = false
+
+    const driftX = Phaser.Math.Between(-120, 120)
+
+    this.scene.tweens.chain({
+      targets: this.sprite,
+      tweens: [
+        {
+          y: this.sprite.y - 60,
+          duration: 250,
+          ease: 'Quad.easeOut',
+        },
+        {
+          angle: 720,
+          y: this.sprite.y + 1200,
+          x: this.sprite.x + driftX,
+          duration: 1400,
+          ease: 'Quad.easeIn',
+          onComplete,
+        },
+      ],
+    })
+  }
+
   update(delta: number, touch?: TouchState, platformVelX: number = 0) {
     this.shotCooldown = Math.max(0, this.shotCooldown - delta / 1000)
 

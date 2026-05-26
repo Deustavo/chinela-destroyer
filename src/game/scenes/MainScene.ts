@@ -86,17 +86,11 @@ export class MainScene extends Phaser.Scene {
     this.mothershipTraps = this.physics.add.group()
 
     this.physics.add.overlap(this.player.gameObject, this.enemy.trapGroup, () => {
-      if (!this.dead) {
-        this.dead = true
-        this.scene.start('game-over-scene', { score: this.score, newAchievements: this.newlyUnlockedThisRun })
-      }
+      this.killPlayer()
     })
 
     this.physics.add.overlap(this.player.gameObject, this.mothershipTraps, () => {
-      if (!this.dead) {
-        this.dead = true
-        this.scene.start('game-over-scene', { score: this.score, newAchievements: this.newlyUnlockedThisRun })
-      }
+      this.killPlayer()
     })
 
     this.physics.add.overlap(
@@ -155,6 +149,14 @@ export class MainScene extends Phaser.Scene {
 
     const zone = this.add.zone(x, y, size, size).setScrollFactor(0).setDepth(22).setInteractive()
     zone.on('pointerdown', () => this.pauseGame())
+  }
+
+  private killPlayer() {
+    if (this.dead) return
+    this.dead = true
+    this.player.die(() => {
+      this.scene.start('game-over-scene', { score: this.score, newAchievements: this.newlyUnlockedThisRun })
+    })
   }
 
   private pauseGame() {
@@ -498,8 +500,7 @@ export class MainScene extends Phaser.Scene {
     this.checkAchievements()
 
     if (this.player.gameObject.y > cameraBottom + 50) {
-      this.dead = true
-      this.scene.start('game-over-scene', { score: this.score, newAchievements: this.newlyUnlockedThisRun })
+      this.killPlayer()
     }
   }
 
