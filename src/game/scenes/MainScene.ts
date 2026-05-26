@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 import { Player } from '../entities/Player'
 import { Enemy } from '../entities/Enemy'
 import { TouchControls } from '../entities/TouchControls'
-import { WORLD, PLATFORMS, BOSS_SHIP, BOSSES } from '../config/constants'
+import { WORLD, PLATFORMS, BOSS_SHIP, BOSSES, ENEMY } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
 import { ACHIEVEMENTS } from '../achievements/achievements'
 
@@ -32,6 +32,8 @@ export class MainScene extends Phaser.Scene {
   private currentLockedPlatforms: Phaser.Physics.Arcade.Image[] = []
   private bossVitals: Array<{ screenX: number; screenY: number; hit: boolean; circle: Phaser.GameObjects.Arc }> = []
   private playerPlatformVelX: number = 0
+  private mothershipTraps!: Phaser.Physics.Arcade.Group
+  private mothershipThrowTimer: number = 0
 
   constructor() {
     super('main-scene')
@@ -81,7 +83,16 @@ export class MainScene extends Phaser.Scene {
         this.playerPlatformVelX = platBody.velocity.x
       }
     })
+    this.mothershipTraps = this.physics.add.group()
+
     this.physics.add.overlap(this.player.gameObject, this.enemy.trapGroup, () => {
+      if (!this.dead) {
+        this.dead = true
+        this.scene.start('game-over-scene', { score: this.score, newAchievements: this.newlyUnlockedThisRun })
+      }
+    })
+
+    this.physics.add.overlap(this.player.gameObject, this.mothershipTraps, () => {
       if (!this.dead) {
         this.dead = true
         this.scene.start('game-over-scene', { score: this.score, newAchievements: this.newlyUnlockedThisRun })
@@ -91,6 +102,15 @@ export class MainScene extends Phaser.Scene {
     this.physics.add.overlap(
       this.player.projectiles,
       this.enemy.trapGroup,
+      (_shot, _trap) => {
+        (_shot as Phaser.Physics.Arcade.Image).destroy()
+        ;(_trap as Phaser.Physics.Arcade.Image).destroy()
+      },
+    )
+
+    this.physics.add.overlap(
+      this.player.projectiles,
+      this.mothershipTraps,
       (_shot, _trap) => {
         (_shot as Phaser.Physics.Arcade.Image).destroy()
         ;(_trap as Phaser.Physics.Arcade.Image).destroy()
@@ -244,6 +264,7 @@ export class MainScene extends Phaser.Scene {
 
   private spawnMothership(bossIdx: number) {
     const displayH = BOSS_SHIP.displayHeight
+    this.mothershipThrowTimer = 0
     this.mothershipSprite = this.add
       .sprite(WORLD.width / 2, -displayH / 2, BOSS_SHIP.spriteKey)
       .setScrollFactor(0)
@@ -258,6 +279,31 @@ export class MainScene extends Phaser.Scene {
       ease: 'Cubic.easeOut',
       onComplete: () => this.spawnBossVitals(bossIdx, displayH / 2),
     })
+  }
+
+  private fireMothershipProjectile(angleOffset: number = 0) {
+    if (!this.mothershipSprite) return
+    const displayH = BOSS_SHIP.displayHeight
+    const screenOriginX = this.mothershipSprite.x
+    const screenOriginY = displayH
+    const worldOriginY = this.cameras.main.scrollY + screenOriginY
+
+    const { x: px, y: py } = this.player.gameObject
+    const dx = px - screenOriginX
+    const dy = py - worldOriginY
+    const len = Math.sqrt(dx * dx + dy * dy) || 1
+    const cos = Math.cos(angleOffset)
+    const sin = Math.sin(angleOffset)
+    const vx = ((dx / len) * cos - (dy / len) * sin) * BOSS_SHIP.projectileSpeed
+    const vy = ((dx / len) * sin + (dy / len) * cos) * BOSS_SHIP.projectileSpeed
+
+    const frame = Phaser.Math.Between(0, 2)
+    const trap = this.mothershipTraps.create(screenOriginX, worldOriginY, ENEMY.trapsKey, frame) as Phaser.Physics.Arcade.Image
+    trap.setDisplaySize(ENEMY.trapDisplaySize, ENEMY.trapDisplaySize)
+    ;(trap.body as Phaser.Physics.Arcade.Body).setSize(ENEMY.trapHitboxSize, ENEMY.trapHitboxSize)
+    ;(trap.body as Phaser.Physics.Arcade.Body).setAllowGravity(false)
+    trap.setVelocityX(vx)
+    trap.setVelocityY(vy)
   }
 
   private spawnBossVitals(bossIdx: number, shipScreenY: number) {
@@ -312,6 +358,7 @@ export class MainScene extends Phaser.Scene {
   private defeatBoss() {
     this.bossesDefeated.add(this.activeBossIdx)
     this.onBossDefeated()
+    this.mothershipTraps.clear(true, true)
     if (this.mothershipSprite) {
       this.tweens.add({
         targets: this.mothershipSprite,
@@ -349,6 +396,30 @@ export class MainScene extends Phaser.Scene {
         this.mothershipFrame = this.mothershipFrame === 0 ? 1 : 0
         this.mothershipSprite.setFrame(this.mothershipFrame)
       }
+
+      if (this.activeBossIdx !== -1) {
+        const boss = BOSSES[this.activeBossIdx]
+        this.mothershipThrowTimer += delta / 1000
+        if (this.mothershipThrowTimer >= boss.throwInterval) {
+          this.mothershipThrowTimer = 0
+          const count = boss.projectileCount
+          if (count === 1) {
+            this.fireMothershipProjectile(0)
+          } else if (count === 2) {
+            this.fireMothershipProjectile(-0.3)
+            this.fireMothershipProjectile(0.3)
+          } else {
+            this.fireMothershipProjectile(-0.4)
+            this.fireMothershipProjectile(0)
+            this.fireMothershipProjectile(0.4)
+          }
+        }
+      }
+
+      const cameraBottom = this.cameras.main.scrollY + WORLD.height
+      ;(this.mothershipTraps.getChildren() as Phaser.Physics.Arcade.Image[]).forEach((trap) => {
+        if (trap.y > cameraBottom + 200) trap.destroy()
+      })
     }
 
     const prevScrollY = this.cameras.main.scrollY

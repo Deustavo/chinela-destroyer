@@ -14,6 +14,7 @@ export class Enemy {
   private lastCameraScrollY: number = 0
   private lastPlayerX: number = 0
   private lastPlayerY: number = 0
+  private isFlying: boolean = false
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene
@@ -39,6 +40,8 @@ export class Enemy {
   }
 
   update(delta: number, cameraScrollY: number, playerX: number, playerY: number, score: number = 0) {
+    if (this.isFlying) return
+
     const dt = delta / 1000
     this.lastCameraScrollY = cameraScrollY
     this.lastPlayerX = playerX
@@ -108,6 +111,8 @@ export class Enemy {
   }
 
   flyAway(onComplete?: () => void) {
+    this.isFlying = true
+    this.glowSprite.setAlpha(0)
     this.scene.tweens.add({
       targets: [this.sprite, this.glowSprite],
       y: -120,
@@ -132,6 +137,9 @@ export class Enemy {
       y: ENEMY.screenY,
       duration: 700,
       ease: 'Cubic.easeOut',
+      onComplete: () => {
+        this.isFlying = false
+      },
     })
   }
 
