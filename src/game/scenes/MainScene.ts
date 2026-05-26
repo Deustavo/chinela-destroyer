@@ -433,10 +433,7 @@ export class MainScene extends Phaser.Scene {
         this.mothershipThrowTimer += delta / 1000
         if (this.mothershipThrowTimer >= boss.throwInterval) {
           this.mothershipThrowTimer = 0
-          const count = boss.projectileCount
-          if (count === 1) {
-            this.fireMothershipProjectile(0)
-          } else if (count === 2) {
+          if (boss.projectileCount === 2) {
             this.fireMothershipProjectile(-0.3)
             this.fireMothershipProjectile(0.3)
           } else {
