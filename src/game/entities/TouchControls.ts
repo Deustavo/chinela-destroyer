@@ -40,9 +40,12 @@ export class TouchControls {
       const labelY = this.shotBtnY + this.shotBtnDisplaySize / 2 + 16
       const label = scene.add
         .text(this.shotBtnX, labelY, 'aperte\nespaço', {
-          fontSize: '11px',
-          color: '#ffffff',
+          fontSize: '15px',
+          color: '#ffff00',
           fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
+          fontStyle: 'bold',
+          stroke: '#000000',
+          strokeThickness: 4,
         })
         .setOrigin(0.5, 0.5)
         .setScrollFactor(0)

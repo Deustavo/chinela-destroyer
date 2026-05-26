@@ -111,7 +111,7 @@ export class Player {
     })
   }
 
-  update(delta: number, touch?: TouchState) {
+  update(delta: number, touch?: TouchState, platformVelX: number = 0) {
     this.shotCooldown = Math.max(0, this.shotCooldown - delta / 1000)
 
     if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
@@ -119,7 +119,7 @@ export class Player {
     }
 
     const body = this.body
-    body.setVelocityX(0)
+    body.setVelocityX(platformVelX)
 
     if (this.sprite.x < 0) this.sprite.x = WORLD.width
     else if (this.sprite.x > WORLD.width) this.sprite.x = 0
@@ -144,12 +144,14 @@ export class Player {
     const extraGravity = WORLD.gravity * (multiplier - 1)
     body.setGravityY(extraGravity)
 
-    this.updateAnimation(body)
+    const movingX =
+      !!(this.cursors.left?.isDown || this.wasd.left.isDown || touch?.left) ||
+      !!(this.cursors.right?.isDown || this.wasd.right.isDown || touch?.right)
+    this.updateAnimation(body, movingX)
   }
 
-  private updateAnimation(body: Phaser.Physics.Arcade.Body) {
+  private updateAnimation(body: Phaser.Physics.Arcade.Body, movingX: boolean) {
     const onGround = body.blocked.down
-    const movingX = body.velocity.x !== 0
     const goingUp = body.velocity.y < 0
 
     let anim: PlayerAnim

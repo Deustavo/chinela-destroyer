@@ -31,6 +31,7 @@ export class MainScene extends Phaser.Scene {
   private mothershipFrame: number = 0
   private currentLockedPlatforms: Phaser.Physics.Arcade.Image[] = []
   private bossVitals: Array<{ screenX: number; screenY: number; hit: boolean; circle: Phaser.GameObjects.Arc }> = []
+  private playerPlatformVelX: number = 0
 
   constructor() {
     super('main-scene')
@@ -74,7 +75,12 @@ export class MainScene extends Phaser.Scene {
     this.touchControls = new TouchControls(this, () => this.player.requestShot())
 
     this.physics.add.collider(this.player.gameObject, this.platforms)
-    this.physics.add.collider(this.player.gameObject, this.movingPlatforms)
+    this.physics.add.collider(this.player.gameObject, this.movingPlatforms, (_playerObj, platformObj) => {
+      if (this.player.body.blocked.down) {
+        const platBody = (platformObj as Phaser.Physics.Arcade.Image).body as Phaser.Physics.Arcade.Body
+        this.playerPlatformVelX = platBody.velocity.x
+      }
+    })
     this.physics.add.overlap(this.player.gameObject, this.enemy.trapGroup, () => {
       if (!this.dead) {
         this.dead = true
@@ -379,7 +385,8 @@ export class MainScene extends Phaser.Scene {
       }
     })
 
-    this.player.update(delta, this.touchControls.state)
+    this.player.update(delta, this.touchControls.state, this.playerPlatformVelX)
+    this.playerPlatformVelX = 0
     this.touchControls.update(this.player.getShotCooldownRatio())
     this.checkBossVitalHits()
     const { x: px, y: py } = this.player.gameObject
