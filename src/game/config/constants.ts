@@ -88,12 +88,20 @@ export const BOSSES = [
 ] as const
 
 export const SHOT = {
-  spriteKey: 'simple-shot',
-  spritePath: '/assets/player/simple-shot.png',
+  spriteKey: 'player-shot',
+  spritesheet: {
+    path: '/assets/player/SpriteSheetShot1.png',
+    frameWidth: 64,
+    frameHeight: 64,
+  },
+  flyFrames: [0, 1],
+  impactFrames: [2, 3],
+  flyFrameRate: 12,
+  impactFrameRate: 16,
   btnKey: 'btn-shot',
   btnPath: '/assets/buttons/shot.png',
   speed: 600,
-  displaySize: 32,
+  displaySize: 48,
   cooldown: 1.0,
 } as const
 

@@ -103,7 +103,7 @@ export class MainScene extends Phaser.Scene {
       this.player.projectiles,
       this.enemy.trapGroup,
       (_shot, _trap) => {
-        (_shot as Phaser.Physics.Arcade.Image).destroy()
+        this.playShotImpact(_shot as Phaser.Physics.Arcade.Sprite)
         ;(_trap as Phaser.Physics.Arcade.Image).destroy()
       },
     )
@@ -112,7 +112,7 @@ export class MainScene extends Phaser.Scene {
       this.player.projectiles,
       this.mothershipTraps,
       (_shot, _trap) => {
-        (_shot as Phaser.Physics.Arcade.Image).destroy()
+        this.playShotImpact(_shot as Phaser.Physics.Arcade.Sprite)
         ;(_trap as Phaser.Physics.Arcade.Image).destroy()
       },
     )
@@ -126,6 +126,19 @@ export class MainScene extends Phaser.Scene {
     this.onEscKey = (e: KeyboardEvent) => { if (e.key === 'Escape') this.pauseGame() }
     window.addEventListener('keydown', this.onEscKey)
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener('keydown', this.onEscKey))
+  }
+
+  private playShotImpact(shot: Phaser.Physics.Arcade.Sprite) {
+    if (!shot.active) return
+    const body = shot.body as Phaser.Physics.Arcade.Body | null
+    if (body) {
+      body.setVelocity(0, 0)
+      body.enable = false
+    }
+    shot.anims.play('shot-impact', true)
+    shot.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+      shot.destroy()
+    })
   }
 
   private addPauseButton() {
@@ -337,7 +350,7 @@ export class MainScene extends Phaser.Scene {
     const cameraY = this.cameras.main.scrollY
     const hitRadius = 22
 
-    for (const proj of this.player.projectiles.getChildren() as Phaser.Physics.Arcade.Image[]) {
+    for (const proj of this.player.projectiles.getChildren() as Phaser.Physics.Arcade.Sprite[]) {
       if (!proj.active) continue
       for (const vital of this.bossVitals) {
         if (vital.hit) continue
@@ -347,7 +360,7 @@ export class MainScene extends Phaser.Scene {
           vital.hit = true
           vital.circle.setFillStyle(0x333333).setStrokeStyle(0)
           this.tweens.killTweensOf(vital.circle)
-          proj.destroy()
+          this.playShotImpact(proj)
           if (this.bossVitals.every(v => v.hit)) this.defeatBoss()
           break
         }

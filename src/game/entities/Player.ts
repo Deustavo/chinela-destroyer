@@ -58,15 +58,16 @@ export class Player {
   }
 
   private fireProjectile() {
-    const proj = this.scene.physics.add.image(
+    const proj = this.scene.physics.add.sprite(
       this.sprite.x,
       this.sprite.y - 20,
       SHOT.spriteKey,
-    ) as Phaser.Physics.Arcade.Image
+    ) as Phaser.Physics.Arcade.Sprite
 
     proj.setDisplaySize(SHOT.displaySize, SHOT.displaySize)
     proj.setDepth(10)
     proj.setScrollFactor(1)
+    proj.anims.play('shot-fly', true)
 
     this.projectiles.add(proj)
 
@@ -109,6 +110,24 @@ export class Player {
       frameRate: animFrameRates.jump,
       repeat: 0,
     })
+
+    if (!scene.anims.exists('shot-fly')) {
+      scene.anims.create({
+        key: 'shot-fly',
+        frames: scene.anims.generateFrameNumbers(SHOT.spriteKey, { frames: [...SHOT.flyFrames] }),
+        frameRate: SHOT.flyFrameRate,
+        repeat: -1,
+      })
+    }
+
+    if (!scene.anims.exists('shot-impact')) {
+      scene.anims.create({
+        key: 'shot-impact',
+        frames: scene.anims.generateFrameNumbers(SHOT.spriteKey, { frames: [...SHOT.impactFrames] }),
+        frameRate: SHOT.impactFrameRate,
+        repeat: 0,
+      })
+    }
   }
 
   update(delta: number, touch?: TouchState, platformVelX: number = 0) {

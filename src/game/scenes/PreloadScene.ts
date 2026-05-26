@@ -48,7 +48,10 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('btn-play', '/assets/buttons/play.png')
     this.load.image('btn-home', '/assets/buttons/home.png')
     this.load.image(SHOT.btnKey, SHOT.btnPath)
-    this.load.image(SHOT.spriteKey, SHOT.spritePath)
+    this.load.spritesheet(SHOT.spriteKey, SHOT.spritesheet.path, {
+      frameWidth: SHOT.spritesheet.frameWidth,
+      frameHeight: SHOT.spritesheet.frameHeight,
+    })
 
     this.load.image('credits-gatas', '/assets/creditsScreen/gatasbobas.png')
     this.load.image('credits-github', '/assets/creditsScreen/github.png')
