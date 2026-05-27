@@ -1,5 +1,7 @@
 import Phaser from 'phaser'
 import { WORLD } from '../config/constants'
+import { addBackground } from '../utils/uiHelpers'
+import { dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
@@ -10,7 +12,7 @@ export class MenuScene extends Phaser.Scene {
     const cx = WORLD.width / 2
     const cy = WORLD.height / 2
 
-    this.add.image(cx, cy, 'bg').setDisplaySize(WORLD.width, WORLD.height).setDepth(0)
+    addBackground(this)
 
     const logo = this.add
       .image(cx, cy - 60, 'menu-logo')
@@ -72,80 +74,33 @@ export class MenuScene extends Phaser.Scene {
     haShop.y += haShop.height / 4
     haShop.height /= 2
 
-
-    const all = [logo, chinela, pera, btn, btnCredits, btnTrophy, btnShop]
+    const all: SceneObject[] = [logo, chinela, pera, btn, btnCredits, btnTrophy, btnShop]
 
     btn.on('pointerover', () => btn.setScale(2.0))
     btn.on('pointerout', () => btn.setScale(1.8))
-    btn.on('pointerdown', () => this.exitTo('main-scene', all))
+    btn.on('pointerdown', () => exitTo(this, 'main-scene', all))
 
     btnCredits.on('pointerover', () => btnCredits.setScale(BTN_SCALE + 0.12))
     btnCredits.on('pointerout', () => btnCredits.setScale(BTN_SCALE))
-    btnCredits.on('pointerdown', () => this.exitTo('credits-scene', all))
+    btnCredits.on('pointerdown', () => exitTo(this, 'credits-scene', all))
 
     btnTrophy.on('pointerover', () => btnTrophy.setAlpha(1))
     btnTrophy.on('pointerout', () => btnTrophy.setAlpha(0.9))
-    btnTrophy.on('pointerdown', () => this.exitTo('achievements-scene', all))
+    btnTrophy.on('pointerdown', () => exitTo(this, 'achievements-scene', all))
 
     btnShop.on('pointerover', () => { btnShop.setAlpha(1); btnShop.setScale(BTN_SCALE + 0.12) })
     btnShop.on('pointerout', () => { btnShop.setAlpha(0.9); btnShop.setScale(BTN_SCALE) })
-    btnShop.on('pointerdown', () => this.exitTo('shop-scene', all))
+    btnShop.on('pointerdown', () => exitTo(this, 'shop-scene', all))
 
-    this.input.keyboard?.once('keydown-SPACE', () => this.exitTo('main-scene', all))
-    this.input.keyboard?.once('keydown-ENTER', () => this.exitTo('main-scene', all))
+    this.input.keyboard?.once('keydown-SPACE', () => exitTo(this, 'main-scene', all))
+    this.input.keyboard?.once('keydown-ENTER', () => exitTo(this, 'main-scene', all))
 
-    this.dropIn(logo,       { amplitude: 8,  floatDuration: 2000, delay: 0   })
-    this.dropIn(chinela,    { amplitude: 12, floatDuration: 1800, delay: 120 })
-    this.dropIn(pera,       { amplitude: 10, floatDuration: 2200, delay: 240 })
-    this.dropIn(btn,        { amplitude: 6,  floatDuration: 1600, delay: 360 })
-    this.dropIn(btnCredits, { amplitude: 5,  floatDuration: 1700, delay: 440 })
-    this.dropIn(btnTrophy,  { amplitude: 4,  floatDuration: 1900, delay: 520 })
-    this.dropIn(btnShop,    { amplitude: 4,  floatDuration: 1900, delay: 560 })
-  }
-
-  private exitTo(scene: string, elements: Phaser.GameObjects.Image[]) {
-    elements.forEach((el, i) => {
-      this.tweens.killTweensOf(el)
-      this.tweens.add({
-        targets: el,
-        y: -WORLD.height,
-        duration: 600,
-        delay: i * 40,
-        ease: 'Cubic.easeIn',
-        onComplete: i === elements.length - 1 ? () => this.scene.start(scene) : undefined,
-      })
-    })
-  }
-
-  private dropIn(
-    obj: Phaser.GameObjects.Image,
-    opts: { amplitude: number; floatDuration: number; delay: number },
-  ) {
-    const finalY = obj.y
-    obj.y = -obj.displayHeight
-
-    this.tweens.add({
-      targets: obj,
-      y: finalY,
-      duration: 900,
-      delay: opts.delay,
-      ease: 'Cubic.easeOut',
-      onComplete: () => this.addFloat(obj, opts.amplitude, opts.floatDuration),
-    })
-  }
-
-  private addFloat(
-    obj: Phaser.GameObjects.Image | Phaser.GameObjects.Sprite,
-    amplitude: number,
-    duration: number,
-  ) {
-    this.tweens.add({
-      targets: obj,
-      y: obj.y - amplitude,
-      duration,
-      ease: 'Sine.easeInOut',
-      yoyo: true,
-      repeat: -1,
-    })
+    dropInFloat(this, logo,       { amplitude: 8,  floatDuration: 2000, delay: 0   })
+    dropInFloat(this, chinela,    { amplitude: 12, floatDuration: 1800, delay: 120 })
+    dropInFloat(this, pera,       { amplitude: 10, floatDuration: 2200, delay: 240 })
+    dropInFloat(this, btn,        { amplitude: 6,  floatDuration: 1600, delay: 360 })
+    dropInFloat(this, btnCredits, { amplitude: 5,  floatDuration: 1700, delay: 440 })
+    dropInFloat(this, btnTrophy,  { amplitude: 4,  floatDuration: 1900, delay: 520 })
+    dropInFloat(this, btnShop,    { amplitude: 4,  floatDuration: 1900, delay: 560 })
   }
 }

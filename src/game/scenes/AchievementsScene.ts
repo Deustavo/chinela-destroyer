@@ -1,14 +1,15 @@
 import Phaser from 'phaser'
-import { WORLD } from '../config/constants'
+import { WORLD, FONT_FAMILY } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
 import type { Achievement } from '../achievements/achievements'
+import { addBackground, addModalOverlay, wireButtonLabel } from '../utils/uiHelpers'
+import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 
 const COLS = 3
 const ICON_SIZE = 90
 const H_GAP = 24
 const V_GAP = 32
 const LOCKED_KEY = 'achievement-locked'
-const FONT = '"Comic Neue", "Comic Sans MS", cursive'
 
 export class AchievementsScene extends Phaser.Scene {
   private modalObjects: Phaser.GameObjects.GameObject[] = []
@@ -22,13 +23,13 @@ export class AchievementsScene extends Phaser.Scene {
     const unlocked = AchievementManager.getUnlocked()
     const all = AchievementManager.getAll()
 
-    this.add.image(cx, WORLD.height / 2, 'bg').setDisplaySize(WORLD.width, WORLD.height).setDepth(0)
+    addBackground(this)
 
     const title = this.add
       .text(cx, 60, 'Conquistas', {
         fontSize: '32px',
         color: '#ffd700',
-        fontFamily: FONT,
+        fontFamily: FONT_FAMILY,
         stroke: '#000000',
         strokeThickness: 4,
       })
@@ -41,7 +42,7 @@ export class AchievementsScene extends Phaser.Scene {
     const totalH = rows * (ICON_SIZE + 36) + (rows - 1) * V_GAP
     const startY = WORLD.height / 2 - totalH / 2 + ICON_SIZE / 2 + 20
 
-    const elements: (Phaser.GameObjects.Image | Phaser.GameObjects.Text)[] = [title]
+    const elements: SceneObject[] = [title]
 
     all.forEach((achievement, i) => {
       const col = i % COLS
@@ -67,7 +68,7 @@ export class AchievementsScene extends Phaser.Scene {
         .text(x, y + ICON_SIZE / 2 + 6, isUnlocked ? achievement.name : '???', {
           fontSize: '13px',
           color: isUnlocked ? '#ffffff' : '#888888',
-          fontFamily: FONT,
+          fontFamily: FONT_FAMILY,
           align: 'center',
           wordWrap: { width: ICON_SIZE + H_GAP - 4 },
         })
@@ -85,10 +86,10 @@ export class AchievementsScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
 
     const labelBack = this.add
-      .text(cx, WORLD.height - 30 , 'Inicio', {
+      .text(cx, WORLD.height - 30, 'Inicio', {
         fontSize: '16px',
         color: '#ffffff',
-        fontFamily: FONT,
+        fontFamily: FONT_FAMILY,
       })
       .setOrigin(0.5)
       .setDepth(3)
@@ -97,15 +98,9 @@ export class AchievementsScene extends Phaser.Scene {
 
     elements.push(backBtn, labelBack)
 
-    backBtn.on('pointerover', () => { backBtn.setAlpha(1); labelBack.setAlpha(1) })
-    backBtn.on('pointerout', () => { backBtn.setAlpha(0.85); labelBack.setAlpha(0.85) })
-    backBtn.on('pointerdown', () => this.exitTo('menu-scene', elements))
+    wireButtonLabel(backBtn, labelBack, () => exitTo(this, 'menu-scene', elements))
 
-    labelBack.on('pointerover', () => { backBtn.setAlpha(1); labelBack.setAlpha(1) })
-    labelBack.on('pointerout', () => { backBtn.setAlpha(0.85); labelBack.setAlpha(0.85) })
-    labelBack.on('pointerdown', () => this.exitTo('menu-scene', elements))
-
-    elements.forEach((el, i) => this.dropIn(el, i * 40))
+    elements.forEach((el, i) => dropIn(this, el, i * 40))
   }
 
   private openModal(achievement: Achievement, isUnlocked: boolean) {
@@ -117,7 +112,7 @@ export class AchievementsScene extends Phaser.Scene {
     const MODAL_SIZE = 390   // square
     const DEPTH = 10
 
-    const overlay = this.add.rectangle(cx, cy, WORLD.width, WORLD.height, 0x000000, 0.6).setDepth(DEPTH).setInteractive()
+    const overlay = addModalOverlay(this, DEPTH).setInteractive()
     overlay.on('pointerdown', () => this.closeModal())
 
     const panel = this.add.image(cx, cy, 'modal-bg')
@@ -136,7 +131,7 @@ export class AchievementsScene extends Phaser.Scene {
     const nameText = this.add.text(cx, cy + 20, isUnlocked ? achievement.name : '???', {
       fontSize: '22px',
       color: isUnlocked ? '#ffd700' : '#888888',
-      fontFamily: FONT,
+      fontFamily: FONT_FAMILY,
       stroke: '#000000',
       strokeThickness: 3,
       align: 'center',
@@ -146,7 +141,7 @@ export class AchievementsScene extends Phaser.Scene {
     const descText = this.add.text(cx, cy + 64, isUnlocked ? achievement.description : 'Conquista bloqueada', {
       fontSize: '15px',
       color: isUnlocked ? '#cccccc' : '#666666',
-      fontFamily: FONT,
+      fontFamily: FONT_FAMILY,
       align: 'center',
       wordWrap: { width: MODAL_SIZE - 48 },
     }).setOrigin(0.5).setDepth(DEPTH + 2)
@@ -154,7 +149,7 @@ export class AchievementsScene extends Phaser.Scene {
     const closeBtn = this.add.text(cx, cy + 124, 'Fechar', {
       fontSize: '17px',
       color: '#ffffff',
-      fontFamily: FONT,
+      fontFamily: FONT_FAMILY,
       backgroundColor: '#333355',
       padding: { x: 20, y: 8 },
     }).setOrigin(0.5).setDepth(DEPTH + 2).setInteractive({ useHandCursor: true })
@@ -193,33 +188,6 @@ export class AchievementsScene extends Phaser.Scene {
         this.modalObjects.forEach(o => o.destroy())
         this.modalObjects = []
       },
-    })
-  }
-
-  private dropIn(obj: Phaser.GameObjects.Image | Phaser.GameObjects.Text, delay: number) {
-    const finalY = obj.y
-    obj.y = -Math.abs(obj.displayHeight) - 20
-
-    this.tweens.add({
-      targets: obj,
-      y: finalY,
-      duration: 900,
-      delay,
-      ease: 'Cubic.easeOut',
-    })
-  }
-
-  private exitTo(scene: string, elements: (Phaser.GameObjects.Image | Phaser.GameObjects.Text)[]) {
-    elements.forEach((el, i) => {
-      this.tweens.killTweensOf(el)
-      this.tweens.add({
-        targets: el,
-        y: -WORLD.height,
-        duration: 600,
-        delay: i * 40,
-        ease: 'Cubic.easeIn',
-        onComplete: i === elements.length - 1 ? () => this.scene.start(scene) : undefined,
-      })
     })
   }
 }

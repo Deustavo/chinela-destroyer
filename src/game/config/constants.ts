@@ -134,3 +134,10 @@ export const PLAYER = {
     jump: 1,
   },
 } as const
+
+// ── UI Typography ─────────────────────────────────────────────────────────────
+export const FONT_FAMILY = '"Comic Neue", "Comic Sans MS", cursive' as const
+
+// ── Scene center shortcuts (derived from WORLD) ───────────────────────────────
+export const CX = WORLD.width / 2   // 202.5
+export const CY = WORLD.height / 2  // 360

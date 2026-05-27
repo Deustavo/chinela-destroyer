@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 import { Player } from '../entities/Player'
 import { Enemy } from '../entities/Enemy'
 import { TouchControls } from '../entities/TouchControls'
-import { WORLD, PLATFORMS, BOSS_SHIP, BOSSES, ENEMY } from '../config/constants'
+import { WORLD, PLATFORMS, BOSS_SHIP, BOSSES, ENEMY, FONT_FAMILY } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
 import { ACHIEVEMENTS } from '../achievements/achievements'
 
@@ -112,7 +112,7 @@ export class MainScene extends Phaser.Scene {
     )
 
     this.scoreText = this.add
-      .text(16, 16, 'Altura: 0', { fontSize: '22px', color: '#ffffff', fontFamily: '"Comic Neue", "Comic Sans MS", cursive' })
+      .text(16, 16, 'Altura: 0', { fontSize: '22px', color: '#ffffff', fontFamily: FONT_FAMILY })
       .setScrollFactor(0)
 
     this.addPauseButton()

@@ -1,5 +1,7 @@
 import Phaser from 'phaser'
-import { WORLD } from '../config/constants'
+import { WORLD, FONT_FAMILY } from '../config/constants'
+import { addBackground, wireButtonLabel } from '../utils/uiHelpers'
+import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 
 export class CreditsScene extends Phaser.Scene {
   constructor() {
@@ -10,13 +12,13 @@ export class CreditsScene extends Phaser.Scene {
     const cx = WORLD.width / 2
     const cy = WORLD.height / 2
 
-    this.add.image(cx, cy, 'bg').setDisplaySize(WORLD.width, WORLD.height).setDepth(0)
+    addBackground(this)
 
     const title = this.add
       .text(cx, cy - 240, 'Créditos', {
         fontSize: '48px',
         color: '#ffffff',
-        fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
+        fontFamily: FONT_FAMILY,
       })
       .setOrigin(0.5)
 
@@ -24,7 +26,7 @@ export class CreditsScene extends Phaser.Scene {
       .text(cx, cy - 140, 'Feito por Deustavo. Siga meu github para mais projetos como esse <3', {
         fontSize: '20px',
         color: '#ffffff',
-        fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
+        fontFamily: FONT_FAMILY,
         align: 'center',
         wordWrap: { width: 320 },
       })
@@ -40,7 +42,7 @@ export class CreditsScene extends Phaser.Scene {
       .text(cx - 76 + 20, cy - 78, '/Deustavo/chinela-destroyer', {
         fontSize: '14px',
         color: '#aaaaaa',
-        fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
+        fontFamily: FONT_FAMILY,
       })
       .setOrigin(0, 0.5)
       .setInteractive({ cursor: 'pointer' })
@@ -54,7 +56,7 @@ export class CreditsScene extends Phaser.Scene {
       .text(cx, cy + 180, 'as protagonistas são essas gatas endeotas', {
         fontSize: '22px',
         color: '#ffffff',
-        fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
+        fontFamily: FONT_FAMILY,
         align: 'center',
         wordWrap: { width: 320 },
       })
@@ -70,11 +72,13 @@ export class CreditsScene extends Phaser.Scene {
       .text(cx, cy + 245 + 32 + 10, 'Inicio', {
         fontSize: '16px',
         color: '#ffffff',
-        fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
+        fontFamily: FONT_FAMILY,
       })
       .setOrigin(0.5)
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
+
+    const elements: SceneObject[] = [title, devText, btnGithub, repoText, gatas, caption, btnBack, labelBack]
 
     const openRepo = () => window.open('https://github.com/Deustavo/chinela-destroyer', '_blank')
 
@@ -86,48 +90,15 @@ export class CreditsScene extends Phaser.Scene {
     repoText.on('pointerout', () => { repoText.setAlpha(0.85).setColor('#aaaaaa'); btnGithub.setAlpha(0.85) })
     repoText.on('pointerdown', openRepo)
 
-    btnBack.on('pointerover', () => { btnBack.setAlpha(1); labelBack.setAlpha(1) })
-    btnBack.on('pointerout', () => { btnBack.setAlpha(0.85); labelBack.setAlpha(0.85) })
-    btnBack.on('pointerdown', () => this.exitTo('menu-scene', [title, devText, btnGithub, repoText, gatas, caption, btnBack, labelBack]))
+    wireButtonLabel(btnBack, labelBack, () => exitTo(this, 'menu-scene', elements))
 
-    labelBack.on('pointerover', () => { btnBack.setAlpha(1); labelBack.setAlpha(1) })
-    labelBack.on('pointerout', () => { btnBack.setAlpha(0.85); labelBack.setAlpha(0.85) })
-    labelBack.on('pointerdown', () => this.exitTo('menu-scene', [title, devText, btnGithub, repoText, gatas, caption, btnBack, labelBack]))
-
-    this.dropIn(title,      0)
-    this.dropIn(devText,    80)
-    this.dropIn(btnGithub,  160)
-    this.dropIn(repoText,   160)
-    this.dropIn(gatas,      240)
-    this.dropIn(caption,    320)
-    this.dropIn(btnBack,    400)
-    this.dropIn(labelBack,  450)
-  }
-
-  private dropIn(obj: Phaser.GameObjects.Image | Phaser.GameObjects.Text, delay: number) {
-    const finalY = obj.y
-    obj.y = -Math.abs(obj.displayHeight) - 20
-
-    this.tweens.add({
-      targets: obj,
-      y: finalY,
-      duration: 900,
-      delay,
-      ease: 'Cubic.easeOut',
-    })
-  }
-
-  private exitTo(scene: string, elements: (Phaser.GameObjects.Image | Phaser.GameObjects.Text)[]) {
-    elements.forEach((el, i) => {
-      this.tweens.killTweensOf(el)
-      this.tweens.add({
-        targets: el,
-        y: -WORLD.height,
-        duration: 600,
-        delay: i * 40,
-        ease: 'Cubic.easeIn',
-        onComplete: i === elements.length - 1 ? () => this.scene.start(scene) : undefined,
-      })
-    })
+    dropIn(this, title,     0)
+    dropIn(this, devText,   80)
+    dropIn(this, btnGithub, 160)
+    dropIn(this, repoText,  160)
+    dropIn(this, gatas,     240)
+    dropIn(this, caption,   320)
+    dropIn(this, btnBack,   400)
+    dropIn(this, labelBack, 450)
   }
 }

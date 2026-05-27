@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
-import { WORLD } from '../config/constants'
-
+import { WORLD, FONT_FAMILY } from '../config/constants'
+import { addModalOverlay } from '../utils/uiHelpers'
 
 export class PauseScene extends Phaser.Scene {
   constructor() {
@@ -11,11 +11,10 @@ export class PauseScene extends Phaser.Scene {
     const cx = WORLD.width / 2
     const cy = WORLD.height / 2
 
-    const overlay = this.add.rectangle(cx, cy, WORLD.width, WORLD.height, 0x000000, 0.6)
-    overlay.setDepth(0)
+    addModalOverlay(this)
 
     this.add
-      .text(cx, cy - 80, 'PAUSADO', { fontSize: '42px', color: '#ffffff', fontStyle: 'bold', fontFamily: '"Comic Neue", "Comic Sans MS", cursive' })
+      .text(cx, cy - 80, 'PAUSADO', { fontSize: '42px', color: '#ffffff', fontStyle: 'bold', fontFamily: FONT_FAMILY })
       .setOrigin(0.5)
       .setDepth(1)
 
@@ -40,11 +39,10 @@ export class PauseScene extends Phaser.Scene {
 
     this.children.getAll().forEach((c) => c.destroy())
 
-    const overlay = this.add.rectangle(cx, cy, WORLD.width, WORLD.height, 0x000000, 0.5)
-    overlay.setDepth(0)
+    addModalOverlay(this, 0, 0.5)
 
     const countText = this.add
-      .text(cx, cy, '3', { fontSize: '100px', color: '#ffffff', fontStyle: 'bold', fontFamily: '"Comic Neue", "Comic Sans MS", cursive' })
+      .text(cx, cy, '3', { fontSize: '100px', color: '#ffffff', fontStyle: 'bold', fontFamily: FONT_FAMILY })
       .setOrigin(0.5)
       .setDepth(1)
 

@@ -1,7 +1,7 @@
 import Phaser from 'phaser'
-import { WORLD } from '../config/constants'
-
-const FONT = '"Comic Neue", "Comic Sans MS", cursive'
+import { WORLD, FONT_FAMILY } from '../config/constants'
+import { addBackground, wireButtonLabel } from '../utils/uiHelpers'
+import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 
 // --- Card dimensions (square background) ---
 const CARD_W = 130
@@ -30,9 +30,6 @@ const ITEMS = [
   { id: 4, name: 'Ninja',  price: 900, color: 0xd4a5a5 },
 ]
 
-// Loose type accepted by both dropIn and exitTo
-type Animatable = { y: number; displayHeight?: number }
-
 export class ShopScene extends Phaser.Scene {
   private scrollContainer!: Phaser.GameObjects.Container
   private scrollX = 0
@@ -51,18 +48,14 @@ export class ShopScene extends Phaser.Scene {
   create() {
     const cx = WORLD.width / 2
 
-    // Background
-    this.add
-      .image(cx, WORLD.height / 2, 'bg')
-      .setDisplaySize(WORLD.width, WORLD.height)
-      .setDepth(0)
+    addBackground(this)
 
     // ── Title ────────────────────────────────────────────────────────────────
     const title = this.add
       .text(cx, 82, 'Loja', {
         fontSize: '42px',
         color: '#ffd700',
-        fontFamily: FONT,
+        fontFamily: FONT_FAMILY,
         stroke: '#000000',
         strokeThickness: 5,
       })
@@ -98,7 +91,7 @@ export class ShopScene extends Phaser.Scene {
         .text(cx_card, nameY, item.name, {
           fontSize: '15px',
           color: '#ffffff',
-          fontFamily: FONT,
+          fontFamily: FONT_FAMILY,
           stroke: '#000000',
           strokeThickness: 2,
         })
@@ -114,7 +107,7 @@ export class ShopScene extends Phaser.Scene {
         .text(cx_card - 5, priceY, `${item.price}`, {
           fontSize: '15px',
           color: '#ffd700',
-          fontFamily: FONT,
+          fontFamily: FONT_FAMILY,
           stroke: '#000000',
           strokeThickness: 2,
         })
@@ -179,7 +172,7 @@ export class ShopScene extends Phaser.Scene {
       .text(previewX, midY - 14 + PREV / 2 + 8, ITEMS[0].name, {
         fontSize: '18px',
         color: '#ffffff',
-        fontFamily: FONT,
+        fontFamily: FONT_FAMILY,
         stroke: '#000000',
         strokeThickness: 3,
       })
@@ -195,7 +188,7 @@ export class ShopScene extends Phaser.Scene {
       .text(coinPrev.x + 13, coinPrev.y, `${ITEMS[0].price}`, {
         fontSize: '18px',
         color: '#ffd700',
-        fontFamily: FONT,
+        fontFamily: FONT_FAMILY,
         stroke: '#000000',
         strokeThickness: 3,
       })
@@ -214,10 +207,10 @@ export class ShopScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
 
     const labelBack = this.add
-      .text(cx, homeY + 36, 'Inicio', {
+      .text(cx, homeY + 20, 'Inicio', {
         fontSize: '16px',
         color: '#ffffff',
-        fontFamily: FONT,
+        fontFamily: FONT_FAMILY,
       })
       .setOrigin(0.5)
       .setDepth(3)
@@ -225,7 +218,7 @@ export class ShopScene extends Phaser.Scene {
       .setInteractive({ cursor: 'pointer' })
 
     // All elements that participate in enter/exit animations
-    const all: Animatable[] = [
+    const all: SceneObject[] = [
       title,
       this.scrollContainer,
 
@@ -239,16 +232,12 @@ export class ShopScene extends Phaser.Scene {
       labelBack,
     ]
 
-    const goBack = () => this.exitTo('menu-scene', all)
-    backBtn.on('pointerover', () => { backBtn.setAlpha(1); labelBack.setAlpha(1) })
-    backBtn.on('pointerout', () => { backBtn.setAlpha(0.85); labelBack.setAlpha(0.85) })
-    backBtn.on('pointerdown', goBack)
-    labelBack.on('pointerover', () => { backBtn.setAlpha(1); labelBack.setAlpha(1) })
-    labelBack.on('pointerout', () => { backBtn.setAlpha(0.85); labelBack.setAlpha(0.85) })
-    labelBack.on('pointerdown', goBack)
+    const goBack = () => exitTo(this, 'menu-scene', all)
+    wireButtonLabel(backBtn, labelBack, goBack)
 
     // ── Drop-in animations ───────────────────────────────────────────────────
-    all.forEach((obj, i) => this.dropIn(obj, i * 60))
+    // Use clearance=40 for all elements (covers the Container which lacks reliable displayHeight)
+    all.forEach((obj, i) => dropIn(this, obj, i * 60, 40))
   }
 
   private selectItem(id: number) {
@@ -262,36 +251,5 @@ export class ShopScene extends Phaser.Scene {
 
     this.previewLabel.setText(item.name)
     this.previewPriceTxt.setText(`${item.price}`)
-  }
-
-  // Accepts any object that has a y position (Image, Text, Rectangle, Container…)
-  private dropIn(obj: Animatable, delay: number) {
-    const finalY = obj.y
-    const h = obj.displayHeight ?? CARD_H
-    obj.y = -Math.abs(h) - 40
-    this.tweens.add({
-      targets: obj,
-      y: finalY,
-      duration: 900,
-      delay,
-      ease: 'Cubic.easeOut',
-    })
-  }
-
-  private exitTo(scene: string, elements: Animatable[]) {
-    elements.forEach((el, i) => {
-      this.tweens.killTweensOf(el)
-      this.tweens.add({
-        targets: el,
-        y: -WORLD.height,
-        duration: 600,
-        delay: i * 40,
-        ease: 'Cubic.easeIn',
-        onComplete:
-          i === elements.length - 1
-            ? () => this.scene.start(scene)
-            : undefined,
-      })
-    })
   }
 }
