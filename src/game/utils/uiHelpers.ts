@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
-import { WORLD } from '../config/constants'
+import { WORLD, FONT_FAMILY } from '../config/constants'
+import { CoinManager } from './CoinManager'
 
 /**
  * Add the standard full-screen background image at depth 0.
@@ -30,6 +31,42 @@ export function addModalOverlay(
   return scene.add
     .rectangle(cx, cy, WORLD.width, WORLD.height, 0x000000, alpha)
     .setDepth(depth)
+}
+
+/**
+ * Add a coin counter (number + coin icon) pinned to the screen.
+ * Returns the Text so the caller can update it when coins change.
+ * Layout: [number][coin_icon] — number on the left, icon on the right.
+ *
+ * @param rightEdge  Right edge of the coin icon in screen pixels (default: near right border)
+ * @param y          Vertical center in screen pixels (default: 20)
+ */
+export function addCoinCounter(
+  scene: Phaser.Scene,
+  rightEdge = WORLD.width - 8,
+  y = 26,
+): Phaser.GameObjects.Text {
+  const iconSize = 22
+  const iconCenterX = rightEdge - iconSize / 2
+
+  scene.add
+    .image(iconCenterX, y, 'shop-coin')
+    .setDisplaySize(iconSize, iconSize)
+    .setOrigin(0.5)
+    .setScrollFactor(0)
+    .setDepth(30)
+
+  return scene.add
+    .text(iconCenterX - iconSize / 2 - 4, y, String(CoinManager.getTotal()), {
+      fontSize: '20px',
+      color: '#ffd700',
+      fontFamily: FONT_FAMILY,
+      stroke: '#000000',
+      strokeThickness: 3,
+    })
+    .setOrigin(1, 0.5)
+    .setScrollFactor(0)
+    .setDepth(30)
 }
 
 /**

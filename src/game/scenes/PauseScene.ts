@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
-import { addModalOverlay } from '../utils/uiHelpers'
+import { addModalOverlay, addCoinCounter } from '../utils/uiHelpers'
 
 export class PauseScene extends Phaser.Scene {
   constructor() {
@@ -12,6 +12,7 @@ export class PauseScene extends Phaser.Scene {
     const cy = WORLD.height / 2
 
     addModalOverlay(this)
+    addCoinCounter(this)
 
     this.add
       .text(cx, cy - 80, 'PAUSADO', { fontSize: '42px', color: '#ffffff', fontStyle: 'bold', fontFamily: FONT_FAMILY })

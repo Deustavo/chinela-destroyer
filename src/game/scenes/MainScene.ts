@@ -5,6 +5,8 @@ import { TouchControls } from '../entities/TouchControls'
 import { WORLD, PLATFORMS, BOSS_SHIP, BOSSES, ENEMY, FONT_FAMILY } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
 import { ACHIEVEMENTS } from '../achievements/achievements'
+import { CoinManager } from '../utils/CoinManager'
+import { addCoinCounter } from '../utils/uiHelpers'
 
 export class MainScene extends Phaser.Scene {
   private player!: Player
@@ -34,6 +36,8 @@ export class MainScene extends Phaser.Scene {
   private playerPlatformVelX: number = 0
   private mothershipTraps!: Phaser.Physics.Arcade.Group
   private mothershipThrowTimer: number = 0
+  private lastCoinWorldY!: number
+  private coinCountText!: Phaser.GameObjects.Text
 
   constructor() {
     super('main-scene')
@@ -55,6 +59,7 @@ export class MainScene extends Phaser.Scene {
     this.newlyUnlockedThisRun = []
     this.toastQueue = []
     this.toastActive = false
+    this.lastCoinWorldY = WORLD.groundY
 
     this.bgTile = this.add.tileSprite(0, 0, WORLD.width, WORLD.height, 'bg')
       .setOrigin(0, 0)
@@ -99,6 +104,7 @@ export class MainScene extends Phaser.Scene {
       (_shot, _trap) => {
         this.playShotImpact(_shot as Phaser.Physics.Arcade.Sprite)
         ;(_trap as Phaser.Physics.Arcade.Image).destroy()
+        this.tryAwardCoin()
       },
     )
 
@@ -108,12 +114,16 @@ export class MainScene extends Phaser.Scene {
       (_shot, _trap) => {
         this.playShotImpact(_shot as Phaser.Physics.Arcade.Sprite)
         ;(_trap as Phaser.Physics.Arcade.Image).destroy()
+        this.tryAwardCoin()
       },
     )
 
     this.scoreText = this.add
       .text(16, 16, 'Altura: 0', { fontSize: '22px', color: '#ffffff', fontFamily: FONT_FAMILY })
       .setScrollFactor(0)
+
+    // Coin counter — positioned to the left of the pause button (pause btn center = WORLD.width-36)
+    this.coinCountText = addCoinCounter(this, WORLD.width - 68, 26)
 
     this.addPauseButton()
 
@@ -368,6 +378,7 @@ export class MainScene extends Phaser.Scene {
           vital.circle.setFillStyle(0x333333).setStrokeStyle(0)
           this.tweens.killTweensOf(vital.circle)
           this.playShotImpact(proj)
+          this.tryAwardCoin()
           if (this.bossVitals.every(v => v.hit)) this.defeatBoss()
           break
         }
@@ -507,6 +518,49 @@ export class MainScene extends Phaser.Scene {
     if (this.player.gameObject.y > cameraBottom + 50) {
       this.killPlayer()
     }
+  }
+
+  private tryAwardCoin() {
+    const py = this.player.gameObject.y
+    if (py >= this.lastCoinWorldY) return
+    this.lastCoinWorldY = py
+    const total = CoinManager.add(1)
+    this.coinCountText.setText(String(total))
+    this.showCoinPopup()
+  }
+
+  private showCoinPopup() {
+    const screenX = this.player.gameObject.x
+    const screenY = this.player.gameObject.y - this.cameras.main.scrollY - 30
+    const iconSize = 18
+
+    const text = this.add
+      .text(screenX - 1, screenY, '+1', {
+        fontSize: '20px',
+        color: '#ffd700',
+        fontFamily: FONT_FAMILY,
+        stroke: '#000000',
+        strokeThickness: 3,
+      })
+      .setScrollFactor(0)
+      .setDepth(40)
+      .setOrigin(1, 0.5)
+
+    const icon = this.add
+      .image(screenX + 1, screenY, 'shop-coin')
+      .setDisplaySize(iconSize, iconSize)
+      .setScrollFactor(0)
+      .setDepth(40)
+      .setOrigin(0, 0.5)
+
+    this.tweens.add({
+      targets: [text, icon],
+      y: screenY - 40,
+      alpha: 0,
+      duration: 900,
+      ease: 'Quad.easeOut',
+      onComplete: () => { text.destroy(); icon.destroy() },
+    })
   }
 
   private checkAchievements() {

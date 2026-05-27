@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
-import { addBackground, wireButtonLabel } from '../utils/uiHelpers'
+import { addBackground, wireButtonLabel, addCoinCounter } from '../utils/uiHelpers'
 import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 
 // --- Card dimensions (square background) ---
@@ -49,6 +49,7 @@ export class ShopScene extends Phaser.Scene {
     const cx = WORLD.width / 2
 
     addBackground(this)
+    addCoinCounter(this)
 
     // ── Title ────────────────────────────────────────────────────────────────
     const title = this.add

@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
-import { addBackground, wireButtonLabel } from '../utils/uiHelpers'
+import { addBackground, wireButtonLabel, addCoinCounter } from '../utils/uiHelpers'
 import { dropIn, dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
 
 const SCALE = 3
@@ -25,6 +25,7 @@ export class GameOverScene extends Phaser.Scene {
     const highScore = isNewBest ? data.score : prevBest
 
     addBackground(this)
+    addCoinCounter(this)
 
     const fim  = this.add.image(cx - 65, cy - 130, 'gameover-fim').setScale(SCALE).setOrigin(0.5)
     const cat  = this.add.image(cx + 65, cy - 150, 'gameover-chinela').setScale(SCALE).setOrigin(0.5)

@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
 import type { Achievement } from '../achievements/achievements'
-import { addBackground, addModalOverlay, wireButtonLabel } from '../utils/uiHelpers'
+import { addBackground, addModalOverlay, wireButtonLabel, addCoinCounter } from '../utils/uiHelpers'
 import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 
 const COLS = 3
@@ -24,6 +24,7 @@ export class AchievementsScene extends Phaser.Scene {
     const all = AchievementManager.getAll()
 
     addBackground(this)
+    addCoinCounter(this)
 
     const title = this.add
       .text(cx, 60, 'Conquistas', {

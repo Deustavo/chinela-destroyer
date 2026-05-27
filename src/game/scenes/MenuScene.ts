@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { WORLD } from '../config/constants'
-import { addBackground } from '../utils/uiHelpers'
+import { addBackground, addCoinCounter } from '../utils/uiHelpers'
 import { dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
 
 export class MenuScene extends Phaser.Scene {
@@ -13,6 +13,7 @@ export class MenuScene extends Phaser.Scene {
     const cy = WORLD.height / 2
 
     addBackground(this)
+    addCoinCounter(this)
 
     const logo = this.add
       .image(cx, cy - 60, 'menu-logo')
