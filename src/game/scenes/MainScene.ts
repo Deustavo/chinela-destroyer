@@ -38,6 +38,7 @@ export class MainScene extends Phaser.Scene {
   private mothershipThrowTimer: number = 0
   private lastCoinWorldY!: number
   private coinCountText!: Phaser.GameObjects.Text
+  private shieldHUD: Phaser.GameObjects.Text | null = null
 
   constructor() {
     super('main-scene')
@@ -90,11 +91,19 @@ export class MainScene extends Phaser.Scene {
     })
     this.mothershipTraps = this.physics.add.group()
 
-    this.physics.add.overlap(this.player.gameObject, this.enemy.trapGroup, () => {
+    this.physics.add.overlap(this.player.gameObject, this.enemy.trapGroup, (_p, trap) => {
+      if (this.player.tryAbsorbHit()) {
+        ;(trap as Phaser.Physics.Arcade.Image).destroy()
+        return
+      }
       this.killPlayer()
     })
 
-    this.physics.add.overlap(this.player.gameObject, this.mothershipTraps, () => {
+    this.physics.add.overlap(this.player.gameObject, this.mothershipTraps, (_p, trap) => {
+      if (this.player.tryAbsorbHit()) {
+        ;(trap as Phaser.Physics.Arcade.Image).destroy()
+        return
+      }
       this.killPlayer()
     })
 
@@ -124,6 +133,19 @@ export class MainScene extends Phaser.Scene {
 
     // Coin counter — positioned to the left of the pause button (pause btn center = WORLD.width-36)
     this.coinCountText = addCoinCounter(this, WORLD.width - 68, 26)
+
+    if (this.player.isShieldOwned()) {
+      this.shieldHUD = this.add
+        .text(16, 44, 'Escudo: pronto', {
+          fontSize: '18px',
+          color: '#00ff88',
+          fontFamily: FONT_FAMILY,
+          stroke: '#000000',
+          strokeThickness: 3,
+        })
+        .setScrollFactor(0)
+        .setDepth(20)
+    }
 
     this.addPauseButton()
 
@@ -513,6 +535,15 @@ export class MainScene extends Phaser.Scene {
 
     this.score = Math.floor(-this.cameras.main.scrollY / 10)
     this.scoreText.setText(`Altura: ${this.score}`)
+
+    if (this.shieldHUD) {
+      const cd = this.player.getShieldCooldown()
+      if (cd > 0) {
+        this.shieldHUD.setText(`Escudo: ${Math.ceil(cd)}s`).setColor('#ff8800')
+      } else {
+        this.shieldHUD.setText('Escudo: pronto').setColor('#00ff88')
+      }
+    }
 
     this.checkAchievements()
 

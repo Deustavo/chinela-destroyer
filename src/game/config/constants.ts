@@ -135,6 +135,18 @@ export const PLAYER = {
   },
 } as const
 
+export const SHIELD = {
+  itemId: 'shield',
+  spriteKey: 'shield1',
+  spritesheet: {
+    path: '/assets/player/SpriteSheetShield1.png',
+    frameWidth: 64,
+    frameHeight: 64,
+  },
+  cooldown: 10,
+  displaySize: 88,
+} as const
+
 // ── UI Typography ─────────────────────────────────────────────────────────────
 export const FONT_FAMILY = '"Comic Neue", "Comic Sans MS", cursive' as const
 

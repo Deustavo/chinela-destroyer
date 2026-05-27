@@ -10,10 +10,19 @@ import type { ShopItem } from './types'
 
 export const ITEM_REGISTRY: ShopItem[] = [
   {
+    id: 'shield',
+    type: 'shield',
+    name: 'Ultima esperança',
+    price: 500,
+    description: 'Escudo absorve 1 tiro\n(recarga 10s)',
+    iconKey: 'shield1',
+    iconFrame: 0,
+  },
+  {
     id: 'special-shot',
     type: 'shot',
     name: 'Arco do Julgamento',
-    price: 10,
+    price: 1000,
     description: 'Cooldown pela metade',
     iconKey: 'player-shot2',
     iconFrame: 0,

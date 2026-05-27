@@ -21,7 +21,7 @@ export interface UpgradeEffect {
 
 export interface ShopItem {
   id: string
-  type: 'shot' | 'upgrade'
+  type: 'shot' | 'upgrade' | 'shield'
   name: string
   price: number
   description: string

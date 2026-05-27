@@ -21,7 +21,8 @@ const CARD_TOTAL_H = CARD_H + LABEL_OFFSET + LABEL_H + PRICE_H
 // 2.5 cards visible
 const VISIBLE_W = 2.5 * CARD_W + 1.5 * CARD_GAP
 const VP_X = Math.round((WORLD.width - VISIBLE_W) / 2)
-const VP_Y = 180
+const VP_Y = 140
+const SCROLL_Y = VP_Y + 20
 const VP_H = CARD_TOTAL_H + 6
 
 export class ShopScene extends Phaser.Scene {
@@ -65,7 +66,7 @@ export class ShopScene extends Phaser.Scene {
     const totalW = ITEM_REGISTRY.length * (CARD_W + CARD_GAP) - CARD_GAP
     this.maxScrollX = Math.max(0, totalW - VISIBLE_W)
 
-    this.scrollContainer = this.add.container(VP_X, VP_Y).setDepth(3)
+    this.scrollContainer = this.add.container(VP_X, SCROLL_Y).setDepth(3)
     this.cardBgs = []
 
     ITEM_REGISTRY.forEach((item, i) => {
@@ -118,7 +119,7 @@ export class ShopScene extends Phaser.Scene {
 
     const maskGfx = this.make.graphics()
     maskGfx.fillStyle(0xffffff)
-    maskGfx.fillRect(VP_X - 1, VP_Y - 1, VISIBLE_W + 2, VP_H + 2)
+    maskGfx.fillRect(VP_X - 1, SCROLL_Y - 1, VISIBLE_W + 2, VP_H + 2)
     this.scrollContainer.setMask(maskGfx.createGeometryMask())
 
     // ── Drag-to-scroll ───────────────────────────────────────────────────────
@@ -127,7 +128,7 @@ export class ShopScene extends Phaser.Scene {
     let scrollStartX = 0
 
     this.input.on('pointerdown', (ptr: Phaser.Input.Pointer) => {
-      if (ptr.y < VP_Y || ptr.y > VP_Y + VP_H) return
+      if (ptr.y < SCROLL_Y || ptr.y > SCROLL_Y + VP_H) return
       dragging = true
       ptrStartX = ptr.x
       scrollStartX = this.scrollX

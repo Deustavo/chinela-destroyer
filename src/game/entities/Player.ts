@@ -1,7 +1,8 @@
 import Phaser from 'phaser'
-import { PLAYER, WORLD, SHOT } from '../config/constants'
+import { PLAYER, WORLD, SHOT, SHIELD } from '../config/constants'
 import { ITEM_REGISTRY } from '../items/registry'
 import { PlayerLoadout } from '../items/PlayerLoadout'
+import { PurchaseManager } from '../utils/PurchaseManager'
 import type { ShotConfig } from '../items/types'
 import type { PlayerAnim } from '../types/animations'
 import type { TouchState } from './TouchControls'
@@ -19,6 +20,10 @@ export class Player {
   private activeShotConfig: ShotConfig
   private scene: Phaser.Scene
   readonly projectiles: Phaser.Physics.Arcade.Group
+
+  private shieldOwned: boolean = false
+  private shieldCooldown: number = 0
+  private shieldSprite: Phaser.GameObjects.Image | null = null
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene
@@ -41,6 +46,15 @@ export class Player {
     this.activeShotConfig = PlayerLoadout.getActiveShotConfig()
     this.projectiles = scene.physics.add.group({ allowGravity: false })
 
+    this.shieldOwned = PurchaseManager.has(SHIELD.itemId)
+    if (this.shieldOwned) {
+      this.shieldSprite = scene.add
+        .image(PLAYER.startX, PLAYER.startY, SHIELD.spriteKey, 0)
+        .setDisplaySize(SHIELD.displaySize, SHIELD.displaySize)
+        .setDepth(6)
+        .setAlpha(0.9)
+    }
+
     this.registerAnimations(scene)
   }
 
@@ -54,6 +68,31 @@ export class Player {
 
   getShotCooldownRatio(): number {
     return this.shotCooldown / this.activeShotConfig.cooldown
+  }
+
+  isShieldOwned(): boolean {
+    return this.shieldOwned
+  }
+
+  getShieldCooldown(): number {
+    return this.shieldCooldown
+  }
+
+  tryAbsorbHit(): boolean {
+    if (!this.shieldOwned || this.shieldCooldown > 0) return false
+    this.shieldCooldown = SHIELD.cooldown
+    if (this.shieldSprite) {
+      this.scene.tweens.add({
+        targets: this.shieldSprite,
+        scaleX: 1.4,
+        scaleY: 1.4,
+        alpha: 0.15,
+        duration: 180,
+        yoyo: true,
+        ease: 'Quad.easeOut',
+      })
+    }
+    return true
   }
 
   requestShot() {
@@ -185,6 +224,12 @@ export class Player {
 
   update(delta: number, touch?: TouchState, platformVelX: number = 0) {
     this.shotCooldown = Math.max(0, this.shotCooldown - delta / 1000)
+
+    if (this.shieldOwned && this.shieldSprite) {
+      this.shieldCooldown = Math.max(0, this.shieldCooldown - delta / 1000)
+      this.shieldSprite.setPosition(this.sprite.x, this.sprite.y - 4)
+      this.shieldSprite.setAlpha(this.shieldCooldown > 0 ? 0.2 : 0.9)
+    }
 
     if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
       this.requestShot()
