@@ -162,7 +162,7 @@ export class ShopScene extends Phaser.Scene {
     const midY = railBottom + (footerTop - railBottom) / 2
 
     const playerImg = this.add
-      .image(cx - 84, midY, 'menu-chinela')
+      .image(cx - 84, midY - 36, 'chinela', 0)
       .setDisplaySize(148, 148)
       .setDepth(2)
 
