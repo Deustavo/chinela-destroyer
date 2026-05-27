@@ -18,7 +18,7 @@ const CARD_TOTAL_H = CARD_H + LABEL_OFFSET + LABEL_H + PRICE_H
 // 2.5 cards visible: 2 full + 1.5 gaps + half card
 const VISIBLE_W = 2.5 * CARD_W + 1.5 * CARD_GAP  // = 346
 const VP_X = Math.round((WORLD.width - VISIBLE_W) / 2) // ≈ 30
-const VP_Y = 150
+const VP_Y = 180
 const VP_H = CARD_TOTAL_H + 6
 
 // --- Shop items (placeholders until real art is provided) ---
