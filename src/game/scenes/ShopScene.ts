@@ -105,13 +105,13 @@ export class ShopScene extends Phaser.Scene {
         .setOrigin(0.5, 0)
 
       // Price row
-      const priceY = nameY + LABEL_H + 2
+      const priceY = nameY + LABEL_H + 8
       const coin = this.add
         .image(cx_card - 14, priceY, 'shop-coin')
         .setDisplaySize(20, 20)
 
       const priceTxt = this.add
-        .text(cx_card - 2, priceY, `${item.price}`, {
+        .text(cx_card - 5, priceY, `${item.price}`, {
           fontSize: '15px',
           color: '#ffd700',
           fontFamily: FONT,
@@ -187,12 +187,12 @@ export class ShopScene extends Phaser.Scene {
       .setDepth(2)
 
     const coinPrev = this.add
-      .image(previewX - 18, midY - 14 + PREV / 2 + 36, 'shop-coin')
+      .image(previewX - 18, midY - 14 + PREV / 2 + 42, 'shop-coin')
       .setDisplaySize(22, 22)
       .setDepth(2)
 
     this.previewPriceTxt = this.add
-      .text(coinPrev.x + 16, coinPrev.y, `${ITEMS[0].price}`, {
+      .text(coinPrev.x + 13, coinPrev.y, `${ITEMS[0].price}`, {
         fontSize: '18px',
         color: '#ffd700',
         fontFamily: FONT,
