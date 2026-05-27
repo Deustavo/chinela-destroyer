@@ -33,11 +33,24 @@ export class MenuScene extends Phaser.Scene {
       .setDepth(3)
       .setInteractive({ useHandCursor: true })
 
+    // Credits + Shop side-by-side, centered as a pair (both 64×64 native, scale 1.6)
+    const BTN_SCALE = 1.6
+    const BTN_SIZE = 64 * BTN_SCALE  // = 102.4
+    const BTN_GAP = 18
+    const btnRowY = cy + 240
+
     const btnCredits = this.add
-      .image(cx, cy + 240, 'menu-credits-btn')
-      .setScale(1.8)
+      .image(cx - (BTN_SIZE / 2 + BTN_GAP / 2), btnRowY, 'menu-credits-btn')
+      .setScale(BTN_SCALE)
       .setDepth(3)
       .setInteractive({ useHandCursor: true })
+
+    const btnShop = this.add
+      .image(cx + (BTN_SIZE / 2 + BTN_GAP / 2), btnRowY, 'menu-shop-btn')
+      .setScale(BTN_SCALE)
+      .setDepth(3)
+      .setInteractive({ useHandCursor: true })
+      .setAlpha(0.9)
 
     const btnTrophy = this.add
       .image(WORLD.width - 44, WORLD.height - 44, 'btn-trophy')
@@ -55,20 +68,28 @@ export class MenuScene extends Phaser.Scene {
     haCredits.y += haCredits.height / 4
     haCredits.height /= 2
 
+    const haShop = btnShop.input!.hitArea as Phaser.Geom.Rectangle
+    haShop.y += haShop.height / 4
+    haShop.height /= 2
 
-    const all = [logo, chinela, pera, btn, btnCredits, btnTrophy]
+
+    const all = [logo, chinela, pera, btn, btnCredits, btnTrophy, btnShop]
 
     btn.on('pointerover', () => btn.setScale(2.0))
     btn.on('pointerout', () => btn.setScale(1.8))
     btn.on('pointerdown', () => this.exitTo('main-scene', all))
 
-    btnCredits.on('pointerover', () => btnCredits.setScale(1.65))
-    btnCredits.on('pointerout', () => btnCredits.setScale(1.5))
+    btnCredits.on('pointerover', () => btnCredits.setScale(BTN_SCALE + 0.12))
+    btnCredits.on('pointerout', () => btnCredits.setScale(BTN_SCALE))
     btnCredits.on('pointerdown', () => this.exitTo('credits-scene', all))
 
     btnTrophy.on('pointerover', () => btnTrophy.setAlpha(1))
     btnTrophy.on('pointerout', () => btnTrophy.setAlpha(0.9))
     btnTrophy.on('pointerdown', () => this.exitTo('achievements-scene', all))
+
+    btnShop.on('pointerover', () => { btnShop.setAlpha(1); btnShop.setScale(BTN_SCALE + 0.12) })
+    btnShop.on('pointerout', () => { btnShop.setAlpha(0.9); btnShop.setScale(BTN_SCALE) })
+    btnShop.on('pointerdown', () => this.exitTo('shop-scene', all))
 
     this.input.keyboard?.once('keydown-SPACE', () => this.exitTo('main-scene', all))
     this.input.keyboard?.once('keydown-ENTER', () => this.exitTo('main-scene', all))
@@ -79,6 +100,7 @@ export class MenuScene extends Phaser.Scene {
     this.dropIn(btn,        { amplitude: 6,  floatDuration: 1600, delay: 360 })
     this.dropIn(btnCredits, { amplitude: 5,  floatDuration: 1700, delay: 440 })
     this.dropIn(btnTrophy,  { amplitude: 4,  floatDuration: 1900, delay: 520 })
+    this.dropIn(btnShop,    { amplitude: 4,  floatDuration: 1900, delay: 560 })
   }
 
   private exitTo(scene: string, elements: Phaser.GameObjects.Image[]) {

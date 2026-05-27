@@ -56,6 +56,9 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('credits-gatas', '/assets/creditsScreen/gatasbobas.png')
     this.load.image('credits-github', '/assets/creditsScreen/github.png')
 
+    this.load.image('menu-shop-btn', '/assets/homeScreen/shop.png')
+    this.load.image('shop-coin', '/assets/shop/coin.png')
+
     this.load.image('btn-trophy', '/assets/achievements/trophy.png')
     this.load.image('achievement-locked', '/assets/achievements/medal-blocked.png')
     this.load.image('achievement-1', '/assets/achievements/medal-100.png')
