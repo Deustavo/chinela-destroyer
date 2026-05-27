@@ -139,7 +139,8 @@ export class MainScene extends Phaser.Scene {
       body.setVelocity(0, 0)
       body.enable = false
     }
-    shot.anims.play('shot-impact', true)
+    const impactAnim = (shot.getData('impactAnim') as string) || 'shot-impact'
+    shot.anims.play(impactAnim, true)
     shot.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
       shot.destroy()
     })

@@ -10,4 +10,11 @@ export class CoinManager {
     localStorage.setItem(KEY, String(next))
     return next
   }
+
+  static spend(amount: number): boolean {
+    const total = CoinManager.getTotal()
+    if (total < amount) return false
+    localStorage.setItem(KEY, String(total - amount))
+    return true
+  }
 }

@@ -1,5 +1,8 @@
 import Phaser from 'phaser'
 import { PLAYER, WORLD, SHOT } from '../config/constants'
+import { ITEM_REGISTRY } from '../items/registry'
+import { PlayerLoadout } from '../items/PlayerLoadout'
+import type { ShotConfig } from '../items/types'
 import type { PlayerAnim } from '../types/animations'
 import type { TouchState } from './TouchControls'
 
@@ -13,6 +16,7 @@ export class Player {
   }
   private spaceKey: Phaser.Input.Keyboard.Key
   private shotCooldown: number = 0
+  private activeShotConfig: ShotConfig
   private scene: Phaser.Scene
   readonly projectiles: Phaser.Physics.Arcade.Group
 
@@ -34,6 +38,7 @@ export class Player {
     }
     this.spaceKey = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
 
+    this.activeShotConfig = PlayerLoadout.getActiveShotConfig()
     this.projectiles = scene.physics.add.group({ allowGravity: false })
 
     this.registerAnimations(scene)
@@ -48,32 +53,33 @@ export class Player {
   }
 
   getShotCooldownRatio(): number {
-    return this.shotCooldown / SHOT.cooldown
+    return this.shotCooldown / this.activeShotConfig.cooldown
   }
 
   requestShot() {
     if (this.shotCooldown > 0) return
-    this.shotCooldown = SHOT.cooldown
-    this.fireProjectile()
+    this.shotCooldown = this.activeShotConfig.cooldown
+    this.fireProjectile(this.activeShotConfig)
   }
 
-  private fireProjectile() {
+  private fireProjectile(config: ShotConfig) {
     const proj = this.scene.physics.add.sprite(
       this.sprite.x,
       this.sprite.y - 20,
-      SHOT.spriteKey,
+      config.spriteKey,
     ) as Phaser.Physics.Arcade.Sprite
 
-    proj.setDisplaySize(SHOT.displaySize, SHOT.displaySize)
+    proj.setDisplaySize(config.displaySize, config.displaySize)
     proj.setDepth(10)
     proj.setScrollFactor(1)
-    proj.anims.play('shot-fly', true)
+    proj.anims.play(config.flyAnimKey, true)
+    proj.setData('impactAnim', config.impactAnimKey)
 
     this.projectiles.add(proj)
 
     const projBody = proj.body as Phaser.Physics.Arcade.Body
     projBody.setAllowGravity(false)
-    projBody.setVelocityY(-SHOT.speed)
+    projBody.setVelocityY(-config.speed)
 
     this.scene.time.delayedCall(3000, () => {
       if (proj.active) proj.destroy()
@@ -111,6 +117,7 @@ export class Player {
       repeat: 0,
     })
 
+    // Base shot (not a registry item — every player has this)
     if (!scene.anims.exists('shot-fly')) {
       scene.anims.create({
         key: 'shot-fly',
@@ -119,7 +126,6 @@ export class Player {
         repeat: -1,
       })
     }
-
     if (!scene.anims.exists('shot-impact')) {
       scene.anims.create({
         key: 'shot-impact',
@@ -127,6 +133,28 @@ export class Player {
         frameRate: SHOT.impactFrameRate,
         repeat: 0,
       })
+    }
+
+    // All registered shot items
+    for (const item of ITEM_REGISTRY) {
+      if (item.type !== 'shot' || !item.shotConfig) continue
+      const cfg = item.shotConfig
+      if (!scene.anims.exists(cfg.flyAnimKey)) {
+        scene.anims.create({
+          key: cfg.flyAnimKey,
+          frames: scene.anims.generateFrameNumbers(cfg.spriteKey, { frames: [...cfg.flyFrames] }),
+          frameRate: cfg.flyFrameRate,
+          repeat: -1,
+        })
+      }
+      if (!scene.anims.exists(cfg.impactAnimKey)) {
+        scene.anims.create({
+          key: cfg.impactAnimKey,
+          frames: scene.anims.generateFrameNumbers(cfg.spriteKey, { frames: [...cfg.impactFrames] }),
+          frameRate: cfg.impactFrameRate,
+          repeat: 0,
+        })
+      }
     }
   }
 

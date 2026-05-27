@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { PLAYER, ENEMY, PLATFORMS, BOSS_SHIP, SHOT, WORLD } from '../config/constants'
+import { ITEM_REGISTRY } from '../items/registry'
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -79,6 +80,20 @@ export class PreloadScene extends Phaser.Scene {
 
     this.load.image('modal-bg', '/assets/modal/modalBG.png')
     this.load.image('modal-bg2', '/assets/modal/modalBG2.png')
+    this.load.image('modal-bg3', '/assets/modal/modalBG3.png')
+
+    // Load assets for all registered shop items
+    for (const item of ITEM_REGISTRY) {
+      if (item.type === 'shot' && item.shotConfig) {
+        const { spriteKey, spritesheet } = item.shotConfig
+        this.load.spritesheet(spriteKey, spritesheet.path, {
+          frameWidth: spritesheet.frameWidth,
+          frameHeight: spritesheet.frameHeight,
+        })
+      } else if (item.iconPath) {
+        this.load.image(item.iconKey, item.iconPath)
+      }
+    }
   }
 
   create() {

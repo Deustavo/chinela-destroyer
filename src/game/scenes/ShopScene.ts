@@ -2,44 +2,42 @@ import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
 import { addBackground, wireButtonLabel, addCoinCounter } from '../utils/uiHelpers'
 import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
+import { CoinManager } from '../utils/CoinManager'
+import { PurchaseManager } from '../utils/PurchaseManager'
+import { ITEM_REGISTRY } from '../items/registry'
 
 // --- Card dimensions (square background) ---
 const CARD_W = 130
-const CARD_H = 130   // equal → always square (bg only)
+const CARD_H = 130
 const CARD_GAP = 14
-const IMG_SIZE = 90  // icon fills most of the square bg
+const IMG_SIZE = 90
 
 // text below the background
-const LABEL_OFFSET = 10   // gap between bg bottom and name
-const LABEL_H = 20        // name line height
-const PRICE_H = 22        // price row height
+const LABEL_OFFSET = 10
+const LABEL_H = 20
+const PRICE_H = 22
 const CARD_TOTAL_H = CARD_H + LABEL_OFFSET + LABEL_H + PRICE_H
 
-// 2.5 cards visible: 2 full + 1.5 gaps + half card
-const VISIBLE_W = 2.5 * CARD_W + 1.5 * CARD_GAP  // = 346
-const VP_X = Math.round((WORLD.width - VISIBLE_W) / 2) // ≈ 30
+// 2.5 cards visible
+const VISIBLE_W = 2.5 * CARD_W + 1.5 * CARD_GAP
+const VP_X = Math.round((WORLD.width - VISIBLE_W) / 2)
 const VP_Y = 180
 const VP_H = CARD_TOTAL_H + 6
-
-// --- Shop items (placeholders until real art is provided) ---
-const ITEMS = [
-  { id: 0, name: 'Turbo',  price: 100, color: 0xff6b35 },
-  { id: 1, name: 'Escudo', price: 250, color: 0x4ecdc4 },
-  { id: 2, name: 'Duplo',  price: 400, color: 0xffe66d },
-  { id: 3, name: 'Magnet', price: 600, color: 0xa8e6cf },
-  { id: 4, name: 'Ninja',  price: 900, color: 0xd4a5a5 },
-]
 
 export class ShopScene extends Phaser.Scene {
   private scrollContainer!: Phaser.GameObjects.Container
   private scrollX = 0
   private maxScrollX = 0
-  private selectedId = 0
+  private selectedIdx = 0
   private cardBgs: Phaser.GameObjects.Image[] = []
 
-  private previewImg!: Phaser.GameObjects.Image
+  private previewBg!: Phaser.GameObjects.Image
+  private previewItemImg!: Phaser.GameObjects.Image
   private previewLabel!: Phaser.GameObjects.Text
+  private previewDesc!: Phaser.GameObjects.Text
   private previewPriceTxt!: Phaser.GameObjects.Text
+  private buyBtn!: Phaser.GameObjects.Text
+  private coinCountText!: Phaser.GameObjects.Text
 
   constructor() {
     super('shop-scene')
@@ -49,7 +47,7 @@ export class ShopScene extends Phaser.Scene {
     const cx = WORLD.width / 2
 
     addBackground(this)
-    addCoinCounter(this)
+    this.coinCountText = addCoinCounter(this)
 
     // ── Title ────────────────────────────────────────────────────────────────
     const title = this.add
@@ -64,30 +62,26 @@ export class ShopScene extends Phaser.Scene {
       .setDepth(2)
 
     // ── Scroll rail ──────────────────────────────────────────────────────────
-    const totalW = ITEMS.length * (CARD_W + CARD_GAP) - CARD_GAP
+    const totalW = ITEM_REGISTRY.length * (CARD_W + CARD_GAP) - CARD_GAP
     this.maxScrollX = Math.max(0, totalW - VISIBLE_W)
 
     this.scrollContainer = this.add.container(VP_X, VP_Y).setDepth(3)
     this.cardBgs = []
 
-    ITEMS.forEach((item, i) => {
+    ITEM_REGISTRY.forEach((item, i) => {
       const cx_card = i * (CARD_W + CARD_GAP) + CARD_W / 2
       const cy_card = CARD_H / 2
 
-      // Background (square): modal-bg for selected, modal-bg2 for unselected
       const cardBg = this.add
-        .image(cx_card, cy_card, i === this.selectedId ? 'modal-bg' : 'modal-bg2')
+        .image(cx_card, cy_card, this.cardTexture(i))
         .setDisplaySize(CARD_W, CARD_H)
       this.cardBgs.push(cardBg)
 
-      // Item icon placeholder (colored square, centred in bg)
-      const imgRect = this.add
-        .rectangle(cx_card, cy_card, IMG_SIZE, IMG_SIZE, item.color)
+      const itemImg = this.add
+        .image(cx_card, cy_card, item.iconKey, item.iconFrame)
+        .setDisplaySize(IMG_SIZE, IMG_SIZE)
 
-      // ── Text below the background ─────────────────────────────────────────
       const nameY = CARD_H + LABEL_OFFSET
-
-      // Item name
       const nameTxt = this.add
         .text(cx_card, nameY, item.name, {
           fontSize: '15px',
@@ -98,7 +92,6 @@ export class ShopScene extends Phaser.Scene {
         })
         .setOrigin(0.5, 0)
 
-      // Price row
       const priceY = nameY + LABEL_H + 8
       const coin = this.add
         .image(cx_card - 14, priceY, 'shop-coin')
@@ -114,22 +107,19 @@ export class ShopScene extends Phaser.Scene {
         })
         .setOrigin(0, 0.5)
 
-      // Invisible hit area covers entire card (bg + labels)
       const hit = this.add
         .rectangle(cx_card, CARD_TOTAL_H / 2, CARD_W, CARD_TOTAL_H, 0xffffff, 0)
         .setInteractive({ useHandCursor: true })
 
       hit.on('pointerdown', () => this.selectItem(item.id))
 
-      this.scrollContainer.add([cardBg, imgRect, nameTxt, coin, priceTxt, hit])
+      this.scrollContainer.add([cardBg, itemImg, nameTxt, coin, priceTxt, hit])
     })
 
-    // Geometry mask to clip the scroll area
     const maskGfx = this.make.graphics()
     maskGfx.fillStyle(0xffffff)
     maskGfx.fillRect(VP_X - 1, VP_Y - 1, VISIBLE_W + 2, VP_H + 2)
     this.scrollContainer.setMask(maskGfx.createGeometryMask())
-
 
     // ── Drag-to-scroll ───────────────────────────────────────────────────────
     let dragging = false
@@ -161,17 +151,23 @@ export class ShopScene extends Phaser.Scene {
       .setDepth(2)
 
     const previewX = cx + 88
-    const PREV = 128  // square preview
+    const PREV = 128
 
-    // Selected preview uses modal-bg (selected variant)
-    this.previewImg = this.add
-      .image(previewX, midY - 14, 'modal-bg')
+    const first = ITEM_REGISTRY[0]
+
+    this.previewBg = this.add
+      .image(previewX, midY - 18, PurchaseManager.has(first.id) ? 'modal-bg3' : 'modal-bg')
       .setDisplaySize(PREV, PREV)
       .setDepth(2)
 
+    this.previewItemImg = this.add
+      .image(previewX, midY - 18, first.iconKey, first.iconFrame)
+      .setDisplaySize(PREV * 0.7, PREV * 0.7)
+      .setDepth(3)
+
     this.previewLabel = this.add
-      .text(previewX, midY - 14 + PREV / 2 + 8, ITEMS[0].name, {
-        fontSize: '18px',
+      .text(previewX, midY - 18 + PREV / 2 + 6, first.name, {
+        fontSize: '17px',
         color: '#ffffff',
         fontFamily: FONT_FAMILY,
         stroke: '#000000',
@@ -180,13 +176,24 @@ export class ShopScene extends Phaser.Scene {
       .setOrigin(0.5, 0)
       .setDepth(2)
 
+    this.previewDesc = this.add
+      .text(previewX, midY - 18 + PREV / 2 + 26, first.description, {
+        fontSize: '13px',
+        color: '#cccccc',
+        fontFamily: FONT_FAMILY,
+        stroke: '#000000',
+        strokeThickness: 2,
+      })
+      .setOrigin(0.5, 0)
+      .setDepth(2)
+
     const coinPrev = this.add
-      .image(previewX - 18, midY - 14 + PREV / 2 + 42, 'shop-coin')
+      .image(previewX - 18, midY - 18 + PREV / 2 + 50, 'shop-coin')
       .setDisplaySize(22, 22)
       .setDepth(2)
 
     this.previewPriceTxt = this.add
-      .text(coinPrev.x + 13, coinPrev.y, `${ITEMS[0].price}`, {
+      .text(coinPrev.x + 13, coinPrev.y, `${first.price}`, {
         fontSize: '18px',
         color: '#ffd700',
         fontFamily: FONT_FAMILY,
@@ -196,6 +203,25 @@ export class ShopScene extends Phaser.Scene {
       .setOrigin(0, 0.5)
       .setDepth(2)
 
+    // ── Buy button ───────────────────────────────────────────────────────────
+    const buyY = midY - 18 + PREV / 2 + 82
+
+    this.buyBtn = this.add
+      .text(previewX, buyY, '', {
+        fontSize: '18px',
+        color: '#ffffff',
+        fontFamily: FONT_FAMILY,
+        stroke: '#000000',
+        strokeThickness: 3,
+        backgroundColor: '#226622',
+        padding: { x: 12, y: 6 },
+      })
+      .setOrigin(0.5)
+      .setDepth(3)
+      .setInteractive({ useHandCursor: true })
+
+    this.buyBtn.on('pointerdown', () => this.handleBuy())
+    this.updateBuyButton()
 
     // ── Home button ──────────────────────────────────────────────────────────
     const homeY = WORLD.height - 68
@@ -218,17 +244,17 @@ export class ShopScene extends Phaser.Scene {
       .setAlpha(0.85)
       .setInteractive({ cursor: 'pointer' })
 
-    // All elements that participate in enter/exit animations
     const all: SceneObject[] = [
       title,
       this.scrollContainer,
-
       playerImg,
-      this.previewImg,
+      this.previewBg,
+      this.previewItemImg,
       this.previewLabel,
+      this.previewDesc,
       coinPrev,
       this.previewPriceTxt,
-
+      this.buyBtn,
       backBtn,
       labelBack,
     ]
@@ -236,21 +262,63 @@ export class ShopScene extends Phaser.Scene {
     const goBack = () => exitTo(this, 'menu-scene', all)
     wireButtonLabel(backBtn, labelBack, goBack)
 
-    // ── Drop-in animations ───────────────────────────────────────────────────
-    // Use clearance=40 for all elements (covers the Container which lacks reliable displayHeight)
     all.forEach((obj, i) => dropIn(this, obj, i * 60, 40))
   }
 
-  private selectItem(id: number) {
-    this.selectedId = id
-    const item = ITEMS[id]
+  private cardTexture(idx: number): string {
+    if (idx === this.selectedIdx) return 'modal-bg'
+    return PurchaseManager.has(ITEM_REGISTRY[idx].id) ? 'modal-bg3' : 'modal-bg2'
+  }
 
-    // Swap textures: selected → modal-bg, others → modal-bg2
-    this.cardBgs.forEach((img, i) =>
-      img.setTexture(i === id ? 'modal-bg' : 'modal-bg2'),
-    )
+  private handleBuy() {
+    const item = ITEM_REGISTRY[this.selectedIdx]
+    if (!item || PurchaseManager.has(item.id)) return
+    if (!CoinManager.spend(item.price)) return
+    PurchaseManager.buy(item.id)
+    this.coinCountText.setText(String(CoinManager.getTotal()))
+    this.updateBuyButton()
+  }
 
+  private updateBuyButton() {
+    const item = ITEM_REGISTRY[this.selectedIdx]
+    if (!item) return
+
+    const owned = PurchaseManager.has(item.id)
+    const canAfford = CoinManager.getTotal() >= item.price
+
+    if (owned) {
+      this.buyBtn
+        .setText('Equipado')
+        .setStyle({ backgroundColor: '#444444', color: '#aaaaaa' })
+        .disableInteractive()
+    } else if (canAfford) {
+      this.buyBtn
+        .setText('Comprar')
+        .setStyle({ backgroundColor: '#226622', color: '#ffffff' })
+        .setInteractive({ useHandCursor: true })
+    } else {
+      this.buyBtn
+        .setText('Sem moedas')
+        .setStyle({ backgroundColor: '#662222', color: '#888888' })
+        .disableInteractive()
+    }
+
+    this.cardBgs.forEach((img, i) => img.setTexture(this.cardTexture(i)))
+    this.previewBg.setTexture(owned ? 'modal-bg3' : 'modal-bg')
+  }
+
+  private selectItem(id: string) {
+    const idx = ITEM_REGISTRY.findIndex(it => it.id === id)
+    if (idx === -1) return
+    this.selectedIdx = idx
+    const item = ITEM_REGISTRY[idx]
+
+    this.cardBgs.forEach((img, i) => img.setTexture(this.cardTexture(i)))
+
+    this.previewItemImg.setTexture(item.iconKey, item.iconFrame)
     this.previewLabel.setText(item.name)
+    this.previewDesc.setText(item.description)
     this.previewPriceTxt.setText(`${item.price}`)
+    this.updateBuyButton()
   }
 }
