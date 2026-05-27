@@ -114,50 +114,49 @@ export class AchievementsScene extends Phaser.Scene {
 
     const cx = WORLD.width / 2
     const cy = WORLD.height / 2
-    const MODAL_W = 260
-    const MODAL_H = 280
+    const MODAL_SIZE = 390   // square
     const DEPTH = 10
 
     const overlay = this.add.rectangle(cx, cy, WORLD.width, WORLD.height, 0x000000, 0.6).setDepth(DEPTH).setInteractive()
     overlay.on('pointerdown', () => this.closeModal())
 
-    const panel = this.add.rectangle(cx, cy, MODAL_W, MODAL_H, 0x1a1a2e, 1)
+    const panel = this.add.image(cx, cy, 'modal-bg')
+      .setDisplaySize(MODAL_SIZE, MODAL_SIZE)
       .setDepth(DEPTH + 1)
-      .setStrokeStyle(2, isUnlocked ? 0xffd700 : 0x555555)
 
     const iconKey = isUnlocked && this.textures.exists(achievement.unlockedIconKey)
       ? achievement.unlockedIconKey
       : 'achievement-locked'
 
-    const icon = this.add.image(cx, cy - 70, iconKey)
-      .setDisplaySize(80, 80)
+    const icon = this.add.image(cx, cy - 90, iconKey)
+      .setDisplaySize(160, 160)
       .setDepth(DEPTH + 2)
       .setAlpha(isUnlocked ? 1 : 0.5)
 
-    const nameText = this.add.text(cx, cy - 10, isUnlocked ? achievement.name : '???', {
-      fontSize: '18px',
+    const nameText = this.add.text(cx, cy + 20, isUnlocked ? achievement.name : '???', {
+      fontSize: '22px',
       color: isUnlocked ? '#ffd700' : '#888888',
       fontFamily: FONT,
       stroke: '#000000',
       strokeThickness: 3,
       align: 'center',
-      wordWrap: { width: MODAL_W - 24 },
+      wordWrap: { width: MODAL_SIZE - 40 },
     }).setOrigin(0.5).setDepth(DEPTH + 2)
 
-    const descText = this.add.text(cx, cy + 30, isUnlocked ? achievement.description : 'Conquista bloqueada', {
-      fontSize: '13px',
+    const descText = this.add.text(cx, cy + 64, isUnlocked ? achievement.description : 'Conquista bloqueada', {
+      fontSize: '15px',
       color: isUnlocked ? '#cccccc' : '#666666',
       fontFamily: FONT,
       align: 'center',
-      wordWrap: { width: MODAL_W - 32 },
+      wordWrap: { width: MODAL_SIZE - 48 },
     }).setOrigin(0.5).setDepth(DEPTH + 2)
 
-    const closeBtn = this.add.text(cx, cy + MODAL_H / 2 - 28, 'Fechar', {
-      fontSize: '15px',
+    const closeBtn = this.add.text(cx, cy + 124, 'Fechar', {
+      fontSize: '17px',
       color: '#ffffff',
       fontFamily: FONT,
       backgroundColor: '#333355',
-      padding: { x: 16, y: 6 },
+      padding: { x: 20, y: 8 },
     }).setOrigin(0.5).setDepth(DEPTH + 2).setInteractive({ useHandCursor: true })
 
     closeBtn.on('pointerover', () => closeBtn.setColor('#ffd700'))
@@ -166,15 +165,26 @@ export class AchievementsScene extends Phaser.Scene {
 
     this.modalObjects = [overlay, panel, icon, nameText, descText, closeBtn]
 
-    const targets = [panel, icon, nameText, descText, closeBtn]
-    targets.forEach(t => { t.setAlpha(0); t.setScale(0.85) })
-    this.tweens.add({ targets, alpha: 1, scale: 1, duration: 180, ease: 'Back.easeOut' })
+    // panel + icon: alpha-only (setScale would override setDisplaySize in Phaser)
+    panel.setAlpha(0)
+    icon.setAlpha(0)
+    this.tweens.add({ targets: [panel, icon], alpha: isUnlocked ? 1 : 0.5, duration: 180, ease: 'Cubic.easeOut' })
+
+    // Scale + alpha tween for text/button only
+    const contentTargets = [nameText, descText, closeBtn]
+    contentTargets.forEach(t => { t.setAlpha(0); t.setScale(0.85) })
+    this.tweens.add({ targets: contentTargets, alpha: 1, scale: 1, duration: 180, ease: 'Back.easeOut' })
   }
 
   private closeModal() {
-    const targets = this.modalObjects.filter(o => o !== this.modalObjects[0])
+    // overlay[0], panel[1], icon[2]: alpha-only (setScale would corrupt setDisplaySize)
+    const alphaOnly = this.modalObjects.slice(1, 3)
+    // nameText[3], descText[4], closeBtn[5]: scale+fade
+    const contentTargets = this.modalObjects.slice(3)
+
+    this.tweens.add({ targets: alphaOnly, alpha: 0, duration: 140, ease: 'Cubic.easeIn' })
     this.tweens.add({
-      targets,
+      targets: contentTargets,
       alpha: 0,
       scale: 0.85,
       duration: 140,
