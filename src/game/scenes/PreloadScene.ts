@@ -78,6 +78,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image(WORLD.floorTextureKey, WORLD.floorTexturePath)
 
     this.load.image('modal-bg', '/assets/modal/modalBG.png')
+    this.load.image('modal-bg2', '/assets/modal/modalBG2.png')
   }
 
   create() {

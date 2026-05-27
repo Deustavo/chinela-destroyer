@@ -3,17 +3,23 @@ import { WORLD } from '../config/constants'
 
 const FONT = '"Comic Neue", "Comic Sans MS", cursive'
 
-// --- Card dimensions ---
-const CARD_W = 110
-const CARD_GAP = 16
-const CARD_H = 168
-const IMG_SIZE = 82
+// --- Card dimensions (square background) ---
+const CARD_W = 130
+const CARD_H = 130   // equal → always square (bg only)
+const CARD_GAP = 14
+const IMG_SIZE = 90  // icon fills most of the square bg
+
+// text below the background
+const LABEL_OFFSET = 10   // gap between bg bottom and name
+const LABEL_H = 20        // name line height
+const PRICE_H = 22        // price row height
+const CARD_TOTAL_H = CARD_H + LABEL_OFFSET + LABEL_H + PRICE_H
 
 // 2.5 cards visible: 2 full + 1.5 gaps + half card
-const VISIBLE_W = 2.5 * CARD_W + 1.5 * CARD_GAP  // = 299
-const VP_X = Math.round((WORLD.width - VISIBLE_W) / 2) // ≈ 53
-const VP_Y = 180
-const VP_H = CARD_H + 6
+const VISIBLE_W = 2.5 * CARD_W + 1.5 * CARD_GAP  // = 346
+const VP_X = Math.round((WORLD.width - VISIBLE_W) / 2) // ≈ 30
+const VP_Y = 150
+const VP_H = CARD_TOTAL_H + 6
 
 // --- Shop items (placeholders until real art is provided) ---
 const ITEMS = [
@@ -32,9 +38,9 @@ export class ShopScene extends Phaser.Scene {
   private scrollX = 0
   private maxScrollX = 0
   private selectedId = 0
-  private cardBgs: Phaser.GameObjects.Rectangle[] = []
+  private cardBgs: Phaser.GameObjects.Image[] = []
 
-  private previewRect!: Phaser.GameObjects.Rectangle
+  private previewImg!: Phaser.GameObjects.Image
   private previewLabel!: Phaser.GameObjects.Text
   private previewPriceTxt!: Phaser.GameObjects.Text
 
@@ -74,17 +80,23 @@ export class ShopScene extends Phaser.Scene {
       const cx_card = i * (CARD_W + CARD_GAP) + CARD_W / 2
       const cy_card = CARD_H / 2
 
+      // Background (square): modal-bg for selected, modal-bg2 for unselected
       const cardBg = this.add
-        .rectangle(cx_card, cy_card, CARD_W, CARD_H, 0x1a1a2e)
-        .setStrokeStyle(2, i === this.selectedId ? 0xffd700 : 0x334466)
+        .image(cx_card, cy_card, i === this.selectedId ? 'modal-bg' : 'modal-bg2')
+        .setDisplaySize(CARD_W, CARD_H)
       this.cardBgs.push(cardBg)
 
+      // Item icon placeholder (colored square, centred in bg)
       const imgRect = this.add
-        .rectangle(cx_card, IMG_SIZE / 2 + 14, IMG_SIZE, IMG_SIZE, item.color)
+        .rectangle(cx_card, cy_card, IMG_SIZE, IMG_SIZE, item.color)
 
+      // ── Text below the background ─────────────────────────────────────────
+      const nameY = CARD_H + LABEL_OFFSET
+
+      // Item name
       const nameTxt = this.add
-        .text(cx_card, IMG_SIZE + 26, item.name, {
-          fontSize: '14px',
+        .text(cx_card, nameY, item.name, {
+          fontSize: '15px',
           color: '#ffffff',
           fontFamily: FONT,
           stroke: '#000000',
@@ -92,13 +104,15 @@ export class ShopScene extends Phaser.Scene {
         })
         .setOrigin(0.5, 0)
 
+      // Price row
+      const priceY = nameY + LABEL_H + 2
       const coin = this.add
-        .image(cx_card - 14, CARD_H - 22, 'shop-coin')
-        .setDisplaySize(18, 18)
+        .image(cx_card - 14, priceY, 'shop-coin')
+        .setDisplaySize(20, 20)
 
       const priceTxt = this.add
-        .text(cx_card, CARD_H - 22, `${item.price}`, {
-          fontSize: '14px',
+        .text(cx_card - 2, priceY, `${item.price}`, {
+          fontSize: '15px',
           color: '#ffd700',
           fontFamily: FONT,
           stroke: '#000000',
@@ -106,16 +120,11 @@ export class ShopScene extends Phaser.Scene {
         })
         .setOrigin(0, 0.5)
 
+      // Invisible hit area covers entire card (bg + labels)
       const hit = this.add
-        .rectangle(cx_card, cy_card, CARD_W, CARD_H, 0xffffff, 0)
+        .rectangle(cx_card, CARD_TOTAL_H / 2, CARD_W, CARD_TOTAL_H, 0xffffff, 0)
         .setInteractive({ useHandCursor: true })
 
-      hit.on('pointerover', () => {
-        if (item.id !== this.selectedId) cardBg.setStrokeStyle(2, 0x6677aa)
-      })
-      hit.on('pointerout', () => {
-        if (item.id !== this.selectedId) cardBg.setStrokeStyle(2, 0x334466)
-      })
       hit.on('pointerdown', () => this.selectItem(item.id))
 
       this.scrollContainer.add([cardBg, imgRect, nameTxt, coin, priceTxt, hit])
@@ -153,21 +162,22 @@ export class ShopScene extends Phaser.Scene {
     const midY = railBottom + (footerTop - railBottom) / 2
 
     const playerImg = this.add
-      .image(cx - 72, midY, 'menu-chinela')
-      .setDisplaySize(120, 120)
+      .image(cx - 84, midY, 'menu-chinela')
+      .setDisplaySize(148, 148)
       .setDepth(2)
 
-    const previewX = cx + 76
-    const PREV = 106
+    const previewX = cx + 88
+    const PREV = 128  // square preview
 
-    this.previewRect = this.add
-      .rectangle(previewX, midY - 14, PREV, PREV, ITEMS[0].color)
+    // Selected preview uses modal-bg (selected variant)
+    this.previewImg = this.add
+      .image(previewX, midY - 14, 'modal-bg')
+      .setDisplaySize(PREV, PREV)
       .setDepth(2)
-      .setStrokeStyle(2, 0xffd700)
 
     this.previewLabel = this.add
-      .text(previewX, midY - 14 + PREV / 2 + 6, ITEMS[0].name, {
-        fontSize: '16px',
+      .text(previewX, midY - 14 + PREV / 2 + 8, ITEMS[0].name, {
+        fontSize: '18px',
         color: '#ffffff',
         fontFamily: FONT,
         stroke: '#000000',
@@ -177,13 +187,13 @@ export class ShopScene extends Phaser.Scene {
       .setDepth(2)
 
     const coinPrev = this.add
-      .image(previewX - 16, midY - 14 + PREV / 2 + 32, 'shop-coin')
-      .setDisplaySize(20, 20)
+      .image(previewX - 18, midY - 14 + PREV / 2 + 36, 'shop-coin')
+      .setDisplaySize(22, 22)
       .setDepth(2)
 
     this.previewPriceTxt = this.add
-      .text(coinPrev.x + 14, coinPrev.y, `${ITEMS[0].price}`, {
-        fontSize: '16px',
+      .text(coinPrev.x + 16, coinPrev.y, `${ITEMS[0].price}`, {
+        fontSize: '18px',
         color: '#ffd700',
         fontFamily: FONT,
         stroke: '#000000',
@@ -220,7 +230,7 @@ export class ShopScene extends Phaser.Scene {
       this.scrollContainer,
 
       playerImg,
-      this.previewRect,
+      this.previewImg,
       this.previewLabel,
       coinPrev,
       this.previewPriceTxt,
@@ -244,10 +254,12 @@ export class ShopScene extends Phaser.Scene {
   private selectItem(id: number) {
     this.selectedId = id
     const item = ITEMS[id]
-    this.cardBgs.forEach((rect, i) =>
-      rect.setStrokeStyle(2, i === id ? 0xffd700 : 0x334466),
+
+    // Swap textures: selected → modal-bg, others → modal-bg2
+    this.cardBgs.forEach((img, i) =>
+      img.setTexture(i === id ? 'modal-bg' : 'modal-bg2'),
     )
-    this.previewRect.setFillStyle(item.color)
+
     this.previewLabel.setText(item.name)
     this.previewPriceTxt.setText(`${item.price}`)
   }
