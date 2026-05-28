@@ -48,9 +48,7 @@ export class MenuScene extends Phaser.Scene {
       const txt = this.add.text(0, 0, label, {
         fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
         fontSize: '20px',
-        color: '#ffffff',
-        stroke: '#000000',
-        strokeThickness: 4,
+        color: '#000000',
       }).setOrigin(0.5)
       const container = this.add.container(x, y, [bg, txt])
         .setSize(bg.width, bg.height)
