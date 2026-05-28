@@ -251,6 +251,11 @@ export class ShopScene extends Phaser.Scene {
       .setDisplaySize(INV_SZ * 1.1, INV_SZ * 1.1).setDepth(3)
 
     // Right block — selected item preview
+    const invSelLabel = this.add.text(INV_R_X, INV_CY - INV_SZ / 2 - 14, 'Selecionado', {
+      fontSize: '14px', color: '#ffd700',
+      fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
+    }).setOrigin(0.5, 1).setDepth(2)
+
     this.invPreviewBg = this.add
       .image(INV_R_X, INV_CY, 'modal-bg2')
       .setDisplaySize(INV_SZ, INV_SZ).setDepth(2)
@@ -310,7 +315,7 @@ export class ShopScene extends Phaser.Scene {
     this.invRail.setMask(maskGfx.createGeometryMask())
 
     this.invObjs = [
-      playerImg,
+      playerImg, invSelLabel,
       this.invPreviewBg, this.invPreviewImg, this.invPreviewName,
     ]
 
@@ -343,7 +348,7 @@ export class ShopScene extends Phaser.Scene {
   // ── Shop helpers ─────────────────────────────────────────────────────────────
   private shopCardTex(idx: number): string {
     if (idx === this.shopSelectedIdx) return 'modal-bg'
-    return EquipManager.isEquipped(ITEM_REGISTRY[idx].id) ? 'modal-bg3' : 'modal-bg2'
+    return 'modal-bg2'
   }
 
   private shopSelectItem(idx: number) {
@@ -370,12 +375,11 @@ export class ShopScene extends Phaser.Scene {
   private refreshBuyBtn() {
     const item     = ITEM_REGISTRY[this.shopSelectedIdx]
     if (!item) return
-    const owned    = PurchaseManager.has(item.id)
-    const equipped = EquipManager.isEquipped(item.id)
-    const afford   = CoinManager.getTotal() >= item.price
+    const owned  = PurchaseManager.has(item.id)
+    const afford = CoinManager.getTotal() >= item.price
 
     this.shopCardBgs.forEach((bg, i) => bg.setTexture(this.shopCardTex(i)))
-    this.shopPreviewBg.setTexture(equipped ? 'modal-bg3' : 'modal-bg')
+    this.shopPreviewBg.setTexture('modal-bg')
 
     if (owned) {
       this.buyBtn
@@ -398,7 +402,7 @@ export class ShopScene extends Phaser.Scene {
   // ── Inventory helpers ────────────────────────────────────────────────────────
   private invCardTex(idx: number): string {
     const item = ITEM_REGISTRY[idx]
-    if (EquipManager.isEquipped(item.id)) return 'modal-bg3'
+    if (EquipManager.isEquipped(item.id)) return 'modal-bg'
     return PurchaseManager.has(item.id) ? 'modal-bg' : 'modal-bg2'
   }
 
@@ -411,8 +415,7 @@ export class ShopScene extends Phaser.Scene {
 
   private invShowPreview(idx: number) {
     const item     = ITEM_REGISTRY[idx]
-    const equipped = EquipManager.isEquipped(item.id)
-    this.invPreviewBg.setTexture(equipped ? 'modal-bg3' : 'modal-bg')
+    this.invPreviewBg.setTexture('modal-bg')
     this.invPreviewImg
       .setTexture(item.iconKey, item.iconFrame)
       .setDisplaySize(INV_SZ * 0.62, INV_SZ * 0.62)
