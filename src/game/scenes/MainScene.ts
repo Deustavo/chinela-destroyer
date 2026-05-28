@@ -434,6 +434,14 @@ export class MainScene extends Phaser.Scene {
   }
 
   private defeatBoss() {
+    const bossRewards = [100, 500, 1000]
+    const reward = bossRewards[this.activeBossIdx] ?? 0
+    if (reward > 0) {
+      const total = CoinManager.add(reward)
+      this.coinCountText.setText(String(total))
+      this.showBossRewardPopup(reward)
+    }
+
     this.bossesDefeated.add(this.activeBossIdx)
     this.onBossDefeated()
     this.mothershipTraps.clear(true, true)
@@ -565,6 +573,40 @@ export class MainScene extends Phaser.Scene {
     const total = CoinManager.add(1)
     this.coinCountText.setText(String(total))
     this.showCoinPopup()
+  }
+
+  private showBossRewardPopup(amount: number) {
+    const screenX = WORLD.width / 2
+    const screenY = WORLD.height / 2
+    const iconSize = 22
+
+    const text = this.add
+      .text(screenX - 2, screenY, `+${amount}`, {
+        fontSize: '28px',
+        color: '#ffd700',
+        fontFamily: FONT_FAMILY,
+        stroke: '#000000',
+        strokeThickness: 4,
+      })
+      .setScrollFactor(0)
+      .setDepth(40)
+      .setOrigin(1, 0.5)
+
+    const icon = this.add
+      .image(screenX + 2, screenY, 'shop-coin')
+      .setDisplaySize(iconSize, iconSize)
+      .setScrollFactor(0)
+      .setDepth(40)
+      .setOrigin(0, 0.5)
+
+    this.tweens.add({
+      targets: [text, icon],
+      y: screenY - 60,
+      alpha: 0,
+      duration: 1400,
+      ease: 'Quad.easeOut',
+      onComplete: () => { text.destroy(); icon.destroy() },
+    })
   }
 
   private showCoinPopup() {
