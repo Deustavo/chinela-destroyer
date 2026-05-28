@@ -18,6 +18,7 @@ export class Enemy {
   private lastPlayerX: number = 0
   private lastPlayerY: number = 0
   private isFlying: boolean = false
+  private throwingEnabled: boolean = true
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene
@@ -52,6 +53,14 @@ export class Enemy {
 
   get isVisibleTarget(): boolean {
     return !this.isFlying && this.sprite.visible
+  }
+
+  setThrowingEnabled(enabled: boolean): void {
+    this.throwingEnabled = enabled
+    if (!enabled) {
+      this.throwTimer = 0
+      this.glowSprite.setAlpha(0)
+    }
   }
 
   showHit() {
@@ -128,8 +137,13 @@ export class Enemy {
       }
     }
 
+    if (!this.throwingEnabled) {
+      this.throwTimer = 0
+      this.glowSprite.setAlpha(0)
+    }
+
     this.throwTimer += dt
-    if (this.throwTimer >= ENEMY.throwInterval) {
+    if (this.throwingEnabled && this.throwTimer >= ENEMY.throwInterval) {
       this.throwTimer = 0
       this.glowSprite.setAlpha(0)
       const speedMult = score >= 2500 ? 1.2 : 1
@@ -151,13 +165,15 @@ export class Enemy {
       }
     }
 
-    const timeLeft = ENEMY.throwInterval - this.throwTimer
-    if (timeLeft <= ENEMY.blinkWindow) {
-      const progress = (ENEMY.blinkWindow - timeLeft) / ENEMY.blinkWindow
-      const alpha = Math.abs(Math.sin(progress * ENEMY.blinkCount * Math.PI)) * 0.8
-      this.glowSprite.setAlpha(alpha)
-    } else {
-      this.glowSprite.setAlpha(0)
+    if (this.throwingEnabled) {
+      const timeLeft = ENEMY.throwInterval - this.throwTimer
+      if (timeLeft <= ENEMY.blinkWindow) {
+        const progress = (ENEMY.blinkWindow - timeLeft) / ENEMY.blinkWindow
+        const alpha = Math.abs(Math.sin(progress * ENEMY.blinkCount * Math.PI)) * 0.8
+        this.glowSprite.setAlpha(alpha)
+      } else {
+        this.glowSprite.setAlpha(0)
+      }
     }
 
     const cameraBottom = cameraScrollY + WORLD.height

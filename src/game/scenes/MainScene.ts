@@ -6,6 +6,7 @@ import { WORLD, PLATFORMS, BOSS_SHIP, BOSSES, ENEMY, FONT_FAMILY } from '../conf
 import { AchievementManager } from '../achievements/AchievementManager'
 import { CoinManager } from '../utils/CoinManager'
 import { addCoinCounter } from '../utils/uiHelpers'
+import { TutorialOverlay } from '../utils/TutorialOverlay'
 
 export class MainScene extends Phaser.Scene {
   private player!: Player
@@ -38,6 +39,8 @@ export class MainScene extends Phaser.Scene {
   private lastCoinWorldY!: number
   private coinCountText!: Phaser.GameObjects.Text
   private shieldHUD: Phaser.GameObjects.Text | null = null
+  private tutorialOverlay: TutorialOverlay | null = null
+  private tutorialActive: boolean = false
 
   constructor() {
     super('main-scene')
@@ -148,6 +151,13 @@ export class MainScene extends Phaser.Scene {
     }
 
     this.addPauseButton()
+
+    if (TutorialOverlay.shouldShow()) {
+      this.tutorialActive = true
+      this.applyTutorialPlatformVisibility(true)
+      this.tutorialOverlay = new TutorialOverlay(this, this.player)
+      this.enemy.setThrowingEnabled(false)
+    }
 
     this.onEscKey = (e: KeyboardEvent) => { if (e.key === 'Escape') this.pauseGame() }
     window.addEventListener('keydown', this.onEscKey)
@@ -268,6 +278,10 @@ export class MainScene extends Phaser.Scene {
 
     const platform = this.platforms.create(x, this.lastPlatformY, PLATFORMS.textureKey) as Phaser.Physics.Arcade.Image
     this.configurePlatformBody(platform)
+    if (this.tutorialActive) {
+      platform.setAlpha(0)
+      ;(platform.body as Phaser.Physics.Arcade.StaticBody).enable = false
+    }
 
     if (Math.random() < 0.3) {
       const minX2 = Math.max(PLATFORMS.minX + half, x + PLATFORMS.width + PLATFORMS.width)
@@ -276,6 +290,10 @@ export class MainScene extends Phaser.Scene {
         const x2 = Phaser.Math.Between(minX2, maxX2)
         const platform2 = this.platforms.create(x2, this.lastPlatformY, PLATFORMS.textureKey) as Phaser.Physics.Arcade.Image
         this.configurePlatformBody(platform2)
+        if (this.tutorialActive) {
+          platform2.setAlpha(0)
+          ;(platform2.body as Phaser.Physics.Arcade.StaticBody).enable = false
+        }
       }
     }
   }
@@ -299,6 +317,28 @@ export class MainScene extends Phaser.Scene {
     body.immovable = true
     body.checkCollision.down = false
     body.setVelocityX(Math.random() < 0.5 ? PLATFORMS.movingSpeed : -PLATFORMS.movingSpeed)
+    if (this.tutorialActive) {
+      platform.setAlpha(0)
+      body.enable = false
+    }
+  }
+
+  private applyTutorialPlatformVisibility(hide: boolean): void {
+    ;(this.platforms.getChildren() as Phaser.Physics.Arcade.Image[]).forEach(p => {
+      if (p.y >= WORLD.groundY) return
+      if (hide) {
+        p.setAlpha(0)
+        ;(p.body as Phaser.Physics.Arcade.StaticBody).enable = false
+      } else {
+        p.setAlpha(1)
+        ;(p.body as Phaser.Physics.Arcade.StaticBody).enable = true
+        p.refreshBody()
+      }
+    })
+    ;(this.movingPlatforms.getChildren() as Phaser.Physics.Arcade.Image[]).forEach(p => {
+      p.setAlpha(hide ? 0 : 1)
+      ;(p.body as Phaser.Physics.Arcade.Body).enable = !hide
+    })
   }
 
   private configurePlatformBody(platform: Phaser.Physics.Arcade.Image) {
@@ -564,6 +604,16 @@ export class MainScene extends Phaser.Scene {
         this.shieldHUD.setText(`Escudo: ${Math.ceil(cd)}s`).setColor('#ff8800')
       } else {
         this.shieldHUD.setText('Escudo: pronto').setColor('#00ff88')
+      }
+    }
+
+    if (this.tutorialOverlay) {
+      this.tutorialOverlay.update(delta)
+      if (this.tutorialOverlay.isDone) {
+        this.tutorialActive = false
+        this.applyTutorialPlatformVisibility(false)
+        this.enemy.setThrowingEnabled(true)
+        this.tutorialOverlay = null
       }
     }
 
