@@ -28,6 +28,7 @@ export class Player {
   private wingsOwned: boolean = false
   private maxJumps: number = 1
   private jumpsRemaining: number = 1
+  private wasOnGround: boolean = false
   private wingsSprite: Phaser.GameObjects.Sprite | null = null
   private prevTouchJump: boolean = false
 
@@ -290,9 +291,14 @@ export class Player {
       (touch?.jump === true && !this.prevTouchJump)
     this.prevTouchJump = touch?.jump ?? false
 
-    if (body.blocked.down) {
+    const onGround = body.blocked.down
+    if (onGround) {
       this.jumpsRemaining = this.maxJumps
+    } else if (this.wasOnGround && !jumpJustDown) {
+      // walked off a platform without jumping — consume the ground jump
+      this.jumpsRemaining = Math.min(this.jumpsRemaining, this.maxJumps - 1)
     }
+    this.wasOnGround = onGround
 
     if (jumpJustDown && this.jumpsRemaining > 0) {
       const isDoubleJump = !body.blocked.down
