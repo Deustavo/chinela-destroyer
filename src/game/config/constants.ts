@@ -48,7 +48,7 @@ export const ENEMY = {
   throwInterval: 2.2,
   projectileSpeed: 300,
   trapDisplaySize: 60,
-  trapHitboxSize: 30,
+  trapHitboxSize: 52,
   blinkWindow: 1.0,
   blinkCount: 2,
   bobAmplitude: 8,
