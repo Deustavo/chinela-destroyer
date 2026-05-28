@@ -132,21 +132,22 @@ export class Enemy {
     if (this.throwTimer >= ENEMY.throwInterval) {
       this.throwTimer = 0
       this.glowSprite.setAlpha(0)
-      if (score >= 1900) {
-        this.throwTrap(cameraScrollY, playerX, playerY, -0.5)
+      const speedMult = score >= 2500 ? 1.2 : 1
+      if (score >= 1500) {
+        this.throwTrap(cameraScrollY, playerX, playerY, -0.5, speedMult)
         this.scene.time.delayedCall(300, () => {
-          this.throwTrap(this.lastCameraScrollY, this.lastPlayerX, this.lastPlayerY, 0)
+          this.throwTrap(this.lastCameraScrollY, this.lastPlayerX, this.lastPlayerY, 0, speedMult)
         })
         this.scene.time.delayedCall(600, () => {
-          this.throwTrap(this.lastCameraScrollY, this.lastPlayerX, this.lastPlayerY, 0.5)
+          this.throwTrap(this.lastCameraScrollY, this.lastPlayerX, this.lastPlayerY, 0.5, speedMult)
         })
       } else if (score >= 500) {
-        this.throwTrap(cameraScrollY, playerX, playerY, 0)
+        this.throwTrap(cameraScrollY, playerX, playerY, 0, speedMult)
         this.scene.time.delayedCall(300, () => {
-          this.throwTrap(this.lastCameraScrollY, this.lastPlayerX, this.lastPlayerY, 0.5)
+          this.throwTrap(this.lastCameraScrollY, this.lastPlayerX, this.lastPlayerY, 0.5, speedMult)
         })
       } else {
-        this.throwTrap(cameraScrollY, playerX, playerY, 0)
+        this.throwTrap(cameraScrollY, playerX, playerY, 0, speedMult)
       }
     }
 
@@ -198,7 +199,7 @@ export class Enemy {
     })
   }
 
-  private throwTrap(cameraScrollY: number, playerX: number, playerY: number, angleOffset: number = 0) {
+  private throwTrap(cameraScrollY: number, playerX: number, playerY: number, angleOffset: number = 0, speedMult: number = 1) {
     const worldX = this.sprite.x
     const worldY = cameraScrollY + this.sprite.y + ENEMY.displayHeight / 2
 
@@ -207,8 +208,8 @@ export class Enemy {
     const len = Math.sqrt(dx * dx + dy * dy) || 1
     const cos = Math.cos(angleOffset)
     const sin = Math.sin(angleOffset)
-    const vx = ((dx / len) * cos - (dy / len) * sin) * ENEMY.projectileSpeed
-    const vy = ((dx / len) * sin + (dy / len) * cos) * ENEMY.projectileSpeed
+    const vx = ((dx / len) * cos - (dy / len) * sin) * ENEMY.projectileSpeed * speedMult
+    const vy = ((dx / len) * sin + (dy / len) * cos) * ENEMY.projectileSpeed * speedMult
 
     const trapFrame = Phaser.Math.Between(0, 3)
     const trap = this.traps.create(worldX, worldY, ENEMY.trapsKey, trapFrame) as Phaser.Physics.Arcade.Image
