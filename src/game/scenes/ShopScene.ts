@@ -41,7 +41,6 @@ type AnimObj  = Phaser.GameObjects.GameObject & { y: number; alpha: number; disp
 
 export class ShopScene extends Phaser.Scene {
   private activeTab: 'shop' | 'inventory' = 'shop'
-  private tabInitialized = false
 
   private tabShop!: Phaser.GameObjects.Text
   private tabInv!: Phaser.GameObjects.Text
@@ -188,7 +187,7 @@ export class ShopScene extends Phaser.Scene {
     // Entry animation for the initial tab elements
     const initObjs = this.initialTab === 'shop'
       ? [...this.shopObjs, this.shopRail]
-      : [...this.invObjs]
+      : [...this.invObjs, this.invRail]
     initObjs.forEach((obj, i) => {
       dropIn(this, obj as unknown as SceneObject, 80 + i * 20, 700)
     })
@@ -452,6 +451,7 @@ export class ShopScene extends Phaser.Scene {
       NotificationManager.clearNewItem()
       this.hideInvNotifDot()
     }
+
   }
 
   // ── Shop helpers ─────────────────────────────────────────────────────────────
