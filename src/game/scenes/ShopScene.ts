@@ -289,11 +289,7 @@ export class ShopScene extends Phaser.Scene {
 
     const shopArrowL = this.add.image(ARROW_L_X, ARROW_Y, 'btn-left')
       .setDisplaySize(ARROW_SIZE, ARROW_SIZE).setDepth(3).setAlpha(0.9)
-      .setInteractive({
-        hitArea: new Phaser.Geom.Rectangle(-ARROW_SIZE / 4, -ARROW_SIZE / 4, ARROW_SIZE / 2, ARROW_SIZE / 2),
-        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
-        useHandCursor: true,
-      })
+      .setInteractive({ useHandCursor: true })
     shopArrowL.on('pointerdown', () => {
       this.shopScrollX = Phaser.Math.Clamp(this.shopScrollX - SCROLL_STEP, 0, this.shopMaxScroll)
       this.tweens.add({ targets: this.shopRail, x: RAIL_X0 - this.shopScrollX, duration: 160, ease: 'Cubic.Out' })
@@ -301,11 +297,7 @@ export class ShopScene extends Phaser.Scene {
 
     const shopArrowR = this.add.image(ARROW_R_X, ARROW_Y, 'btn-right')
       .setDisplaySize(ARROW_SIZE, ARROW_SIZE).setDepth(3).setAlpha(0.9)
-      .setInteractive({
-        hitArea: new Phaser.Geom.Rectangle(-ARROW_SIZE / 4, -ARROW_SIZE / 4, ARROW_SIZE / 2, ARROW_SIZE / 2),
-        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
-        useHandCursor: true,
-      })
+      .setInteractive({ useHandCursor: true })
     shopArrowR.on('pointerdown', () => {
       this.shopScrollX = Phaser.Math.Clamp(this.shopScrollX + SCROLL_STEP, 0, this.shopMaxScroll)
       this.tweens.add({ targets: this.shopRail, x: RAIL_X0 - this.shopScrollX, duration: 160, ease: 'Cubic.Out' })
@@ -401,11 +393,7 @@ export class ShopScene extends Phaser.Scene {
 
     const invArrowL = this.add.image(ARROW_L_X, ARROW_Y, 'btn-left')
       .setDisplaySize(ARROW_SIZE, ARROW_SIZE).setDepth(3).setAlpha(0.9)
-      .setInteractive({
-        hitArea: new Phaser.Geom.Rectangle(-ARROW_SIZE / 4, -ARROW_SIZE / 4, ARROW_SIZE / 2, ARROW_SIZE / 2),
-        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
-        useHandCursor: true,
-      })
+      .setInteractive({ useHandCursor: true })
     invArrowL.on('pointerdown', () => {
       this.invScrollX = Phaser.Math.Clamp(this.invScrollX - SCROLL_STEP, 0, this.invMaxScroll)
       this.tweens.add({ targets: this.invRail, x: RAIL_X0 - this.invScrollX, duration: 160, ease: 'Cubic.Out' })
@@ -413,11 +401,7 @@ export class ShopScene extends Phaser.Scene {
 
     const invArrowR = this.add.image(ARROW_R_X, ARROW_Y, 'btn-right')
       .setDisplaySize(ARROW_SIZE, ARROW_SIZE).setDepth(3).setAlpha(0.9)
-      .setInteractive({
-        hitArea: new Phaser.Geom.Rectangle(-ARROW_SIZE / 4, -ARROW_SIZE / 4, ARROW_SIZE / 2, ARROW_SIZE / 2),
-        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
-        useHandCursor: true,
-      })
+      .setInteractive({ useHandCursor: true })
     invArrowR.on('pointerdown', () => {
       this.invScrollX = Phaser.Math.Clamp(this.invScrollX + SCROLL_STEP, 0, this.invMaxScroll)
       this.tweens.add({ targets: this.invRail, x: RAIL_X0 - this.invScrollX, duration: 160, ease: 'Cubic.Out' })
