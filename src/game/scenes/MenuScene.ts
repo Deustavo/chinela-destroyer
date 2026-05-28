@@ -106,7 +106,7 @@ export class MenuScene extends Phaser.Scene {
 
     btnShop.on('pointerover', () => { btnShop.setAlpha(1); btnShop.setScale(BTN_SCALE + 0.12) })
     btnShop.on('pointerout', () => { btnShop.setAlpha(0.9); btnShop.setScale(BTN_SCALE) })
-    btnShop.on('pointerdown', () => exitTo(this, 'shop-scene', all))
+    btnShop.on('pointerdown', () => exitTo(this, 'shop-scene', all, { tab: 'inventory' }))
 
     btnConquistas.on('pointerover', () => btnConquistas.setScale(BTN_SCALE + 0.12))
     btnConquistas.on('pointerout', () => btnConquistas.setScale(BTN_SCALE))

@@ -76,6 +76,7 @@ export function exitTo(
   scene: Phaser.Scene,
   targetScene: string,
   elements: SceneObject[],
+  data?: object,
 ): void {
   elements.forEach((el, i) => {
     scene.tweens.killTweensOf(el)
@@ -87,7 +88,7 @@ export function exitTo(
       ease: 'Cubic.easeIn',
       onComplete:
         i === elements.length - 1
-          ? () => scene.scene.start(targetScene)
+          ? () => scene.scene.start(targetScene, data)
           : undefined,
     })
   })

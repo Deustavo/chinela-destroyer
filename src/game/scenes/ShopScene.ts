@@ -87,7 +87,13 @@ export class ShopScene extends Phaser.Scene {
   private invNotifDotBaseY = 0
   private invNotifBounce?: Phaser.Tweens.Tween
 
+  private initialTab: 'shop' | 'inventory' = 'shop'
+
   constructor() { super('shop-scene') }
+
+  init(data: { tab?: 'shop' | 'inventory' }) {
+    this.initialTab = data?.tab ?? 'shop'
+  }
 
   // ────────────────────────────────────────────────────────────────────────────
   create() {
@@ -177,10 +183,13 @@ export class ShopScene extends Phaser.Scene {
 
     baseObjs.forEach((obj, i) => dropIn(this, obj, i * 50, 40))
 
-    this.setTab('shop')
+    this.setTab(this.initialTab)
 
-    // Entry animation for the default (shop) tab elements
-    ;[...this.shopObjs, this.shopRail].forEach((obj, i) => {
+    // Entry animation for the initial tab elements
+    const initObjs = this.initialTab === 'shop'
+      ? [...this.shopObjs, this.shopRail]
+      : [...this.invObjs]
+    initObjs.forEach((obj, i) => {
       dropIn(this, obj as unknown as SceneObject, 80 + i * 20, 700)
     })
   }
