@@ -17,22 +17,22 @@ export class MenuScene extends Phaser.Scene {
     addCoinCounter(this)
 
     const logo = this.add
-      .image(cx, cy - 60, 'menu-logo')
+      .image(cx, cy - 100, 'menu-logo')
       .setScale(2.2)
       .setDepth(1)
 
     const chinela = this.add
-      .image(cx - 80, cy + 40, 'menu-chinela')
+      .image(cx - 80, cy, 'menu-chinela')
       .setScale(3.2)
       .setDepth(2)
 
     const pera = this.add
-      .image(cx + 80, cy - 180, 'menu-pera')
+      .image(cx + 80, cy - 220, 'menu-pera')
       .setScale(2)
       .setDepth(2)
 
     const btn = this.add
-      .image(cx, cy + 176, 'menu-play-btn')
+      .image(cx, cy + 116, 'menu-play-btn')
       .setScale(1.8)
       .setDepth(3)
       .setInteractive({ useHandCursor: true })
@@ -42,7 +42,7 @@ export class MenuScene extends Phaser.Scene {
     const btnTex = this.textures.get('btn-secondary').getSourceImage()
     const BTN_W = (btnTex as HTMLImageElement).width * BTN_SCALE
     const BTN_GAP = 18
-    const btnRowY = cy + 240
+    const btnRowY = cy + 180
 
     const makeSecondaryBtn = (x: number, y: number, label: string) => {
       const bg = this.add.image(0, 0, 'btn-secondary')
