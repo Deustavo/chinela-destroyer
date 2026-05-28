@@ -11,7 +11,8 @@ export class PurchaseManager {
 
   static buy(itemId: string): void {
     const raw = storageGet(KEY)
-    const items: string[] = raw ? (JSON.parse(raw) as string[]) : []
+    let items: string[] = []
+    try { items = raw ? (JSON.parse(raw) as string[]) : [] } catch { items = [] }
     if (!items.includes(itemId)) items.push(itemId)
     storageSet(KEY, JSON.stringify(items))
   }

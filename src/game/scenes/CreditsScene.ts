@@ -117,7 +117,7 @@ export class CreditsScene extends Phaser.Scene {
       .setAlpha(0.85)
 
     const labelBack = this.add
-      .text(cx, cy + 245 + 32 + 10, 'Inicio', {
+      .text(cx, cy + 245 + 32 + 10, 'Início', {
         fontSize: '16px',
         color: '#ffffff',
         fontFamily: FONT_FAMILY,

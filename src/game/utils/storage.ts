@@ -1,3 +1,5 @@
+// Client-side HMAC+XOR provides casual tamper deterrence, not real security.
+// The key is intentionally visible in the bundle — hiding it would offer no extra protection.
 const SECRET = 'ch1n3l4-d3str0y3r-k3y-2025'
 
 export const STORAGE_KEYS = [

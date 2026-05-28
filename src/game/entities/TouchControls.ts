@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { WORLD } from '../config/constants'
+import { WORLD, FONT_FAMILY } from '../config/constants'
 
 export interface TouchState {
   left: boolean
@@ -42,7 +42,7 @@ export class TouchControls {
         .text(this.shotBtnX, labelY, 'aperte\nespaço', {
           fontSize: '15px',
           color: '#ffff00',
-          fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
+          fontFamily: FONT_FAMILY,
           fontStyle: 'bold',
           stroke: '#000000',
           strokeThickness: 4,

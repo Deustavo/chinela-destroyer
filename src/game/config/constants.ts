@@ -86,9 +86,9 @@ export const BOSS_SHIP = {
 } as const
 
 export const BOSSES = [
-  { triggerHeight: 999,  vitalsCount: 3, arenaType: 'two-static', throwInterval: 2.2, projectileCount: 2 },
-  { triggerHeight: 1999, vitalsCount: 5, arenaType: 'two-static', throwInterval: 2, projectileCount: 3 },
-  { triggerHeight: 2999, vitalsCount: 5, arenaType: 'moving',     throwInterval: 1.8, projectileCount: 3 },
+  { triggerHeight: 999,  vitalsCount: 3, arenaType: 'two-static', throwInterval: 2.2, projectileCount: 2, reward: 100  },
+  { triggerHeight: 1999, vitalsCount: 5, arenaType: 'two-static', throwInterval: 2,   projectileCount: 3, reward: 500  },
+  { triggerHeight: 2999, vitalsCount: 5, arenaType: 'moving',     throwInterval: 1.8, projectileCount: 3, reward: 1000 },
 ] as const
 
 export const SHOT = {

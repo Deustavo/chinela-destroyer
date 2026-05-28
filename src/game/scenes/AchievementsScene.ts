@@ -11,8 +11,17 @@ const H_GAP = 24
 const V_GAP = 32
 const LOCKED_KEY = 'achievement-locked'
 
+type Modal = {
+  overlay: Phaser.GameObjects.Rectangle
+  panel: Phaser.GameObjects.Image
+  icon: Phaser.GameObjects.Image
+  nameText: Phaser.GameObjects.Text
+  descText: Phaser.GameObjects.Text
+  closeBtn: Phaser.GameObjects.Container
+}
+
 export class AchievementsScene extends Phaser.Scene {
-  private modalObjects: Phaser.GameObjects.GameObject[] = []
+  private modal: Modal | null = null
 
   constructor() {
     super('achievements-scene')
@@ -87,7 +96,7 @@ export class AchievementsScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
 
     const labelBack = this.add
-      .text(cx, WORLD.height - 30, 'Inicio', {
+      .text(cx, WORLD.height - 30, 'Início', {
         fontSize: '16px',
         color: '#ffffff',
         fontFamily: FONT_FAMILY,
@@ -105,20 +114,24 @@ export class AchievementsScene extends Phaser.Scene {
   }
 
   private openModal(achievement: Achievement, isUnlocked: boolean) {
-    this.modalObjects.forEach(o => o.destroy())
-    this.modalObjects = []
+    if (this.modal) {
+      const { overlay, panel, icon, nameText, descText, closeBtn } = this.modal
+      ;[overlay, panel, icon, nameText, descText, closeBtn].forEach(o => o.destroy())
+      this.modal = null
+    }
 
     const cx = WORLD.width / 2
     const cy = WORLD.height / 2
     const MODAL_SIZE = 390   // square
     const DEPTH = 10
 
-    const overlay = addModalOverlay(this, DEPTH).setInteractive()
+    const overlay = addModalOverlay(this, DEPTH).setInteractive().setAlpha(0)
     overlay.on('pointerdown', () => this.closeModal())
 
     const panel = this.add.image(cx, cy, 'modal-bg')
       .setDisplaySize(MODAL_SIZE, MODAL_SIZE)
       .setDepth(DEPTH + 1)
+      .setAlpha(0)
 
     const iconKey = isUnlocked && this.textures.exists(achievement.unlockedIconKey)
       ? achievement.unlockedIconKey
@@ -127,7 +140,7 @@ export class AchievementsScene extends Phaser.Scene {
     const icon = this.add.image(cx, cy - 90, iconKey)
       .setDisplaySize(160, 160)
       .setDepth(DEPTH + 2)
-      .setAlpha(isUnlocked ? 1 : 0.5)
+      .setAlpha(0)
 
     const nameText = this.add.text(cx, cy + 20, isUnlocked ? achievement.name : '???', {
       fontSize: '22px',
@@ -162,11 +175,10 @@ export class AchievementsScene extends Phaser.Scene {
     closeBtn.on('pointerout', () => closeBtn.setScale(1))
     closeBtn.on('pointerdown', () => this.closeModal())
 
-    this.modalObjects = [overlay, panel, icon, nameText, descText, closeBtn]
+    this.modal = { overlay, panel, icon, nameText, descText, closeBtn }
 
-    // panel + icon: alpha-only (setScale would override setDisplaySize in Phaser)
-    panel.setAlpha(0)
-    icon.setAlpha(0)
+    // overlay + panel + icon: alpha-only (setScale would override setDisplaySize in Phaser)
+    this.tweens.add({ targets: overlay, alpha: 0.6, duration: 180, ease: 'Cubic.easeOut' })
     this.tweens.add({ targets: [panel, icon], alpha: isUnlocked ? 1 : 0.5, duration: 180, ease: 'Cubic.easeOut' })
 
     // Scale + alpha tween for text/button only
@@ -176,21 +188,20 @@ export class AchievementsScene extends Phaser.Scene {
   }
 
   private closeModal() {
-    // overlay[0], panel[1], icon[2]: alpha-only (setScale would corrupt setDisplaySize)
-    const alphaOnly = this.modalObjects.slice(1, 3)
-    // nameText[3], descText[4], closeBtn[5]: scale+fade
-    const contentTargets = this.modalObjects.slice(3)
+    if (!this.modal) return
+    const { overlay, panel, icon, nameText, descText, closeBtn } = this.modal
 
-    this.tweens.add({ targets: alphaOnly, alpha: 0, duration: 140, ease: 'Cubic.easeIn' })
+    // overlay + panel + icon: alpha-only (setScale would corrupt setDisplaySize)
+    this.tweens.add({ targets: [overlay, panel, icon], alpha: 0, duration: 140, ease: 'Cubic.easeIn' })
     this.tweens.add({
-      targets: contentTargets,
+      targets: [nameText, descText, closeBtn],
       alpha: 0,
       scale: 0.85,
       duration: 140,
       ease: 'Cubic.easeIn',
       onComplete: () => {
-        this.modalObjects.forEach(o => o.destroy())
-        this.modalObjects = []
+        ;[overlay, panel, icon, nameText, descText, closeBtn].forEach(o => o.destroy())
+        this.modal = null
       },
     })
   }

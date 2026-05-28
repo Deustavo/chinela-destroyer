@@ -8,6 +8,7 @@ const SCALE = 3
 
 export class GameOverScene extends Phaser.Scene {
   private achievementQueue!: { iconKey: string; name: string }[]
+  private toastTimer: Phaser.Time.TimerEvent | null = null
 
   constructor() {
     super('game-over-scene')
@@ -61,7 +62,7 @@ export class GameOverScene extends Phaser.Scene {
       .setAlpha(0.85)
 
     const labelHome = this.add
-      .text(cx - btnSize / 2 - gap / 2, cy + 180 + btnSize / 2 + 10, 'Inicio', labelStyle)
+      .text(cx - btnSize / 2 - gap / 2, cy + 180 + btnSize / 2 + 10, 'Início', labelStyle)
       .setOrigin(0.5, 0)
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
@@ -86,11 +87,11 @@ export class GameOverScene extends Phaser.Scene {
     dropIn(this, labelPlay, 500)
 
     if (this.achievementQueue.length > 0) {
-      this.time.delayedCall(1500, () => this.showNextAchievementToast())
+      this.toastTimer = this.time.delayedCall(1500, () => this.showNextAchievementToast())
     }
 
     wireButtonLabel(btnHome, labelHome, () => exitTo(this, 'menu-scene', allElements))
-    wireButtonLabel(btnPlay, labelPlay, () => this.scene.start('main-scene'))
+    wireButtonLabel(btnPlay, labelPlay, () => exitTo(this, 'main-scene', allElements))
   }
 
   private showNextAchievementToast() {
@@ -117,7 +118,8 @@ export class GameOverScene extends Phaser.Scene {
     container.on('pointerout', () => panel.setStrokeStyle(2, 0xffd700))
     container.on('pointerdown', () => {
       this.tweens.killTweensOf(container)
-      this.time.removeAllEvents()
+      this.toastTimer?.remove(false)
+      this.toastTimer = null
       this.scene.start('achievements-scene')
     })
 
@@ -127,7 +129,7 @@ export class GameOverScene extends Phaser.Scene {
       duration: 400,
       ease: 'Cubic.easeOut',
       onComplete: () => {
-        this.time.delayedCall(2400, () => {
+        this.toastTimer = this.time.delayedCall(2400, () => {
           this.tweens.add({
             targets: container,
             x: -(panelW / 2 + 10),

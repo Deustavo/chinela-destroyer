@@ -4,7 +4,6 @@ import { Enemy } from '../entities/Enemy'
 import { TouchControls } from '../entities/TouchControls'
 import { WORLD, PLATFORMS, BOSS_SHIP, BOSSES, ENEMY, FONT_FAMILY } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
-import { ACHIEVEMENTS } from '../achievements/achievements'
 import { CoinManager } from '../utils/CoinManager'
 import { addCoinCounter } from '../utils/uiHelpers'
 
@@ -435,8 +434,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   private defeatBoss() {
-    const bossRewards = [100, 500, 1000]
-    const reward = bossRewards[this.activeBossIdx] ?? 0
+    const reward = BOSSES[this.activeBossIdx]?.reward ?? 0
     if (reward > 0) {
       const total = CoinManager.add(reward)
       this.coinCountText.setText(String(total))
@@ -654,16 +652,13 @@ export class MainScene extends Phaser.Scene {
   }
 
   private checkAchievements() {
-    for (let i = 0; i < ACHIEVEMENTS.length; i++) {
-      const achievement = ACHIEVEMENTS[i]
-      if (!this.sessionUnlocked.has(achievement.id) && this.score >= achievement.heightThreshold) {
-        this.sessionUnlocked.add(achievement.id)
-        AchievementManager.checkHeight(this.score)
-        this.newlyUnlockedThisRun.push({ iconKey: achievement.unlockedIconKey, name: achievement.name })
-        this.toastQueue.push({ iconKey: achievement.unlockedIconKey })
-        if (!this.toastActive) this.showNextToast()
-      }
+    const newlyUnlocked = AchievementManager.checkHeight(this.score)
+    for (const achievement of newlyUnlocked) {
+      this.sessionUnlocked.add(achievement.id)
+      this.newlyUnlockedThisRun.push({ iconKey: achievement.unlockedIconKey, name: achievement.name })
+      this.toastQueue.push({ iconKey: achievement.unlockedIconKey })
     }
+    if (newlyUnlocked.length > 0 && !this.toastActive) this.showNextToast()
   }
 
   private showNextToast() {

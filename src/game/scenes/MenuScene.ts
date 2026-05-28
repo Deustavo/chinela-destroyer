@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { WORLD } from '../config/constants'
+import { WORLD, FONT_FAMILY } from '../config/constants'
 import { addBackground, addCoinCounter } from '../utils/uiHelpers'
 import { dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
 import { NotificationManager } from '../utils/NotificationManager'
@@ -47,7 +47,7 @@ export class MenuScene extends Phaser.Scene {
     const makeSecondaryBtn = (x: number, y: number, label: string) => {
       const bg = this.add.image(0, 0, 'btn-secondary')
       const txt = this.add.text(0, 0, label, {
-        fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
+        fontFamily: FONT_FAMILY,
         fontSize: '20px',
         color: '#000000',
       }).setOrigin(0.5)

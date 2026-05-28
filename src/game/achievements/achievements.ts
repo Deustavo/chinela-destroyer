@@ -9,7 +9,7 @@ export interface Achievement {
 export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'height_100',
-    name: 'Primerios pulos',
+    name: 'Primeiros pulos',
     description: 'Alcance altura 100',
     heightThreshold: 100,
     unlockedIconKey: 'achievement-1',

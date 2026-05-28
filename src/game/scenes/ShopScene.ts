@@ -37,7 +37,6 @@ const INV_R_X = Math.round(W * 0.73)  // 296 — selected item
 const INV_CY  = 292
 
 type Showable = { setVisible(v: boolean): unknown }
-type AnimObj  = Phaser.GameObjects.GameObject & { y: number; alpha: number; displayHeight?: number }
 
 export class ShopScene extends Phaser.Scene {
   private activeTab: 'shop' | 'inventory' = 'shop'
@@ -163,7 +162,7 @@ export class ShopScene extends Phaser.Scene {
     const backBtn = this.add.image(CX, homeY, 'btn-home')
       .setDisplaySize(52, 52).setDepth(3).setAlpha(0.85)
       .setInteractive({ useHandCursor: true })
-    const labelBack = this.add.text(CX, homeY + 18, 'Inicio', {
+    const labelBack = this.add.text(CX, homeY + 18, 'Início', {
       fontSize: '15px', color: '#ffffff', fontFamily: FONT_FAMILY,
     }).setOrigin(0.5).setDepth(3).setAlpha(0.85).setInteractive({ cursor: 'pointer' })
 

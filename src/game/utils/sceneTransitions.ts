@@ -78,6 +78,15 @@ export function exitTo(
   elements: SceneObject[],
   data?: object,
 ): void {
+  if (elements.length === 0) { scene.scene.start(targetScene, data); return }
+
+  // Disable all interactive elements immediately to prevent double-click
+  elements.forEach(el => {
+    if ('disableInteractive' in el && typeof (el as any).disableInteractive === 'function') {
+      ;(el as any).disableInteractive()
+    }
+  })
+
   elements.forEach((el, i) => {
     scene.tweens.killTweensOf(el)
     scene.tweens.add({
