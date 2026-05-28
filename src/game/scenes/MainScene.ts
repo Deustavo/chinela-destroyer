@@ -513,6 +513,15 @@ export class MainScene extends Phaser.Scene {
       if (this.player.gameObject.y < upperThreshold) {
         this.cameras.main.scrollY = this.player.gameObject.y - WORLD.height * 0.5
       }
+
+      // Force scroll upward in the 50-unit window before each boss trigger
+      const bossPushStarts = [950, 1950, 2950]
+      for (let i = 0; i < bossPushStarts.length; i++) {
+        if (this.score >= bossPushStarts[i] && !this.bossesDefeated.has(i)) {
+          this.cameras.main.scrollY -= 80 * (delta / 1000)
+          break
+        }
+      }
     }
 
     const scrollDelta = this.cameras.main.scrollY - prevScrollY
