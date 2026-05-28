@@ -48,7 +48,7 @@ export const ENEMY = {
   throwInterval: 2.2,
   projectileSpeed: 300,
   trapDisplaySize: 60,
-  trapHitboxSize: 30,
+  trapHitboxSize: 52,
   blinkWindow: 1.0,
   blinkCount: 2,
   bobAmplitude: 8,
@@ -86,9 +86,9 @@ export const BOSS_SHIP = {
 } as const
 
 export const BOSSES = [
-  { triggerHeight: 999,  vitalsCount: 3, arenaType: 'two-static', throwInterval: 2.2, projectileCount: 2 },
-  { triggerHeight: 1999, vitalsCount: 5, arenaType: 'two-static', throwInterval: 2, projectileCount: 3 },
-  { triggerHeight: 2999, vitalsCount: 5, arenaType: 'moving',     throwInterval: 1.8, projectileCount: 3 },
+  { triggerHeight: 999,  vitalsCount: 3, arenaType: 'two-static', throwInterval: 2.2, projectileCount: 2, reward: 100  },
+  { triggerHeight: 1999, vitalsCount: 5, arenaType: 'two-static', throwInterval: 2,   projectileCount: 3, reward: 500  },
+  { triggerHeight: 2999, vitalsCount: 5, arenaType: 'moving',     throwInterval: 1.8, projectileCount: 3, reward: 1000 },
 ] as const
 
 export const SHOT = {
@@ -134,3 +134,36 @@ export const PLAYER = {
     jump: 1,
   },
 } as const
+
+export const SHIELD = {
+  itemId: 'shield',
+  spriteKey: 'shield1',
+  spritesheet: {
+    path: '/assets/player/SpriteSheetShield1.png',
+    frameWidth: 64,
+    frameHeight: 64,
+  },
+  cooldown: 10,
+  displaySize: 88,
+} as const
+
+export const WINGS = {
+  itemId: 'anjo-caido',
+  spriteKey: 'wings1',
+  spritesheet: {
+    path: '/assets/player/SpriteSheetWings1.png',
+    frameWidth: 64,
+    frameHeight: 64,
+  },
+  animKey: 'wings-flap',
+  frames: [0, 1, 2, 3],
+  frameRate: 12,
+  displaySize: 128,
+} as const
+
+// ── UI Typography ─────────────────────────────────────────────────────────────
+export const FONT_FAMILY = '"Comic Neue", "Comic Sans MS", cursive' as const
+
+// ── Scene center shortcuts (derived from WORLD) ───────────────────────────────
+export const CX = WORLD.width / 2   // 202.5
+export const CY = WORLD.height / 2  // 360

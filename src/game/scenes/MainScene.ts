@@ -2,9 +2,10 @@ import Phaser from 'phaser'
 import { Player } from '../entities/Player'
 import { Enemy } from '../entities/Enemy'
 import { TouchControls } from '../entities/TouchControls'
-import { WORLD, PLATFORMS, BOSS_SHIP, BOSSES, ENEMY } from '../config/constants'
+import { WORLD, PLATFORMS, BOSS_SHIP, BOSSES, ENEMY, FONT_FAMILY } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
-import { ACHIEVEMENTS } from '../achievements/achievements'
+import { CoinManager } from '../utils/CoinManager'
+import { addCoinCounter } from '../utils/uiHelpers'
 
 export class MainScene extends Phaser.Scene {
   private player!: Player
@@ -34,6 +35,9 @@ export class MainScene extends Phaser.Scene {
   private playerPlatformVelX: number = 0
   private mothershipTraps!: Phaser.Physics.Arcade.Group
   private mothershipThrowTimer: number = 0
+  private lastCoinWorldY!: number
+  private coinCountText!: Phaser.GameObjects.Text
+  private shieldHUD: Phaser.GameObjects.Text | null = null
 
   constructor() {
     super('main-scene')
@@ -49,12 +53,14 @@ export class MainScene extends Phaser.Scene {
     this.mothershipSprite = null
     this.mothershipFrameTimer = 0
     this.mothershipFrame = 0
+    this.shieldHUD = null
     this.lastPlatformY = WORLD.groundY - WORLD.groundHeight / 2
     this.lastPlatformX = WORLD.width / 2
     this.sessionUnlocked = AchievementManager.getUnlocked()
     this.newlyUnlockedThisRun = []
     this.toastQueue = []
     this.toastActive = false
+    this.lastCoinWorldY = WORLD.groundY
 
     this.bgTile = this.add.tileSprite(0, 0, WORLD.width, WORLD.height, 'bg')
       .setOrigin(0, 0)
@@ -85,11 +91,19 @@ export class MainScene extends Phaser.Scene {
     })
     this.mothershipTraps = this.physics.add.group()
 
-    this.physics.add.overlap(this.player.gameObject, this.enemy.trapGroup, () => {
+    this.physics.add.overlap(this.player.gameObject, this.enemy.trapGroup, (_p, trap) => {
+      if (this.player.tryAbsorbHit()) {
+        ;(trap as Phaser.Physics.Arcade.Image).destroy()
+        return
+      }
       this.killPlayer()
     })
 
-    this.physics.add.overlap(this.player.gameObject, this.mothershipTraps, () => {
+    this.physics.add.overlap(this.player.gameObject, this.mothershipTraps, (_p, trap) => {
+      if (this.player.tryAbsorbHit()) {
+        ;(trap as Phaser.Physics.Arcade.Image).destroy()
+        return
+      }
       this.killPlayer()
     })
 
@@ -99,6 +113,7 @@ export class MainScene extends Phaser.Scene {
       (_shot, _trap) => {
         this.playShotImpact(_shot as Phaser.Physics.Arcade.Sprite)
         ;(_trap as Phaser.Physics.Arcade.Image).destroy()
+        this.tryAwardCoin()
       },
     )
 
@@ -108,12 +123,29 @@ export class MainScene extends Phaser.Scene {
       (_shot, _trap) => {
         this.playShotImpact(_shot as Phaser.Physics.Arcade.Sprite)
         ;(_trap as Phaser.Physics.Arcade.Image).destroy()
+        this.tryAwardCoin()
       },
     )
 
     this.scoreText = this.add
-      .text(16, 16, 'Altura: 0', { fontSize: '22px', color: '#ffffff', fontFamily: '"Comic Neue", "Comic Sans MS", cursive' })
+      .text(16, 16, 'Altura: 0', { fontSize: '22px', color: '#ffffff', fontFamily: FONT_FAMILY })
       .setScrollFactor(0)
+
+    // Coin counter — positioned to the left of the pause button (pause btn center = WORLD.width-36)
+    this.coinCountText = addCoinCounter(this, WORLD.width - 68, 26)
+
+    if (this.player.isShieldOwned()) {
+      this.shieldHUD = this.add
+        .text(16, 44, 'Escudo: pronto', {
+          fontSize: '18px',
+          color: '#00ff88',
+          fontFamily: FONT_FAMILY,
+          stroke: '#000000',
+          strokeThickness: 3,
+        })
+        .setScrollFactor(0)
+        .setDepth(20)
+    }
 
     this.addPauseButton()
 
@@ -129,7 +161,8 @@ export class MainScene extends Phaser.Scene {
       body.setVelocity(0, 0)
       body.enable = false
     }
-    shot.anims.play('shot-impact', true)
+    const impactAnim = (shot.getData('impactAnim') as string) || 'shot-impact'
+    shot.anims.play(impactAnim, true)
     shot.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
       shot.destroy()
     })
@@ -317,7 +350,7 @@ export class MainScene extends Phaser.Scene {
     const vx = ((dx / len) * cos - (dy / len) * sin) * BOSS_SHIP.projectileSpeed
     const vy = ((dx / len) * sin + (dy / len) * cos) * BOSS_SHIP.projectileSpeed
 
-    const frame = Phaser.Math.Between(0, 2)
+    const frame = Phaser.Math.Between(0, 3)
     const trap = this.mothershipTraps.create(screenOriginX, worldOriginY, ENEMY.trapsKey, frame) as Phaser.Physics.Arcade.Image
     trap.setDisplaySize(ENEMY.trapDisplaySize, ENEMY.trapDisplaySize)
     ;(trap.body as Phaser.Physics.Arcade.Body).setSize(ENEMY.trapHitboxSize, ENEMY.trapHitboxSize)
@@ -368,6 +401,7 @@ export class MainScene extends Phaser.Scene {
           vital.circle.setFillStyle(0x333333).setStrokeStyle(0)
           this.tweens.killTweensOf(vital.circle)
           this.playShotImpact(proj)
+          this.tryAwardCoin()
           if (this.bossVitals.every(v => v.hit)) this.defeatBoss()
           break
         }
@@ -387,13 +421,26 @@ export class MainScene extends Phaser.Scene {
       const dx = proj.x - ex
       const dy = proj.y - (cameraY + ey)
       if (Math.abs(dx) < r && Math.abs(dy) < r) {
-        this.enemy.showHit()
+        const stunDuration = proj.getData('stunDuration') as number | undefined
+        if (stunDuration) {
+          this.enemy.applyStun(stunDuration)
+          this.tryAwardCoin()
+        } else {
+          this.enemy.showHit()
+        }
         this.playShotImpact(proj)
       }
     }
   }
 
   private defeatBoss() {
+    const reward = BOSSES[this.activeBossIdx]?.reward ?? 0
+    if (reward > 0) {
+      const total = CoinManager.add(reward)
+      this.coinCountText.setText(String(total))
+      this.showBossRewardPopup(reward)
+    }
+
     this.bossesDefeated.add(this.activeBossIdx)
     this.onBossDefeated()
     this.mothershipTraps.clear(true, true)
@@ -464,6 +511,15 @@ export class MainScene extends Phaser.Scene {
       if (this.player.gameObject.y < upperThreshold) {
         this.cameras.main.scrollY = this.player.gameObject.y - WORLD.height * 0.5
       }
+
+      // Force scroll upward in the 50-unit window before each boss trigger
+      const bossPushStarts = [950, 1950, 2950]
+      for (let i = 0; i < bossPushStarts.length; i++) {
+        if (this.score >= bossPushStarts[i] && !this.bossesDefeated.has(i)) {
+          this.cameras.main.scrollY -= 80 * (delta / 1000)
+          break
+        }
+      }
     }
 
     const scrollDelta = this.cameras.main.scrollY - prevScrollY
@@ -502,6 +558,15 @@ export class MainScene extends Phaser.Scene {
     this.score = Math.floor(-this.cameras.main.scrollY / 10)
     this.scoreText.setText(`Altura: ${this.score}`)
 
+    if (this.shieldHUD) {
+      const cd = this.player.getShieldCooldown()
+      if (cd > 0) {
+        this.shieldHUD.setText(`Escudo: ${Math.ceil(cd)}s`).setColor('#ff8800')
+      } else {
+        this.shieldHUD.setText('Escudo: pronto').setColor('#00ff88')
+      }
+    }
+
     this.checkAchievements()
 
     if (this.player.gameObject.y > cameraBottom + 50) {
@@ -509,17 +574,91 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
+  private tryAwardCoin() {
+    const py = this.player.gameObject.y
+    if (py >= this.lastCoinWorldY) return
+    this.lastCoinWorldY = py
+    const total = CoinManager.add(1)
+    this.coinCountText.setText(String(total))
+    this.showCoinPopup()
+  }
+
+  private showBossRewardPopup(amount: number) {
+    const screenX = WORLD.width / 2
+    const screenY = WORLD.height / 2
+    const iconSize = 22
+
+    const text = this.add
+      .text(screenX - 2, screenY, `+${amount}`, {
+        fontSize: '28px',
+        color: '#ffd700',
+        fontFamily: FONT_FAMILY,
+        stroke: '#000000',
+        strokeThickness: 4,
+      })
+      .setScrollFactor(0)
+      .setDepth(40)
+      .setOrigin(1, 0.5)
+
+    const icon = this.add
+      .image(screenX + 2, screenY, 'shop-coin')
+      .setDisplaySize(iconSize, iconSize)
+      .setScrollFactor(0)
+      .setDepth(40)
+      .setOrigin(0, 0.5)
+
+    this.tweens.add({
+      targets: [text, icon],
+      y: screenY - 60,
+      alpha: 0,
+      duration: 1400,
+      ease: 'Quad.easeOut',
+      onComplete: () => { text.destroy(); icon.destroy() },
+    })
+  }
+
+  private showCoinPopup() {
+    const screenX = this.player.gameObject.x
+    const screenY = this.player.gameObject.y - this.cameras.main.scrollY - 30
+    const iconSize = 18
+
+    const text = this.add
+      .text(screenX - 1, screenY, '+1', {
+        fontSize: '20px',
+        color: '#ffd700',
+        fontFamily: FONT_FAMILY,
+        stroke: '#000000',
+        strokeThickness: 3,
+      })
+      .setScrollFactor(0)
+      .setDepth(40)
+      .setOrigin(1, 0.5)
+
+    const icon = this.add
+      .image(screenX + 1, screenY, 'shop-coin')
+      .setDisplaySize(iconSize, iconSize)
+      .setScrollFactor(0)
+      .setDepth(40)
+      .setOrigin(0, 0.5)
+
+    this.tweens.add({
+      targets: [text, icon],
+      y: screenY - 40,
+      alpha: 0,
+      duration: 900,
+      ease: 'Quad.easeOut',
+      onComplete: () => { text.destroy(); icon.destroy() },
+    })
+  }
+
   private checkAchievements() {
-    for (let i = 0; i < ACHIEVEMENTS.length; i++) {
-      const achievement = ACHIEVEMENTS[i]
-      if (!this.sessionUnlocked.has(achievement.id) && this.score >= achievement.heightThreshold) {
-        this.sessionUnlocked.add(achievement.id)
-        AchievementManager.checkHeight(this.score)
-        this.newlyUnlockedThisRun.push({ iconKey: achievement.unlockedIconKey, name: achievement.name })
-        this.toastQueue.push({ iconKey: achievement.unlockedIconKey })
-        if (!this.toastActive) this.showNextToast()
-      }
+    const newlyUnlocked = AchievementManager.checkHeight(this.score)
+    for (const achievement of newlyUnlocked) {
+      this.sessionUnlocked.add(achievement.id)
+      this.newlyUnlockedThisRun.push({ iconKey: achievement.unlockedIconKey, name: achievement.name })
+      this.toastQueue.push({ iconKey: achievement.unlockedIconKey })
     }
+    if (newlyUnlocked.length > 0 && !this.toastActive) this.showNextToast()
   }
 
   private showNextToast() {

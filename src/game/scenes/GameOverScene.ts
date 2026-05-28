@@ -1,11 +1,14 @@
 import Phaser from 'phaser'
-import { WORLD } from '../config/constants'
+import { WORLD, FONT_FAMILY } from '../config/constants'
+import { addBackground, wireButtonLabel, addCoinCounter } from '../utils/uiHelpers'
+import { dropIn, dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
+import { storageGet, storageSet } from '../utils/storage'
 
 const SCALE = 3
-const FONT = '"Comic Neue", "Comic Sans MS", cursive'
 
 export class GameOverScene extends Phaser.Scene {
   private achievementQueue!: { iconKey: string; name: string }[]
+  private toastTimer: Phaser.Time.TimerEvent | null = null
 
   constructor() {
     super('game-over-scene')
@@ -18,26 +21,29 @@ export class GameOverScene extends Phaser.Scene {
 
     this.cameras.main.fadeIn(600, 0, 0, 0)
 
-    const prevBest = parseInt(localStorage.getItem('highScore') ?? '0', 10)
+    const prevBest = parseInt(storageGet('highScore') ?? '0', 10)
     const isNewBest = data.score > prevBest
-    if (isNewBest) localStorage.setItem('highScore', String(data.score))
+    if (isNewBest) storageSet('highScore', String(data.score))
     const highScore = isNewBest ? data.score : prevBest
 
-    this.add.image(cx, cy, 'bg').setDisplaySize(WORLD.width, WORLD.height).setDepth(0)
+    addBackground(this)
+    addCoinCounter(this)
 
     const fim  = this.add.image(cx - 65, cy - 130, 'gameover-fim').setScale(SCALE).setOrigin(0.5)
     const cat  = this.add.image(cx + 65, cy - 150, 'gameover-chinela').setScale(SCALE).setOrigin(0.5)
     const de   = this.add.image(cx - 85, cy - 50,  'gameover-de').setScale(SCALE).setOrigin(0.5)
     const jogo = this.add.image(cx + 55, cy - 45,  'gameover-jogo').setScale(SCALE).setOrigin(0.5)
 
+    const labelStyle = { fontSize: '16px', color: '#ffffff', fontFamily: FONT_FAMILY }
+
     const scoreText = this.add
-      .text(cx, cy + 105, `Altura: ${data.score}`, { fontSize: '26px', color: '#ffffff', fontFamily: '"Comic Neue", "Comic Sans MS", cursive' })
+      .text(cx, cy + 105, `Altura: ${data.score}`, { fontSize: '26px', color: '#ffffff', fontFamily: FONT_FAMILY })
       .setOrigin(0.5)
 
     const bestColor = isNewBest ? '#ffd700' : '#aaaaaa'
     const bestLabel = isNewBest ? `Novo recorde: ${highScore}!` : `Recorde: ${highScore}`
     const bestText = this.add
-      .text(cx, cy + 138, bestLabel, { fontSize: '18px', color: bestColor, fontFamily: '"Comic Neue", "Comic Sans MS", cursive' })
+      .text(cx, cy + 138, bestLabel, { fontSize: '18px', color: bestColor, fontFamily: FONT_FAMILY })
       .setOrigin(0.5)
 
     const btnSize = 80
@@ -55,10 +61,8 @@ export class GameOverScene extends Phaser.Scene {
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
-    const labelStyle = { fontSize: '16px', color: '#ffffff', fontFamily: '"Comic Neue", "Comic Sans MS", cursive' }
-
     const labelHome = this.add
-      .text(cx - btnSize / 2 - gap / 2, cy + 180 + btnSize / 2 + 10, 'Inicio', labelStyle)
+      .text(cx - btnSize / 2 - gap / 2, cy + 180 + btnSize / 2 + 10, 'Início', labelStyle)
       .setOrigin(0.5, 0)
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
@@ -69,67 +73,25 @@ export class GameOverScene extends Phaser.Scene {
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
-    const allElements = [fim, cat, de, jogo, scoreText, bestText, btnHome, btnPlay, labelHome, labelPlay]
+    const allElements: SceneObject[] = [fim, cat, de, jogo, scoreText, bestText, btnHome, btnPlay, labelHome, labelPlay]
 
-    this.dropIn(fim,       { amplitude: 10, floatDuration: 1800, delay: 0   })
-    this.dropIn(cat,       { amplitude: 8,  floatDuration: 2100, delay: 100 })
-    this.dropIn(de,        { amplitude: 10, floatDuration: 1600, delay: 200 })
-    this.dropIn(jogo,      { amplitude: 9,  floatDuration: 2300, delay: 300 })
-    this.dropIn(scoreText, { amplitude: 0,  floatDuration: 0,    delay: 350 })
-    this.dropIn(bestText,  { amplitude: 0,  floatDuration: 0,    delay: 400 })
-    this.dropIn(btnHome,   { amplitude: 0,  floatDuration: 0,    delay: 450 })
-    this.dropIn(btnPlay,   { amplitude: 0,  floatDuration: 0,    delay: 500 })
-    this.dropIn(labelHome, { amplitude: 0,  floatDuration: 0,    delay: 450 })
-    this.dropIn(labelPlay, { amplitude: 0,  floatDuration: 0,    delay: 500 })
+    dropInFloat(this, fim,  { amplitude: 10, floatDuration: 1800, delay: 0   })
+    dropInFloat(this, cat,  { amplitude: 8,  floatDuration: 2100, delay: 100 })
+    dropInFloat(this, de,   { amplitude: 10, floatDuration: 1600, delay: 200 })
+    dropInFloat(this, jogo, { amplitude: 9,  floatDuration: 2300, delay: 300 })
+    dropIn(this, scoreText, 350)
+    dropIn(this, bestText,  400)
+    dropIn(this, btnHome,   450)
+    dropIn(this, btnPlay,   500)
+    dropIn(this, labelHome, 450)
+    dropIn(this, labelPlay, 500)
 
     if (this.achievementQueue.length > 0) {
-      this.time.delayedCall(1500, () => this.showNextAchievementToast())
+      this.toastTimer = this.time.delayedCall(1500, () => this.showNextAchievementToast())
     }
 
-    btnHome.on('pointerover', () => { btnHome.setAlpha(1); labelHome.setAlpha(1) })
-    btnHome.on('pointerout',  () => { btnHome.setAlpha(0.85); labelHome.setAlpha(0.85) })
-    btnHome.on('pointerdown', () => this.exitTo('menu-scene', allElements))
-
-    btnPlay.on('pointerover', () => { btnPlay.setAlpha(1); labelPlay.setAlpha(1) })
-    btnPlay.on('pointerout',  () => { btnPlay.setAlpha(0.85); labelPlay.setAlpha(0.85) })
-    btnPlay.on('pointerdown', () => this.scene.start('main-scene'))
-
-    labelHome.on('pointerover', () => { btnHome.setAlpha(1); labelHome.setAlpha(1) })
-    labelHome.on('pointerout',  () => { btnHome.setAlpha(0.85); labelHome.setAlpha(0.85) })
-    labelHome.on('pointerdown', () => this.exitTo('menu-scene', allElements))
-
-    labelPlay.on('pointerover', () => { btnPlay.setAlpha(1); labelPlay.setAlpha(1) })
-    labelPlay.on('pointerout',  () => { btnPlay.setAlpha(0.85); labelPlay.setAlpha(0.85) })
-    labelPlay.on('pointerdown', () => this.scene.start('main-scene'))
-
-  }
-
-  private dropIn(
-    obj: Phaser.GameObjects.Image | Phaser.GameObjects.Text,
-    opts: { amplitude: number; floatDuration: number; delay: number },
-  ) {
-    const finalY = obj.y
-    obj.y = -Math.abs(obj.displayHeight) - 20
-
-    this.tweens.add({
-      targets: obj,
-      y: finalY,
-      duration: 900,
-      delay: opts.delay,
-      ease: 'Cubic.easeOut',
-      onComplete: () => {
-        if (opts.amplitude > 0) {
-          this.tweens.add({
-            targets: obj,
-            y: finalY + opts.amplitude,
-            duration: opts.floatDuration,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut',
-          })
-        }
-      },
-    })
+    wireButtonLabel(btnHome, labelHome, () => exitTo(this, 'menu-scene', allElements))
+    wireButtonLabel(btnPlay, labelPlay, () => exitTo(this, 'main-scene', allElements))
   }
 
   private showNextAchievementToast() {
@@ -145,9 +107,9 @@ export class GameOverScene extends Phaser.Scene {
     const container = this.add.container(startX, panelY).setDepth(100)
     const panel = this.add.rectangle(0, 0, panelW, panelH, 0x222222, 0.92).setStrokeStyle(2, 0xffd700)
     const icon = this.add.image(-panelW / 2 + 36, 0, next.iconKey).setDisplaySize(42, 42)
-    const label = this.add.text(-panelW / 2 + 64, -14, 'Conquista desbloqueada!', { fontSize: '10px', color: '#ffd700', fontFamily: FONT })
-    const nameText = this.add.text(-panelW / 2 + 64, 2, next.name, { fontSize: '15px', color: '#ffffff', fontFamily: FONT })
-    const hint = this.add.text(panelW / 2 - 8, panelH / 2 - 12, 'ver ›', { fontSize: '10px', color: '#ffd700', fontFamily: FONT }).setOrigin(1, 1)
+    const label = this.add.text(-panelW / 2 + 64, -14, 'Conquista desbloqueada!', { fontSize: '10px', color: '#ffd700', fontFamily: FONT_FAMILY })
+    const nameText = this.add.text(-panelW / 2 + 64, 2, next.name, { fontSize: '15px', color: '#ffffff', fontFamily: FONT_FAMILY })
+    const hint = this.add.text(panelW / 2 - 8, panelH / 2 - 12, 'ver ›', { fontSize: '10px', color: '#ffd700', fontFamily: FONT_FAMILY }).setOrigin(1, 1)
     container.add([panel, icon, label, nameText, hint])
 
     container.setSize(panelW, panelH)
@@ -156,7 +118,8 @@ export class GameOverScene extends Phaser.Scene {
     container.on('pointerout', () => panel.setStrokeStyle(2, 0xffd700))
     container.on('pointerdown', () => {
       this.tweens.killTweensOf(container)
-      this.time.removeAllEvents()
+      this.toastTimer?.remove(false)
+      this.toastTimer = null
       this.scene.start('achievements-scene')
     })
 
@@ -166,7 +129,7 @@ export class GameOverScene extends Phaser.Scene {
       duration: 400,
       ease: 'Cubic.easeOut',
       onComplete: () => {
-        this.time.delayedCall(2400, () => {
+        this.toastTimer = this.time.delayedCall(2400, () => {
           this.tweens.add({
             targets: container,
             x: -(panelW / 2 + 10),
@@ -179,20 +142,6 @@ export class GameOverScene extends Phaser.Scene {
           })
         })
       },
-    })
-  }
-
-  private exitTo(scene: string, elements: (Phaser.GameObjects.Image | Phaser.GameObjects.Text)[]) {
-    elements.forEach((el, i) => {
-      this.tweens.killTweensOf(el)
-      this.tweens.add({
-        targets: el,
-        y: -WORLD.height,
-        duration: 600,
-        delay: i * 40,
-        ease: 'Cubic.easeIn',
-        onComplete: i === elements.length - 1 ? () => this.scene.start(scene) : undefined,
-      })
     })
   }
 }

@@ -1,17 +1,27 @@
 import Phaser from 'phaser'
-import { WORLD } from '../config/constants'
+import { WORLD, FONT_FAMILY } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
 import type { Achievement } from '../achievements/achievements'
+import { addBackground, addModalOverlay, wireButtonLabel, addCoinCounter } from '../utils/uiHelpers'
+import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 
 const COLS = 3
 const ICON_SIZE = 90
 const H_GAP = 24
 const V_GAP = 32
 const LOCKED_KEY = 'achievement-locked'
-const FONT = '"Comic Neue", "Comic Sans MS", cursive'
+
+type Modal = {
+  overlay: Phaser.GameObjects.Rectangle
+  panel: Phaser.GameObjects.Image
+  icon: Phaser.GameObjects.Image
+  nameText: Phaser.GameObjects.Text
+  descText: Phaser.GameObjects.Text
+  closeBtn: Phaser.GameObjects.Container
+}
 
 export class AchievementsScene extends Phaser.Scene {
-  private modalObjects: Phaser.GameObjects.GameObject[] = []
+  private modal: Modal | null = null
 
   constructor() {
     super('achievements-scene')
@@ -22,13 +32,14 @@ export class AchievementsScene extends Phaser.Scene {
     const unlocked = AchievementManager.getUnlocked()
     const all = AchievementManager.getAll()
 
-    this.add.image(cx, WORLD.height / 2, 'bg').setDisplaySize(WORLD.width, WORLD.height).setDepth(0)
+    addBackground(this)
+    addCoinCounter(this)
 
     const title = this.add
       .text(cx, 60, 'Conquistas', {
         fontSize: '32px',
         color: '#ffd700',
-        fontFamily: FONT,
+        fontFamily: FONT_FAMILY,
         stroke: '#000000',
         strokeThickness: 4,
       })
@@ -41,7 +52,7 @@ export class AchievementsScene extends Phaser.Scene {
     const totalH = rows * (ICON_SIZE + 36) + (rows - 1) * V_GAP
     const startY = WORLD.height / 2 - totalH / 2 + ICON_SIZE / 2 + 20
 
-    const elements: (Phaser.GameObjects.Image | Phaser.GameObjects.Text)[] = [title]
+    const elements: SceneObject[] = [title]
 
     all.forEach((achievement, i) => {
       const col = i % COLS
@@ -67,7 +78,7 @@ export class AchievementsScene extends Phaser.Scene {
         .text(x, y + ICON_SIZE / 2 + 6, isUnlocked ? achievement.name : '???', {
           fontSize: '13px',
           color: isUnlocked ? '#ffffff' : '#888888',
-          fontFamily: FONT,
+          fontFamily: FONT_FAMILY,
           align: 'center',
           wordWrap: { width: ICON_SIZE + H_GAP - 4 },
         })
@@ -85,10 +96,10 @@ export class AchievementsScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
 
     const labelBack = this.add
-      .text(cx, WORLD.height - 30 , 'Inicio', {
+      .text(cx, WORLD.height - 30, 'Início', {
         fontSize: '16px',
         color: '#ffffff',
-        fontFamily: FONT,
+        fontFamily: FONT_FAMILY,
       })
       .setOrigin(0.5)
       .setDepth(3)
@@ -97,119 +108,101 @@ export class AchievementsScene extends Phaser.Scene {
 
     elements.push(backBtn, labelBack)
 
-    backBtn.on('pointerover', () => { backBtn.setAlpha(1); labelBack.setAlpha(1) })
-    backBtn.on('pointerout', () => { backBtn.setAlpha(0.85); labelBack.setAlpha(0.85) })
-    backBtn.on('pointerdown', () => this.exitTo('menu-scene', elements))
+    wireButtonLabel(backBtn, labelBack, () => exitTo(this, 'menu-scene', elements))
 
-    labelBack.on('pointerover', () => { backBtn.setAlpha(1); labelBack.setAlpha(1) })
-    labelBack.on('pointerout', () => { backBtn.setAlpha(0.85); labelBack.setAlpha(0.85) })
-    labelBack.on('pointerdown', () => this.exitTo('menu-scene', elements))
-
-    elements.forEach((el, i) => this.dropIn(el, i * 40))
+    elements.forEach((el, i) => dropIn(this, el, i * 40))
   }
 
   private openModal(achievement: Achievement, isUnlocked: boolean) {
-    this.modalObjects.forEach(o => o.destroy())
-    this.modalObjects = []
+    if (this.modal) {
+      const { overlay, panel, icon, nameText, descText, closeBtn } = this.modal
+      ;[overlay, panel, icon, nameText, descText, closeBtn].forEach(o => o.destroy())
+      this.modal = null
+    }
 
     const cx = WORLD.width / 2
     const cy = WORLD.height / 2
-    const MODAL_W = 260
-    const MODAL_H = 280
+    const MODAL_SIZE = 390   // square
     const DEPTH = 10
 
-    const overlay = this.add.rectangle(cx, cy, WORLD.width, WORLD.height, 0x000000, 0.6).setDepth(DEPTH).setInteractive()
+    const overlay = addModalOverlay(this, DEPTH).setInteractive().setAlpha(0)
     overlay.on('pointerdown', () => this.closeModal())
 
-    const panel = this.add.rectangle(cx, cy, MODAL_W, MODAL_H, 0x1a1a2e, 1)
+    const panel = this.add.image(cx, cy, 'modal-bg')
+      .setDisplaySize(MODAL_SIZE, MODAL_SIZE)
       .setDepth(DEPTH + 1)
-      .setStrokeStyle(2, isUnlocked ? 0xffd700 : 0x555555)
+      .setAlpha(0)
 
     const iconKey = isUnlocked && this.textures.exists(achievement.unlockedIconKey)
       ? achievement.unlockedIconKey
       : 'achievement-locked'
 
-    const icon = this.add.image(cx, cy - 70, iconKey)
-      .setDisplaySize(80, 80)
+    const icon = this.add.image(cx, cy - 90, iconKey)
+      .setDisplaySize(160, 160)
       .setDepth(DEPTH + 2)
-      .setAlpha(isUnlocked ? 1 : 0.5)
+      .setAlpha(0)
 
-    const nameText = this.add.text(cx, cy - 10, isUnlocked ? achievement.name : '???', {
-      fontSize: '18px',
+    const nameText = this.add.text(cx, cy + 20, isUnlocked ? achievement.name : '???', {
+      fontSize: '22px',
       color: isUnlocked ? '#ffd700' : '#888888',
-      fontFamily: FONT,
+      fontFamily: FONT_FAMILY,
       stroke: '#000000',
       strokeThickness: 3,
       align: 'center',
-      wordWrap: { width: MODAL_W - 24 },
+      wordWrap: { width: MODAL_SIZE - 40 },
     }).setOrigin(0.5).setDepth(DEPTH + 2)
 
-    const descText = this.add.text(cx, cy + 30, isUnlocked ? achievement.description : 'Conquista bloqueada', {
-      fontSize: '13px',
-      color: isUnlocked ? '#cccccc' : '#666666',
-      fontFamily: FONT,
-      align: 'center',
-      wordWrap: { width: MODAL_W - 32 },
-    }).setOrigin(0.5).setDepth(DEPTH + 2)
-
-    const closeBtn = this.add.text(cx, cy + MODAL_H / 2 - 28, 'Fechar', {
+    const descText = this.add.text(cx, cy + 64, isUnlocked ? achievement.description : 'Conquista bloqueada', {
       fontSize: '15px',
-      color: '#ffffff',
-      fontFamily: FONT,
-      backgroundColor: '#333355',
-      padding: { x: 16, y: 6 },
-    }).setOrigin(0.5).setDepth(DEPTH + 2).setInteractive({ useHandCursor: true })
+      color: isUnlocked ? '#cccccc' : '#666666',
+      fontFamily: FONT_FAMILY,
+      align: 'center',
+      wordWrap: { width: MODAL_SIZE - 48 },
+    }).setOrigin(0.5).setDepth(DEPTH + 2)
 
-    closeBtn.on('pointerover', () => closeBtn.setColor('#ffd700'))
-    closeBtn.on('pointerout', () => closeBtn.setColor('#ffffff'))
+    const closeBg = this.add.image(0, 0, 'btn-secondary')
+    const closeTxt = this.add.text(0, 0, 'Fechar', {
+      fontFamily: FONT_FAMILY,
+      fontSize: '20px',
+      color: '#000000',
+    }).setOrigin(0.5)
+    const closeBtn = this.add.container(cx, cy + 124, [closeBg, closeTxt])
+      .setSize(closeBg.width, closeBg.height)
+      .setDepth(DEPTH + 2)
+      .setInteractive({ useHandCursor: true })
+
+    closeBtn.on('pointerover', () => closeBtn.setScale(1.12))
+    closeBtn.on('pointerout', () => closeBtn.setScale(1))
     closeBtn.on('pointerdown', () => this.closeModal())
 
-    this.modalObjects = [overlay, panel, icon, nameText, descText, closeBtn]
+    this.modal = { overlay, panel, icon, nameText, descText, closeBtn }
 
-    const targets = [panel, icon, nameText, descText, closeBtn]
-    targets.forEach(t => { t.setAlpha(0); t.setScale(0.85) })
-    this.tweens.add({ targets, alpha: 1, scale: 1, duration: 180, ease: 'Back.easeOut' })
+    // overlay + panel + icon: alpha-only (setScale would override setDisplaySize in Phaser)
+    this.tweens.add({ targets: overlay, alpha: 0.6, duration: 180, ease: 'Cubic.easeOut' })
+    this.tweens.add({ targets: [panel, icon], alpha: isUnlocked ? 1 : 0.5, duration: 180, ease: 'Cubic.easeOut' })
+
+    // Scale + alpha tween for text/button only
+    const contentTargets = [nameText, descText, closeBtn]
+    contentTargets.forEach(t => { t.setAlpha(0); t.setScale(0.85) })
+    this.tweens.add({ targets: contentTargets, alpha: 1, scale: 1, duration: 180, ease: 'Back.easeOut' })
   }
 
   private closeModal() {
-    const targets = this.modalObjects.filter(o => o !== this.modalObjects[0])
+    if (!this.modal) return
+    const { overlay, panel, icon, nameText, descText, closeBtn } = this.modal
+
+    // overlay + panel + icon: alpha-only (setScale would corrupt setDisplaySize)
+    this.tweens.add({ targets: [overlay, panel, icon], alpha: 0, duration: 140, ease: 'Cubic.easeIn' })
     this.tweens.add({
-      targets,
+      targets: [nameText, descText, closeBtn],
       alpha: 0,
       scale: 0.85,
       duration: 140,
       ease: 'Cubic.easeIn',
       onComplete: () => {
-        this.modalObjects.forEach(o => o.destroy())
-        this.modalObjects = []
+        ;[overlay, panel, icon, nameText, descText, closeBtn].forEach(o => o.destroy())
+        this.modal = null
       },
-    })
-  }
-
-  private dropIn(obj: Phaser.GameObjects.Image | Phaser.GameObjects.Text, delay: number) {
-    const finalY = obj.y
-    obj.y = -Math.abs(obj.displayHeight) - 20
-
-    this.tweens.add({
-      targets: obj,
-      y: finalY,
-      duration: 900,
-      delay,
-      ease: 'Cubic.easeOut',
-    })
-  }
-
-  private exitTo(scene: string, elements: (Phaser.GameObjects.Image | Phaser.GameObjects.Text)[]) {
-    elements.forEach((el, i) => {
-      this.tweens.killTweensOf(el)
-      this.tweens.add({
-        targets: el,
-        y: -WORLD.height,
-        duration: 600,
-        delay: i * 40,
-        ease: 'Cubic.easeIn',
-        onComplete: i === elements.length - 1 ? () => this.scene.start(scene) : undefined,
-      })
     })
   }
 }
