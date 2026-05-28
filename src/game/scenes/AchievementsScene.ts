@@ -147,16 +147,19 @@ export class AchievementsScene extends Phaser.Scene {
       wordWrap: { width: MODAL_SIZE - 48 },
     }).setOrigin(0.5).setDepth(DEPTH + 2)
 
-    const closeBtn = this.add.text(cx, cy + 124, 'Fechar', {
-      fontSize: '17px',
-      color: '#ffffff',
+    const closeBg = this.add.image(0, 0, 'btn-secondary')
+    const closeTxt = this.add.text(0, 0, 'Fechar', {
       fontFamily: FONT_FAMILY,
-      backgroundColor: '#333355',
-      padding: { x: 20, y: 8 },
-    }).setOrigin(0.5).setDepth(DEPTH + 2).setInteractive({ useHandCursor: true })
+      fontSize: '20px',
+      color: '#000000',
+    }).setOrigin(0.5)
+    const closeBtn = this.add.container(cx, cy + 124, [closeBg, closeTxt])
+      .setSize(closeBg.width, closeBg.height)
+      .setDepth(DEPTH + 2)
+      .setInteractive({ useHandCursor: true })
 
-    closeBtn.on('pointerover', () => closeBtn.setColor('#ffd700'))
-    closeBtn.on('pointerout', () => closeBtn.setColor('#ffffff'))
+    closeBtn.on('pointerover', () => closeBtn.setScale(1.12))
+    closeBtn.on('pointerout', () => closeBtn.setScale(1))
     closeBtn.on('pointerdown', () => this.closeModal())
 
     this.modalObjects = [overlay, panel, icon, nameText, descText, closeBtn]
