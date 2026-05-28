@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
 import { addBackground, wireButtonLabel, addCoinCounter } from '../utils/uiHelpers'
 import { dropIn, dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
+import { storageGet, storageSet } from '../utils/storage'
 
 const SCALE = 3
 
@@ -19,9 +20,9 @@ export class GameOverScene extends Phaser.Scene {
 
     this.cameras.main.fadeIn(600, 0, 0, 0)
 
-    const prevBest = parseInt(localStorage.getItem('highScore') ?? '0', 10)
+    const prevBest = parseInt(storageGet('highScore') ?? '0', 10)
     const isNewBest = data.score > prevBest
-    if (isNewBest) localStorage.setItem('highScore', String(data.score))
+    if (isNewBest) storageSet('highScore', String(data.score))
     const highScore = isNewBest ? data.score : prevBest
 
     addBackground(this)

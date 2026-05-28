@@ -1,12 +1,13 @@
 import { ACHIEVEMENTS } from './achievements'
 import type { Achievement } from './achievements'
+import { storageGet, storageSet } from '../utils/storage'
 
 const STORAGE_KEY = 'unlockedAchievements'
 
 export class AchievementManager {
   static getUnlocked(): Set<string> {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY)
+      const raw = storageGet(STORAGE_KEY)
       return new Set(raw ? JSON.parse(raw) : [])
     } catch {
       return new Set()
@@ -30,7 +31,7 @@ export class AchievementManager {
     }
 
     if (newlyUnlocked.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([...unlocked]))
+      storageSet(STORAGE_KEY, JSON.stringify([...unlocked]))
     }
 
     return newlyUnlocked

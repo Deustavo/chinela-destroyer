@@ -1,7 +1,9 @@
+import { storageGet, storageRemove, storageSet } from './storage'
+
 const KEY = 'newItemNotification'
 
 export const NotificationManager = {
-  setNewItem()  { localStorage.setItem(KEY, '1') },
-  clearNewItem(){ localStorage.removeItem(KEY) },
-  hasNewItem()  { return localStorage.getItem(KEY) === '1' },
+  setNewItem()  { storageSet(KEY, '1') },
+  clearNewItem(){ storageRemove(KEY) },
+  hasNewItem()  { return storageGet(KEY) === '1' },
 }

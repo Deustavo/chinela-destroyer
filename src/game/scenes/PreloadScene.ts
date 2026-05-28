@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { PLAYER, ENEMY, PLATFORMS, BOSS_SHIP, SHOT, WORLD, SHIELD, WINGS } from '../config/constants'
 import { ITEM_REGISTRY } from '../items/registry'
+import { storageInit, STORAGE_KEYS } from '../utils/storage'
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -118,6 +119,6 @@ export class PreloadScene extends Phaser.Scene {
     g.setVisible(false)
     g.destroy()
 
-    this.scene.start('menu-scene')
+    storageInit(STORAGE_KEYS).then(() => this.scene.start('menu-scene'))
   }
 }

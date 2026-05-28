@@ -1,15 +1,17 @@
+import { storageGet, storageSet } from './storage'
+
 const KEY = 'equipped'
 
 export class EquipManager {
   static getEquipped(): string | null {
-    return localStorage.getItem(KEY)
+    return storageGet(KEY)
   }
 
   static isEquipped(itemId: string): boolean {
-    return localStorage.getItem(KEY) === itemId
+    return storageGet(KEY) === itemId
   }
 
   static equip(itemId: string): void {
-    localStorage.setItem(KEY, itemId)
+    storageSet(KEY, itemId)
   }
 }
