@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { PLAYER, WORLD, SHOT, SHIELD } from '../config/constants'
+import { PLAYER, WORLD, SHOT, SHIELD, WINGS } from '../config/constants'
 import { ITEM_REGISTRY } from '../items/registry'
 import { PlayerLoadout } from '../items/PlayerLoadout'
 import { EquipManager } from '../utils/EquipManager'
@@ -25,10 +25,16 @@ export class Player {
   private shieldCooldown: number = 0
   private shieldSprite: Phaser.GameObjects.Image | null = null
 
+  private wingsOwned: boolean = false
+  private maxJumps: number = 1
+  private jumpsRemaining: number = 1
+  private wingsSprite: Phaser.GameObjects.Sprite | null = null
+  private prevTouchJump: boolean = false
+
   constructor(scene: Phaser.Scene) {
     this.scene = scene
     this.sprite = scene.physics.add.sprite(PLAYER.startX, PLAYER.startY, PLAYER.spriteKey)
-    this.sprite.setScale(.5)
+    this.sprite.setScale(.5).setDepth(1)
     const body = this.body
     body.setCollideWorldBounds(false)
     const hitW = this.sprite.width * 0.5
@@ -53,6 +59,17 @@ export class Player {
         .setDisplaySize(SHIELD.displaySize, SHIELD.displaySize)
         .setDepth(6)
         .setAlpha(0.9)
+    }
+
+    this.wingsOwned = EquipManager.isEquipped(WINGS.itemId)
+    if (this.wingsOwned) {
+      this.maxJumps = 2
+      this.jumpsRemaining = 2
+      this.wingsSprite = scene.add
+        .sprite(PLAYER.startX, PLAYER.startY, WINGS.spriteKey)
+        .setDisplaySize(WINGS.displaySize, WINGS.displaySize)
+        .setDepth(0)
+        .setVisible(false)
     }
 
     this.registerAnimations(scene)
@@ -175,6 +192,15 @@ export class Player {
       })
     }
 
+    if (!scene.anims.exists(WINGS.animKey)) {
+      scene.anims.create({
+        key: WINGS.animKey,
+        frames: scene.anims.generateFrameNumbers(WINGS.spriteKey, { frames: [...WINGS.frames] }),
+        frameRate: WINGS.frameRate,
+        repeat: 0,
+      })
+    }
+
     // All registered shot items
     for (const item of ITEM_REGISTRY) {
       if (item.type !== 'shot' || !item.shotConfig) continue
@@ -232,6 +258,10 @@ export class Player {
       this.shieldSprite.setAlpha(this.shieldCooldown > 0 ? 0 : 0.9)
     }
 
+    if (this.wingsOwned && this.wingsSprite) {
+      this.wingsSprite.setPosition(this.sprite.x, this.sprite.y - 16)
+    }
+
     if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
       this.requestShot()
     }
@@ -252,8 +282,28 @@ export class Player {
       this.sprite.setFlipX(false)
     }
 
-    if ((this.cursors.up?.isDown || this.wasd.up.isDown || touch?.jump) && body.blocked.down) {
+    const jumpJustDown =
+      Phaser.Input.Keyboard.JustDown(this.cursors.up!) ||
+      Phaser.Input.Keyboard.JustDown(this.wasd.up) ||
+      (touch?.jump === true && !this.prevTouchJump)
+    this.prevTouchJump = touch?.jump ?? false
+
+    if (body.blocked.down) {
+      this.jumpsRemaining = this.maxJumps
+    }
+
+    if (jumpJustDown && this.jumpsRemaining > 0) {
+      const isDoubleJump = !body.blocked.down
       body.setVelocityY(PLAYER.jumpVelocity)
+      this.jumpsRemaining--
+      if (isDoubleJump && this.wingsSprite) {
+        this.wingsSprite.setVisible(true)
+        this.wingsSprite.anims.play(WINGS.animKey, true)
+        this.wingsSprite.once(
+          Phaser.Animations.Events.ANIMATION_COMPLETE,
+          () => { this.wingsSprite?.setVisible(false) },
+        )
+      }
     }
 
     const multiplier = body.velocity.y > 0

@@ -147,6 +147,20 @@ export const SHIELD = {
   displaySize: 88,
 } as const
 
+export const WINGS = {
+  itemId: 'anjo-caido',
+  spriteKey: 'wings1',
+  spritesheet: {
+    path: '/assets/player/SpriteSheetWings1.png',
+    frameWidth: 64,
+    frameHeight: 64,
+  },
+  animKey: 'wings-flap',
+  frames: [0, 1, 2, 3],
+  frameRate: 12,
+  displaySize: 128,
+} as const
+
 // ── UI Typography ─────────────────────────────────────────────────────────────
 export const FONT_FAMILY = '"Comic Neue", "Comic Sans MS", cursive' as const
 

@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { PLAYER, ENEMY, PLATFORMS, BOSS_SHIP, SHOT, WORLD, SHIELD } from '../config/constants'
+import { PLAYER, ENEMY, PLATFORMS, BOSS_SHIP, SHOT, WORLD, SHIELD, WINGS } from '../config/constants'
 import { ITEM_REGISTRY } from '../items/registry'
 
 export class PreloadScene extends Phaser.Scene {
@@ -68,7 +68,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('achievement-1', '/assets/achievements/medal-100.png')
     this.load.image('achievement-2', '/assets/achievements/medal-200.png')
     this.load.image('achievement-3', '/assets/achievements/medal-500.png')
-    this.load.image('achievement-4', '/assets/achievements/meda-1000.png')
+    this.load.image('achievement-4', '/assets/achievements/medal-1000.png')
     this.load.image('achievement-5', '/assets/achievements/medal-2000.png')
     this.load.image('achievement-6', '/assets/achievements/medal-3000.png')
 
@@ -88,6 +88,11 @@ export class PreloadScene extends Phaser.Scene {
     this.load.spritesheet(SHIELD.spriteKey, SHIELD.spritesheet.path, {
       frameWidth: SHIELD.spritesheet.frameWidth,
       frameHeight: SHIELD.spritesheet.frameHeight,
+    })
+
+    this.load.spritesheet(WINGS.spriteKey, WINGS.spritesheet.path, {
+      frameWidth: WINGS.spritesheet.frameWidth,
+      frameHeight: WINGS.spritesheet.frameHeight,
     })
 
     // Load assets for all registered shop items

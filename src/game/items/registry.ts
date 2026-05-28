@@ -10,10 +10,19 @@ import type { ShopItem } from './types'
 
 export const ITEM_REGISTRY: ShopItem[] = [
   {
+    id: 'anjo-caido',
+    type: 'ability',
+    name: 'Anjo Caído',
+    price: 1000,
+    description: 'Pulo duplo!\nAsas aparecem no 2º salto',
+    iconKey: 'wings1',
+    iconFrame: 0,
+  },
+  {
     id: 'shield',
     type: 'shield',
     name: 'Ultima esperança',
-    price: 500,
+    price: 1000,
     description: 'Escudo absorve 1 tiro\n(recarga 10s)',
     iconKey: 'shield1',
     iconFrame: 0,
@@ -22,7 +31,7 @@ export const ITEM_REGISTRY: ShopItem[] = [
     id: 'pomodoro-shot',
     type: 'shot',
     name: 'Pomodoro',
-    price: 5,
+    price: 500,
     description: 'Tiro gigante!\nAtordoa a Pera por 3s',
     iconKey: 'player-shot3',
     iconFrame: 0,

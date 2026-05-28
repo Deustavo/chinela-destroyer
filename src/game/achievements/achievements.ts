@@ -9,14 +9,14 @@ export interface Achievement {
 export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'height_100',
-    name: 'Alpinista',
+    name: 'Primerios pulos',
     description: 'Alcance altura 100',
     heightThreshold: 100,
     unlockedIconKey: 'achievement-1',
   },
   {
     id: 'height_200',
-    name: 'Conquistador do Céu',
+    name: 'Subindo na vida',
     description: 'Alcance altura 200',
     heightThreshold: 200,
     unlockedIconKey: 'achievement-2',
@@ -30,22 +30,22 @@ export const ACHIEVEMENTS: Achievement[] = [
   },
   {
     id: 'height_1000',
-    name: 'Mestre das Nuvens',
-    description: 'Alcance altura 1000',
+    name: 'Mestre do espaço',
+    description: 'Derrote a nave mãe e alcance altura 1000',
     heightThreshold: 1000,
     unlockedIconKey: 'achievement-4',
   },
   {
     id: 'height_2000',
     name: 'Tocar as Estrelas',
-    description: 'Alcance altura 2000',
+    description: 'Derrote a nave mãe duas vezes e alcance altura 2000',
     heightThreshold: 2000,
     unlockedIconKey: 'achievement-5',
   },
   {
     id: 'height_3000',
     name: 'Além dos Céus',
-    description: 'Alcance altura 3000',
+    description: 'Vença todas as nave mães e alcance altura 3000',
     heightThreshold: 3000,
     unlockedIconKey: 'achievement-6',
   },
