@@ -350,7 +350,7 @@ export class MainScene extends Phaser.Scene {
     const vx = ((dx / len) * cos - (dy / len) * sin) * BOSS_SHIP.projectileSpeed
     const vy = ((dx / len) * sin + (dy / len) * cos) * BOSS_SHIP.projectileSpeed
 
-    const frame = Phaser.Math.Between(0, 2)
+    const frame = Phaser.Math.Between(0, 3)
     const trap = this.mothershipTraps.create(screenOriginX, worldOriginY, ENEMY.trapsKey, frame) as Phaser.Physics.Arcade.Image
     trap.setDisplaySize(ENEMY.trapDisplaySize, ENEMY.trapDisplaySize)
     ;(trap.body as Phaser.Physics.Arcade.Body).setSize(ENEMY.trapHitboxSize, ENEMY.trapHitboxSize)

@@ -183,7 +183,7 @@ export class Enemy {
     const vx = ((dx / len) * cos - (dy / len) * sin) * ENEMY.projectileSpeed
     const vy = ((dx / len) * sin + (dy / len) * cos) * ENEMY.projectileSpeed
 
-    const trapFrame = Phaser.Math.Between(0, 2)
+    const trapFrame = Phaser.Math.Between(0, 3)
     const trap = this.traps.create(worldX, worldY, ENEMY.trapsKey, trapFrame) as Phaser.Physics.Arcade.Image
     trap.setDisplaySize(ENEMY.trapDisplaySize, ENEMY.trapDisplaySize)
     ;(trap.body as Phaser.Physics.Arcade.Body).setSize(ENEMY.trapHitboxSize, ENEMY.trapHitboxSize)
