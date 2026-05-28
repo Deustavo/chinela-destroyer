@@ -346,7 +346,8 @@ export class ShopScene extends Phaser.Scene {
         .rectangle(cx, cy, CARD_SZ, CARD_SZ, 0xffffff, 0)
         .setInteractive({ useHandCursor: true })
       hit.on('pointerdown', () => {
-        if (PurchaseManager.has(ITEM_REGISTRY[i].id)) this.invEquipItem(i)
+        const reg = ITEM_REGISTRY[i]
+        if (!!reg.alwaysOwned || PurchaseManager.has(reg.id)) this.invEquipItem(i)
       })
 
       this.invRail.add([bg, blocked, icon, nameTxt, hit])
@@ -499,7 +500,7 @@ export class ShopScene extends Phaser.Scene {
       bg.setTexture(this.invCardTex(i))
       this.invCardBlocked[i].setVisible(!owned)
       this.invCardIcons[i].setVisible(owned)
-      this.invCardNames[i].setVisible(owned && !item.alwaysOwned)
+      this.invCardNames[i].setVisible(owned)
     })
   }
 
