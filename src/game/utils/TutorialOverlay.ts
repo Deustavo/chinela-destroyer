@@ -56,7 +56,7 @@ export class TutorialOverlay {
     this.player = player
 
     const cx = WORLD.width / 2
-    const cy = WORLD.height / 2 - 20
+    const cy = WORLD.height * 0.25
 
     this.bg = scene.add
       .rectangle(0, 0, PANEL_W, this.panelHeightFor(STEPS[0].lines.length), 0x000000, 0.8)
