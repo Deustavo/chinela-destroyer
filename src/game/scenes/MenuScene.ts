@@ -61,7 +61,7 @@ export class MenuScene extends Phaser.Scene {
     }
 
     const btnCredits = makeSecondaryBtn(cx - (BTN_W / 2 + BTN_GAP / 2), btnRowY, 'Créditos')
-    const btnShop = makeSecondaryBtn(cx + (BTN_W / 2 + BTN_GAP / 2), btnRowY, 'Loja')
+    const btnShop = makeSecondaryBtn(cx + (BTN_W / 2 + BTN_GAP / 2), btnRowY, 'Itens')
     btnShop.setAlpha(0.9)
 
     const btnTrophy = this.add

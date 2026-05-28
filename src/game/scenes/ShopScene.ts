@@ -427,6 +427,25 @@ export class ShopScene extends Phaser.Scene {
     this.invShowPreview(idx)
     this.refreshInvCards()
     this.refreshBuyBtn()
+    this.jumpInvPreview()
+  }
+
+  private jumpInvPreview() {
+    const baseY = INV_CY
+    this.tweens.add({
+      targets: this.invPreviewImg,
+      y: baseY - 28,
+      duration: 140,
+      ease: 'Cubic.Out',
+      onComplete: () => {
+        this.tweens.add({
+          targets: this.invPreviewImg,
+          y: baseY,
+          duration: 180,
+          ease: 'Bounce.Out',
+        })
+      },
+    })
   }
 
   private invShowPreview(idx: number) {
