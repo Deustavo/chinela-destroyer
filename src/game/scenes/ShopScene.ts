@@ -4,6 +4,7 @@ import { addBackground, wireButtonLabel, addCoinCounter } from '../utils/uiHelpe
 import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 import { CoinManager } from '../utils/CoinManager'
 import { PurchaseManager } from '../utils/PurchaseManager'
+import { EquipManager } from '../utils/EquipManager'
 import { ITEM_REGISTRY } from '../items/registry'
 
 // --- Card dimensions (square background) ---
@@ -157,7 +158,7 @@ export class ShopScene extends Phaser.Scene {
     const first = ITEM_REGISTRY[0]
 
     this.previewBg = this.add
-      .image(previewX, midY - 18, PurchaseManager.has(first.id) ? 'modal-bg3' : 'modal-bg')
+      .image(previewX, midY - 18, EquipManager.isEquipped(first.id) ? 'modal-bg3' : 'modal-bg')
       .setDisplaySize(PREV, PREV)
       .setDepth(2)
 
@@ -268,15 +269,18 @@ export class ShopScene extends Phaser.Scene {
 
   private cardTexture(idx: number): string {
     if (idx === this.selectedIdx) return 'modal-bg'
-    return PurchaseManager.has(ITEM_REGISTRY[idx].id) ? 'modal-bg3' : 'modal-bg2'
+    return EquipManager.isEquipped(ITEM_REGISTRY[idx].id) ? 'modal-bg3' : 'modal-bg2'
   }
 
   private handleBuy() {
     const item = ITEM_REGISTRY[this.selectedIdx]
-    if (!item || PurchaseManager.has(item.id)) return
-    if (!CoinManager.spend(item.price)) return
-    PurchaseManager.buy(item.id)
-    this.coinCountText.setText(String(CoinManager.getTotal()))
+    if (!item) return
+    if (!PurchaseManager.has(item.id)) {
+      if (!CoinManager.spend(item.price)) return
+      PurchaseManager.buy(item.id)
+      this.coinCountText.setText(String(CoinManager.getTotal()))
+    }
+    EquipManager.equip(item.id)
     this.updateBuyButton()
   }
 
@@ -285,13 +289,19 @@ export class ShopScene extends Phaser.Scene {
     if (!item) return
 
     const owned = PurchaseManager.has(item.id)
+    const equipped = EquipManager.isEquipped(item.id)
     const canAfford = CoinManager.getTotal() >= item.price
 
-    if (owned) {
+    if (equipped) {
       this.buyBtn
         .setText('Equipado')
         .setStyle({ backgroundColor: '#444444', color: '#aaaaaa' })
         .disableInteractive()
+    } else if (owned) {
+      this.buyBtn
+        .setText('Equipar')
+        .setStyle({ backgroundColor: '#226688', color: '#ffffff' })
+        .setInteractive({ useHandCursor: true })
     } else if (canAfford) {
       this.buyBtn
         .setText('Comprar')
@@ -305,7 +315,7 @@ export class ShopScene extends Phaser.Scene {
     }
 
     this.cardBgs.forEach((img, i) => img.setTexture(this.cardTexture(i)))
-    this.previewBg.setTexture(owned ? 'modal-bg3' : 'modal-bg')
+    this.previewBg.setTexture(equipped ? 'modal-bg3' : 'modal-bg')
   }
 
   private selectItem(id: string) {

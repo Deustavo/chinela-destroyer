@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 import { PLAYER, WORLD, SHOT, SHIELD } from '../config/constants'
 import { ITEM_REGISTRY } from '../items/registry'
 import { PlayerLoadout } from '../items/PlayerLoadout'
-import { PurchaseManager } from '../utils/PurchaseManager'
+import { EquipManager } from '../utils/EquipManager'
 import type { ShotConfig } from '../items/types'
 import type { PlayerAnim } from '../types/animations'
 import type { TouchState } from './TouchControls'
@@ -46,7 +46,7 @@ export class Player {
     this.activeShotConfig = PlayerLoadout.getActiveShotConfig()
     this.projectiles = scene.physics.add.group({ allowGravity: false })
 
-    this.shieldOwned = PurchaseManager.has(SHIELD.itemId)
+    this.shieldOwned = EquipManager.isEquipped(SHIELD.itemId)
     if (this.shieldOwned) {
       this.shieldSprite = scene.add
         .image(PLAYER.startX, PLAYER.startY, SHIELD.spriteKey, 0)
@@ -228,7 +228,7 @@ export class Player {
     if (this.shieldOwned && this.shieldSprite) {
       this.shieldCooldown = Math.max(0, this.shieldCooldown - delta / 1000)
       this.shieldSprite.setPosition(this.sprite.x, this.sprite.y - 4)
-      this.shieldSprite.setAlpha(this.shieldCooldown > 0 ? 0.2 : 0.9)
+      this.shieldSprite.setAlpha(this.shieldCooldown > 0 ? 0 : 0.9)
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {

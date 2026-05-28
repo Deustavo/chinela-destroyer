@@ -21,7 +21,7 @@ export const ITEM_REGISTRY: ShopItem[] = [
   {
     id: 'special-shot',
     type: 'shot',
-    name: 'Arco do Julgamento',
+    name: 'Bolimbolacho',
     price: 1000,
     description: 'Cooldown pela metade',
     iconKey: 'player-shot2',

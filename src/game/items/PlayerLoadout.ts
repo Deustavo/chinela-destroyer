@@ -1,5 +1,5 @@
 import { SHOT } from '../config/constants'
-import { PurchaseManager } from '../utils/PurchaseManager'
+import { EquipManager } from '../utils/EquipManager'
 import { ITEM_REGISTRY } from './registry'
 import type { ShotConfig, UpgradeEffect } from './types'
 
@@ -22,11 +22,12 @@ export class PlayerLoadout {
   // Returns the resolved shot config to use this session.
   // Picks the highest-price owned shot, then folds in all upgrade multipliers.
   static getActiveShotConfig(): ShotConfig {
-    const ownedShots = ITEM_REGISTRY
-      .filter(item => item.type === 'shot' && item.shotConfig && PurchaseManager.has(item.id))
-      .sort((a, b) => b.price - a.price)
+    const equipped = EquipManager.getEquipped()
+    const equippedItem = equipped
+      ? ITEM_REGISTRY.find(item => item.id === equipped && item.type === 'shot' && item.shotConfig)
+      : undefined
 
-    const base = ownedShots[0]?.shotConfig ?? BASE_SHOT
+    const base = equippedItem?.shotConfig ?? BASE_SHOT
 
     return PlayerLoadout.getActiveEffects().reduce<ShotConfig>((cfg, fx) => {
       if (fx.stat === 'shotCooldownMultiplier') return { ...cfg, cooldown: cfg.cooldown * fx.value }
@@ -36,8 +37,9 @@ export class PlayerLoadout {
   }
 
   static getActiveEffects(): UpgradeEffect[] {
-    return ITEM_REGISTRY
-      .filter(item => item.type === 'upgrade' && item.effect && PurchaseManager.has(item.id))
-      .map(item => item.effect!)
+    const equipped = EquipManager.getEquipped()
+    if (!equipped) return []
+    const item = ITEM_REGISTRY.find(i => i.id === equipped && i.type === 'upgrade' && i.effect)
+    return item?.effect ? [item.effect] : []
   }
 }
