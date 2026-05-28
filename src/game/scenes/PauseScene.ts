@@ -20,16 +20,42 @@ export class PauseScene extends Phaser.Scene {
       .setDepth(1)
 
     const btnSize = 80
-    const btnImg = this.add
-      .image(cx, cy + 20, 'btn-play')
+    const gap = 30
+    const labelStyle = { fontSize: '16px', color: '#ffffff', fontFamily: FONT_FAMILY }
+
+    const btnPlay = this.add
+      .image(cx + btnSize / 2 + gap / 2, cy + 20, 'btn-play')
       .setDisplaySize(btnSize, btnSize)
       .setDepth(1)
       .setInteractive({ cursor: 'pointer' })
+      .setAlpha(0.85)
 
-    btnImg.on('pointerover', () => btnImg.setAlpha(1))
-    btnImg.on('pointerout', () => btnImg.setAlpha(0.85))
-    btnImg.on('pointerdown', () => this.startCountdown())
-    btnImg.setAlpha(0.85)
+    const labelPlay = this.add
+      .text(cx + btnSize / 2 + gap / 2, cy + btnSize / 2 + 6, 'Continuar', labelStyle)
+      .setOrigin(0.5, 0)
+      .setDepth(1)
+
+    btnPlay.on('pointerover', () => btnPlay.setAlpha(1))
+    btnPlay.on('pointerout', () => btnPlay.setAlpha(0.85))
+    btnPlay.on('pointerdown', () => this.startCountdown())
+    labelPlay.setInteractive({ cursor: 'pointer' }).on('pointerdown', () => this.startCountdown())
+
+    const btnHome = this.add
+      .image(cx - btnSize / 2 - gap / 2, cy + 20, 'btn-home')
+      .setDisplaySize(btnSize, btnSize)
+      .setDepth(1)
+      .setInteractive({ cursor: 'pointer' })
+      .setAlpha(0.85)
+
+    const labelHome = this.add
+      .text(cx - btnSize / 2 - gap / 2, cy + btnSize / 2 + 6, 'Início', labelStyle)
+      .setOrigin(0.5, 0)
+      .setDepth(1)
+
+    btnHome.on('pointerover', () => btnHome.setAlpha(1))
+    btnHome.on('pointerout', () => btnHome.setAlpha(0.85))
+    btnHome.on('pointerdown', () => this.goHome())
+    labelHome.setInteractive({ cursor: 'pointer' }).on('pointerdown', () => this.goHome())
 
     this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC).once('down', () => this.startCountdown())
   }
@@ -77,5 +103,11 @@ export class PauseScene extends Phaser.Scene {
   private resume() {
     this.scene.stop()
     this.scene.resume('main-scene')
+  }
+
+  private goHome() {
+    this.scene.stop('main-scene')
+    this.scene.stop()
+    this.scene.start('menu-scene')
   }
 }
