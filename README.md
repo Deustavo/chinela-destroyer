@@ -6,9 +6,9 @@
 
 ## Sobre o jogo
 
-**Chinela Destroyer** é um jogo de plataforma infinita feito com [Phaser 3](https://phaser.io/) e TypeScript. O jogador controla a Chinela que precisa subir o mais alto possível pulando entre plataformas, enquanto avança em direção da Pera atirando armadilhas.
+**Chinela Destroyer** é um jogo de plataforma infinita feito com [Phaser 3](https://phaser.io/) e TypeScript. 
 
-O jogo fica cada vez mais difícil conforme você sobe: a câmera acelera progressivamente, pressionando você para cima. Caia fora da tela ou seja atingido por uma armadilha — game over.
+Suba mais alto, compre power ups e derrote todas as naves mãe!!
 
 ---
 
@@ -31,15 +31,10 @@ O jogo fica cada vez mais difícil conforme você sobe: a câmera acelera progre
 | Pular | `↑` ou `W` | Botão pular |
 | Pausar | `Esc` | Botão pause |
 
-- O personagem **atravessa as bordas** da tela (sai pela esquerda, entra pela direita e vice-versa).
-- **Evite as armadilhas** lançadas pela pera — ela pisca antes de jogar, te dando um aviso.
-- Quanto mais alto chegar, maior sua pontuação em **Altura**.
-
 ---
 
 ## Mecânicas
 
-- **Scroll automático acelerado** — a câmera sobe continuamente e vai ficando cada vez mais rápida.
 - **Plataformas geradas proceduralmente** — cada partida tem um layout diferente.
 - **Inimigo com IA simples** — a pera se move horizontalmente no topo da tela e mira as armadilhas diretamente no jogador.
 - **Controles touch** — suporte completo a dispositivos móveis com botões virtuais na tela.
