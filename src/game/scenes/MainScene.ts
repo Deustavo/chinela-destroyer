@@ -421,7 +421,13 @@ export class MainScene extends Phaser.Scene {
       const dx = proj.x - ex
       const dy = proj.y - (cameraY + ey)
       if (Math.abs(dx) < r && Math.abs(dy) < r) {
-        this.enemy.showHit()
+        const stunDuration = proj.getData('stunDuration') as number | undefined
+        if (stunDuration) {
+          this.enemy.applyStun(stunDuration)
+          this.tryAwardCoin()
+        } else {
+          this.enemy.showHit()
+        }
         this.playShotImpact(proj)
       }
     }

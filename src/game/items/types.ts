@@ -10,6 +10,7 @@ export interface ShotConfig {
   speed: number
   displaySize: number
   cooldown: number
+  stunDuration?: number
 }
 
 // Multiplier-based stat modifiers that stack with upgrades.

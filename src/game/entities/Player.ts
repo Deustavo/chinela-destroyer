@@ -113,6 +113,7 @@ export class Player {
     proj.setScrollFactor(1)
     proj.anims.play(config.flyAnimKey, true)
     proj.setData('impactAnim', config.impactAnimKey)
+    if (config.stunDuration) proj.setData('stunDuration', config.stunDuration)
 
     this.projectiles.add(proj)
 

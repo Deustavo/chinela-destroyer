@@ -12,6 +12,8 @@ export class Enemy {
   private throwTimer: number = 0
   private bobTimer: number = 0
   private hitTimer: number = 0
+  private stunTimer: number = 0
+  private stunBlinkTimer: number = 0
   private lastCameraScrollY: number = 0
   private lastPlayerX: number = 0
   private lastPlayerY: number = 0
@@ -58,6 +60,13 @@ export class Enemy {
     this.glowSprite.setFrame(ENEMY.hitFrame)
   }
 
+  applyStun(duration: number) {
+    this.stunTimer = duration
+    this.stunBlinkTimer = 0
+    this.throwTimer = 0
+    this.glowSprite.setAlpha(0)
+  }
+
   update(delta: number, cameraScrollY: number, playerX: number, playerY: number, score: number = 0) {
     if (this.isFlying) return
 
@@ -83,6 +92,24 @@ export class Enemy {
     this.bobTimer += dt
     const bob = Math.sin(this.bobTimer * ENEMY.bobSpeed * Math.PI * 2) * ENEMY.bobAmplitude
     this.sprite.y = ENEMY.screenY + bob
+
+    if (this.stunTimer > 0) {
+      this.stunTimer -= dt
+      this.stunBlinkTimer += dt
+      const blinkOn = Math.floor(this.stunBlinkTimer / 0.15) % 2 === 0
+      this.sprite.setTint(blinkOn ? 0x000000 : 0xffffff)
+      this.glowSprite.setAlpha(0)
+      if (this.stunTimer <= 0) {
+        this.stunTimer = 0
+        this.sprite.clearTint()
+        this.throwTimer = 0
+      }
+      const cameraBottom = cameraScrollY + WORLD.height
+      ;(this.traps.getChildren() as Phaser.Physics.Arcade.Image[]).forEach((trap) => {
+        if (trap.y > cameraBottom + 200) trap.destroy()
+      })
+      return
+    }
 
     if (this.hitTimer > 0) {
       this.hitTimer -= dt
