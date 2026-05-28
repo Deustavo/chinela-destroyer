@@ -14,11 +14,16 @@ const H  = WORLD.height  // 720
 const CX = W / 2         // 202.5
 
 // ── Card rail (bottom strip) ─────────────────────────────────────────────────
-const CARD_SZ  = 88
-const CARD_GAP = 16
-const RAIL_VW  = 3 * CARD_SZ + 2 * CARD_GAP   // 296 px visible width
-const RAIL_X0  = Math.floor((W - RAIL_VW) / 2) // 54
-const RAIL_TOP = 480                            // top edge of rail cards
+const CARD_SZ    = 88
+const CARD_GAP   = 16
+const RAIL_VW    = 3 * CARD_SZ + 2 * CARD_GAP   // 296 px visible width
+const RAIL_X0    = Math.floor((W - RAIL_VW) / 2) // 54
+const RAIL_TOP   = 480                            // top edge of rail cards
+const ARROW_Y    = RAIL_TOP + CARD_SZ + 60        // below rail content
+const ARROW_SIZE = 92
+const ARROW_L_X  = 40
+const ARROW_R_X  = W - 40
+const SCROLL_STEP = CARD_SZ + CARD_GAP            // one card per click
 
 // ── Shop preview (large selected-item block) ─────────────────────────────────
 const PREV_SZ = 178
@@ -282,10 +287,35 @@ export class ShopScene extends Phaser.Scene {
     maskGfx.fillRect(RAIL_X0, RAIL_TOP, RAIL_VW, CARD_SZ + 54)
     this.shopRail.setMask(maskGfx.createGeometryMask())
 
+    const shopArrowL = this.add.image(ARROW_L_X, ARROW_Y, 'btn-left')
+      .setDisplaySize(ARROW_SIZE, ARROW_SIZE).setDepth(3).setAlpha(0.9)
+      .setInteractive({
+        hitArea: new Phaser.Geom.Rectangle(-ARROW_SIZE / 4, -ARROW_SIZE / 4, ARROW_SIZE / 2, ARROW_SIZE / 2),
+        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+        useHandCursor: true,
+      })
+    shopArrowL.on('pointerdown', () => {
+      this.shopScrollX = Phaser.Math.Clamp(this.shopScrollX - SCROLL_STEP, 0, this.shopMaxScroll)
+      this.tweens.add({ targets: this.shopRail, x: RAIL_X0 - this.shopScrollX, duration: 160, ease: 'Cubic.Out' })
+    })
+
+    const shopArrowR = this.add.image(ARROW_R_X, ARROW_Y, 'btn-right')
+      .setDisplaySize(ARROW_SIZE, ARROW_SIZE).setDepth(3).setAlpha(0.9)
+      .setInteractive({
+        hitArea: new Phaser.Geom.Rectangle(-ARROW_SIZE / 4, -ARROW_SIZE / 4, ARROW_SIZE / 2, ARROW_SIZE / 2),
+        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+        useHandCursor: true,
+      })
+    shopArrowR.on('pointerdown', () => {
+      this.shopScrollX = Phaser.Math.Clamp(this.shopScrollX + SCROLL_STEP, 0, this.shopMaxScroll)
+      this.tweens.add({ targets: this.shopRail, x: RAIL_X0 - this.shopScrollX, duration: 160, ease: 'Cubic.Out' })
+    })
+
     this.shopObjs = [
       this.shopPreviewBg, this.shopPreviewImg,
       this.shopPreviewName, this.shopPreviewDesc,
       this.shopCoinIcon, this.shopPriceTxt, this.shopOwnedTxt, this.buyBtn,
+      shopArrowL, shopArrowR,
     ]
   }
 
@@ -369,9 +399,34 @@ export class ShopScene extends Phaser.Scene {
     maskGfx.fillRect(RAIL_X0, RAIL_TOP, RAIL_VW, CARD_SZ + 36)
     this.invRail.setMask(maskGfx.createGeometryMask())
 
+    const invArrowL = this.add.image(ARROW_L_X, ARROW_Y, 'btn-left')
+      .setDisplaySize(ARROW_SIZE, ARROW_SIZE).setDepth(3).setAlpha(0.9)
+      .setInteractive({
+        hitArea: new Phaser.Geom.Rectangle(-ARROW_SIZE / 4, -ARROW_SIZE / 4, ARROW_SIZE / 2, ARROW_SIZE / 2),
+        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+        useHandCursor: true,
+      })
+    invArrowL.on('pointerdown', () => {
+      this.invScrollX = Phaser.Math.Clamp(this.invScrollX - SCROLL_STEP, 0, this.invMaxScroll)
+      this.tweens.add({ targets: this.invRail, x: RAIL_X0 - this.invScrollX, duration: 160, ease: 'Cubic.Out' })
+    })
+
+    const invArrowR = this.add.image(ARROW_R_X, ARROW_Y, 'btn-right')
+      .setDisplaySize(ARROW_SIZE, ARROW_SIZE).setDepth(3).setAlpha(0.9)
+      .setInteractive({
+        hitArea: new Phaser.Geom.Rectangle(-ARROW_SIZE / 4, -ARROW_SIZE / 4, ARROW_SIZE / 2, ARROW_SIZE / 2),
+        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+        useHandCursor: true,
+      })
+    invArrowR.on('pointerdown', () => {
+      this.invScrollX = Phaser.Math.Clamp(this.invScrollX + SCROLL_STEP, 0, this.invMaxScroll)
+      this.tweens.add({ targets: this.invRail, x: RAIL_X0 - this.invScrollX, duration: 160, ease: 'Cubic.Out' })
+    })
+
     this.invObjs = [
       playerImg, invSelLabel,
       this.invPreviewBg, this.invPreviewImg, this.invPreviewName,
+      invArrowL, invArrowR,
     ]
 
     // Default to 'nada' if nothing is equipped yet
