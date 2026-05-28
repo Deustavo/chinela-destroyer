@@ -53,7 +53,9 @@ export class ShopScene extends Phaser.Scene {
   private shopPreviewDesc!: Phaser.GameObjects.Text
   private shopCoinIcon!:    Phaser.GameObjects.Image
   private shopPriceTxt!:    Phaser.GameObjects.Text
-  private buyBtn!:          Phaser.GameObjects.Text
+  private buyBtn!:          Phaser.GameObjects.Container
+  private buyBtnBg!:        Phaser.GameObjects.Image
+  private buyBtnTxt!:       Phaser.GameObjects.Text
 
   // ── Inventory tab ─────────────────────────────────────────────────────────
   private invObjs: Showable[] = []
@@ -196,11 +198,15 @@ export class ShopScene extends Phaser.Scene {
     }).setOrigin(0, 0.5).setDepth(2)
 
     const btnY = priceY + 36
-    this.buyBtn = this.add.text(PREV_X, btnY, '', {
-      fontSize: '17px', color: '#ffffff',
+    this.buyBtnBg = this.add.image(0, 0, 'btn-primary')
+    this.buyBtnTxt = this.add.text(0, 0, '', {
+      fontSize: '14px', color: '#ffffff',
       fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
-      backgroundColor: '#226622', padding: { x: 14, y: 7 },
-    }).setOrigin(0.5).setDepth(3).setInteractive({ useHandCursor: true })
+    }).setOrigin(0.5)
+    this.buyBtn = this.add.container(PREV_X, btnY, [this.buyBtnBg, this.buyBtnTxt])
+      .setSize(this.buyBtnBg.width, this.buyBtnBg.height)
+      .setDepth(3)
+      .setInteractive({ useHandCursor: true })
     this.buyBtn.on('pointerdown', () => this.handleBuy())
     this.refreshBuyBtn()
 
@@ -395,20 +401,17 @@ export class ShopScene extends Phaser.Scene {
     this.shopPreviewBg.setTexture('modal-bg')
 
     if (owned) {
-      this.buyBtn
-        .setText('Comprado')
-        .setStyle({ backgroundColor: '#444444', color: '#aaaaaa' })
-        .disableInteractive()
+      this.buyBtnBg.setTexture('btn-blocked')
+      this.buyBtnTxt.setText('Comprado').setColor('#aaaaaa')
+      this.buyBtn.disableInteractive()
     } else if (afford) {
-      this.buyBtn
-        .setText('Comprar')
-        .setStyle({ backgroundColor: '#226622', color: '#ffffff' })
-        .setInteractive({ useHandCursor: true })
+      this.buyBtnBg.setTexture('btn-primary')
+      this.buyBtnTxt.setText('Comprar').setColor('#ffffff')
+      this.buyBtn.setInteractive({ useHandCursor: true })
     } else {
-      this.buyBtn
-        .setText('Sem moedas')
-        .setStyle({ backgroundColor: '#662222', color: '#888888' })
-        .disableInteractive()
+      this.buyBtnBg.setTexture('btn-blocked')
+      this.buyBtnTxt.setText('Sem moedas').setColor('#888888')
+      this.buyBtn.disableInteractive()
     }
   }
 

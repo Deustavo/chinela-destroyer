@@ -36,24 +36,33 @@ export class MenuScene extends Phaser.Scene {
       .setDepth(3)
       .setInteractive({ useHandCursor: true })
 
-    // Credits + Shop side-by-side, centered as a pair (both 64×64 native, scale 1.6)
-    const BTN_SCALE = 1.6
-    const BTN_SIZE = 64 * BTN_SCALE  // = 102.4
+    // Credits + Shop side-by-side, centered as a pair
+    const BTN_SCALE = 1
+    const btnTex = this.textures.get('btn-secondary').getSourceImage()
+    const BTN_W = (btnTex as HTMLImageElement).width * BTN_SCALE
     const BTN_GAP = 18
     const btnRowY = cy + 240
 
-    const btnCredits = this.add
-      .image(cx - (BTN_SIZE / 2 + BTN_GAP / 2), btnRowY, 'menu-credits-btn')
-      .setScale(BTN_SCALE)
-      .setDepth(3)
-      .setInteractive({ useHandCursor: true })
+    const makeSecondaryBtn = (x: number, y: number, label: string) => {
+      const bg = this.add.image(0, 0, 'btn-secondary')
+      const txt = this.add.text(0, 0, label, {
+        fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
+        fontSize: '20px',
+        color: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 4,
+      }).setOrigin(0.5)
+      const container = this.add.container(x, y, [bg, txt])
+        .setSize(bg.width, bg.height)
+        .setScale(BTN_SCALE)
+        .setDepth(3)
+        .setInteractive({ useHandCursor: true })
+      return container
+    }
 
-    const btnShop = this.add
-      .image(cx + (BTN_SIZE / 2 + BTN_GAP / 2), btnRowY, 'menu-shop-btn')
-      .setScale(BTN_SCALE)
-      .setDepth(3)
-      .setInteractive({ useHandCursor: true })
-      .setAlpha(0.9)
+    const btnCredits = makeSecondaryBtn(cx - (BTN_W / 2 + BTN_GAP / 2), btnRowY, 'Créditos')
+    const btnShop = makeSecondaryBtn(cx + (BTN_W / 2 + BTN_GAP / 2), btnRowY, 'Loja')
+    btnShop.setAlpha(0.9)
 
     const btnTrophy = this.add
       .image(WORLD.width - 44, WORLD.height - 44, 'btn-trophy')
@@ -66,14 +75,6 @@ export class MenuScene extends Phaser.Scene {
     const haBtn = btn.input!.hitArea as Phaser.Geom.Rectangle
     haBtn.y += haBtn.height / 3
     haBtn.height /= 3
-
-    const haCredits = btnCredits.input!.hitArea as Phaser.Geom.Rectangle
-    haCredits.y += haCredits.height / 4
-    haCredits.height /= 2
-
-    const haShop = btnShop.input!.hitArea as Phaser.Geom.Rectangle
-    haShop.y += haShop.height / 4
-    haShop.height /= 2
 
     const all: SceneObject[] = [logo, chinela, pera, btn, btnCredits, btnTrophy, btnShop]
 
