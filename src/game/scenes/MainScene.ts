@@ -54,6 +54,7 @@ export class MainScene extends Phaser.Scene {
     this.mothershipSprite = null
     this.mothershipFrameTimer = 0
     this.mothershipFrame = 0
+    this.shieldHUD = null
     this.lastPlatformY = WORLD.groundY - WORLD.groundHeight / 2
     this.lastPlatformX = WORLD.width / 2
     this.sessionUnlocked = AchievementManager.getUnlocked()
