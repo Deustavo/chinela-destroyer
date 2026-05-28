@@ -30,9 +30,11 @@ const INV_R_X = Math.round(W * 0.73)  // 296 — selected item
 const INV_CY  = 292
 
 type Showable = { setVisible(v: boolean): unknown }
+type AnimObj  = Phaser.GameObjects.GameObject & { y: number; alpha: number; displayHeight?: number }
 
 export class ShopScene extends Phaser.Scene {
   private activeTab: 'shop' | 'inventory' = 'shop'
+  private tabInitialized = false
 
   private tabShop!: Phaser.GameObjects.Text
   private tabInv!: Phaser.GameObjects.Text
@@ -146,10 +148,17 @@ export class ShopScene extends Phaser.Scene {
     baseObjs.forEach((obj, i) => dropIn(this, obj, i * 50, 40))
 
     this.setTab('shop')
+
+    // Entry animation for the default (shop) tab elements
+    const entryBase = baseObjs.length * 50 + 60
+    ;[...this.shopObjs, this.shopRail].forEach((obj, i) => {
+      dropIn(this, obj as unknown as SceneObject, entryBase + i * 40, 700)
+    })
   }
 
   // ── Shop panel ───────────────────────────────────────────────────────────────
   private buildShopPanel() {
+    this.shopCardBgs = []
     const first = ITEM_REGISTRY[0]
 
     // Large preview block
