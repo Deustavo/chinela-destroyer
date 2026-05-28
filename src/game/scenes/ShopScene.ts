@@ -402,7 +402,7 @@ export class ShopScene extends Phaser.Scene {
   // ── Inventory helpers ────────────────────────────────────────────────────────
   private invCardTex(idx: number): string {
     const item = ITEM_REGISTRY[idx]
-    if (EquipManager.isEquipped(item.id)) return 'modal-bg'
+    if (EquipManager.isEquipped(item.id)) return 'modal-bg3'
     return PurchaseManager.has(item.id) ? 'modal-bg' : 'modal-bg2'
   }
 
@@ -415,7 +415,8 @@ export class ShopScene extends Phaser.Scene {
 
   private invShowPreview(idx: number) {
     const item     = ITEM_REGISTRY[idx]
-    this.invPreviewBg.setTexture('modal-bg')
+    const equipped = EquipManager.isEquipped(item.id)
+    this.invPreviewBg.setTexture(equipped ? 'modal-bg3' : 'modal-bg')
     this.invPreviewImg
       .setTexture(item.iconKey, item.iconFrame)
       .setDisplaySize(INV_SZ * 0.62, INV_SZ * 0.62)
