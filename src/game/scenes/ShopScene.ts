@@ -5,6 +5,7 @@ import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 import { CoinManager } from '../utils/CoinManager'
 import { PurchaseManager } from '../utils/PurchaseManager'
 import { EquipManager } from '../utils/EquipManager'
+import { NotificationManager } from '../utils/NotificationManager'
 import { ITEM_REGISTRY } from '../items/registry'
 import type { ShopItem } from '../items/types'
 
@@ -74,6 +75,9 @@ export class ShopScene extends Phaser.Scene {
   private invPreviewName!: Phaser.GameObjects.Text
 
   private coinCountText!: Phaser.GameObjects.Text
+  private invNotifDot!: Phaser.GameObjects.Arc
+  private invNotifDotBaseY = 0
+  private invNotifBounce?: Phaser.Tweens.Tween
 
   constructor() { super('shop-scene') }
 
@@ -101,6 +105,13 @@ export class ShopScene extends Phaser.Scene {
 
     this.tabShop.on('pointerdown', () => this.setTab('shop'))
     this.tabInv.on('pointerdown', () => this.setTab('inventory'))
+
+    // Notification dot on "Inventário" tab
+    const dotX = W * 0.72 + 58
+    const dotY  = 82
+    this.invNotifDotBaseY = dotY
+    this.invNotifDot = this.add.circle(dotX, dotY, 7, 0xff7700).setDepth(4).setScale(0).setVisible(false)
+    if (NotificationManager.hasNewItem()) this.showInvNotifDot()
 
     const divider = this.add
       .rectangle(CX, 108, W - 40, 2, 0x555555)
@@ -145,6 +156,7 @@ export class ShopScene extends Phaser.Scene {
 
     const baseObjs: SceneObject[] = [
       title, this.tabShop, this.tabInv, divider, backBtn, labelBack,
+      this.invNotifDot,
     ]
     const goBack = () => {
       const panelObjs = this.activeTab === 'shop'
@@ -373,7 +385,11 @@ export class ShopScene extends Phaser.Scene {
     this.invRail.setVisible(!isShop)
 
     // Sync inventory cards when switching to that tab
-    if (!isShop) this.refreshInvCards()
+    if (!isShop) {
+      this.refreshInvCards()
+      NotificationManager.clearNewItem()
+      this.hideInvNotifDot()
+    }
   }
 
   // ── Shop helpers ─────────────────────────────────────────────────────────────
@@ -399,6 +415,8 @@ export class ShopScene extends Phaser.Scene {
     if (PurchaseManager.has(item.id)) return
     if (!CoinManager.spend(item.price)) return
     PurchaseManager.buy(item.id)
+    NotificationManager.setNewItem()
+    this.showInvNotifDot()
     this.coinCountText.setText(String(CoinManager.getTotal()))
     this.refreshBuyBtn()
   }
@@ -482,6 +500,43 @@ export class ShopScene extends Phaser.Scene {
       this.invCardBlocked[i].setVisible(!owned)
       this.invCardIcons[i].setVisible(owned)
       this.invCardNames[i].setVisible(owned && !item.alwaysOwned)
+    })
+  }
+
+  private showInvNotifDot() {
+    if (this.invNotifDot.visible) return
+    this.invNotifDot.y = this.invNotifDotBaseY
+    this.invNotifDot.setScale(0).setVisible(true)
+    this.tweens.add({
+      targets: this.invNotifDot,
+      scale: 1,
+      duration: 320,
+      ease: 'Back.Out',
+      onComplete: () => {
+        this.invNotifBounce = this.tweens.add({
+          targets: this.invNotifDot,
+          scale: 1.45,
+          duration: 600,
+          ease: 'Sine.InOut',
+          yoyo: true,
+          repeat: -1,
+        })
+      },
+    })
+  }
+
+  private hideInvNotifDot() {
+    if (!this.invNotifDot.visible) return
+    this.invNotifBounce?.stop()
+    this.invNotifBounce = undefined
+    this.tweens.add({
+      targets: this.invNotifDot,
+      scale: 0,
+      duration: 220,
+      ease: 'Back.In',
+      onComplete: () => {
+        this.invNotifDot.setVisible(false).setScale(1)
+      },
     })
   }
 }

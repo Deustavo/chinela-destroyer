@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import { WORLD } from '../config/constants'
 import { addBackground, addCoinCounter } from '../utils/uiHelpers'
 import { dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
+import { NotificationManager } from '../utils/NotificationManager'
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
@@ -70,6 +71,30 @@ export class MenuScene extends Phaser.Scene {
     haBtn.height /= 3
 
     const all: SceneObject[] = [logo, chinela, pera, btn, btnCredits, btnShop, btnConquistas]
+
+    if (NotificationManager.hasNewItem()) {
+      const dotX = btnShop.x + BTN_W / 2 - 10
+      const dotY  = btnShop.y - 12
+      const dot = this.add.circle(dotX, dotY, 8, 0xff7700).setDepth(5).setScale(0)
+      all.push(dot as unknown as SceneObject)
+      this.tweens.add({
+        targets: dot,
+        scale: 1,
+        duration: 320,
+        delay: 1120,
+        ease: 'Back.Out',
+        onComplete: () => {
+          this.tweens.add({
+            targets: dot,
+            scale: 1.45,
+            duration: 600,
+            ease: 'Sine.InOut',
+            yoyo: true,
+            repeat: -1,
+          })
+        },
+      })
+    }
 
     btn.on('pointerover', () => btn.setScale(2.0))
     btn.on('pointerout', () => btn.setScale(1.8))
