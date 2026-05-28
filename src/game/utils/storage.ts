@@ -1,6 +1,10 @@
 // Client-side HMAC+XOR provides casual tamper deterrence, not real security.
 // The key is intentionally visible in the bundle — hiding it would offer no extra protection.
-const SECRET = 'ch1n3l4-d3str0y3r-k3y-2025'
+const SECRET = import.meta.env.VITE_STORAGE_SECRET as string
+
+// Bump this whenever the SECRET changes. Saves from older versions are wiped on boot.
+const STORAGE_VERSION = '1'
+const VERSION_KEY = 'storageVersion'
 
 export const STORAGE_KEYS = [
   'totalCoins',
@@ -59,6 +63,14 @@ async function decode(stored: string): Promise<string | null> {
 
 /** Call once during app boot (PreloadScene). Populates the in-memory cache. */
 export async function storageInit(keys: readonly string[]): Promise<void> {
+  const savedVersion = localStorage.getItem(VERSION_KEY)
+  if (savedVersion !== STORAGE_VERSION) {
+    // Version mismatch or missing — wipe all game data and stamp new version
+    for (const key of keys) localStorage.removeItem(key)
+    localStorage.setItem(VERSION_KEY, STORAGE_VERSION)
+    return
+  }
+
   for (const key of keys) {
     const raw = localStorage.getItem(key)
     if (raw === null) continue
