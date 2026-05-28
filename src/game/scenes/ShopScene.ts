@@ -59,6 +59,8 @@ export class ShopScene extends Phaser.Scene {
   private buyBtn!:          Phaser.GameObjects.Container
   private buyBtnBg!:        Phaser.GameObjects.Image
   private buyBtnTxt!:       Phaser.GameObjects.Text
+  private shopCardCoinIcons: Phaser.GameObjects.Image[] = []
+  private shopCardPriceTxts: Phaser.GameObjects.Text[]  = []
 
   // ── Inventory tab ─────────────────────────────────────────────────────────
   private invObjs: Showable[] = []
@@ -250,13 +252,17 @@ export class ShopScene extends Phaser.Scene {
         fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
       }).setOrigin(0.5, 0)
 
+      const owned = PurchaseManager.has(item.id)
       const coinIco = this.add
         .image(cx - 14, CARD_SZ + 28, 'shop-coin')
         .setDisplaySize(18, 18)
+        .setVisible(!owned)
       const priceTxt = this.add.text(cx - 3, CARD_SZ + 28, `${item.price}`, {
         fontSize: '13px', color: '#ffd700',
         fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
-      }).setOrigin(0, 0.5)
+      }).setOrigin(0, 0.5).setVisible(!owned)
+      this.shopCardCoinIcons.push(coinIco)
+      this.shopCardPriceTxts.push(priceTxt)
 
       const hit = this.add
         .rectangle(cx, cy, CARD_SZ, CARD_SZ, 0xffffff, 0)
@@ -385,8 +391,9 @@ export class ShopScene extends Phaser.Scene {
     this.invObjs.forEach(o => o.setVisible(!isShop))
     this.invRail.setVisible(!isShop)
 
-    // Sync inventory cards when switching to that tab
-    if (!isShop) {
+    if (isShop) {
+      this.refreshBuyBtn()
+    } else {
       this.refreshInvCards()
       NotificationManager.clearNewItem()
       this.hideInvNotifDot()
@@ -419,6 +426,8 @@ export class ShopScene extends Phaser.Scene {
     NotificationManager.setNewItem()
     this.showInvNotifDot()
     this.coinCountText.setText(String(CoinManager.getTotal()))
+    this.shopCardCoinIcons[this.shopSelectedIdx]?.setVisible(false)
+    this.shopCardPriceTxts[this.shopSelectedIdx]?.setVisible(false)
     this.refreshBuyBtn()
   }
 
@@ -432,17 +441,22 @@ export class ShopScene extends Phaser.Scene {
     this.shopPreviewBg.setTexture('modal-bg')
 
     if (owned) {
-      this.buyBtnBg.setTexture('btn-blocked')
-      this.buyBtnTxt.setText('Comprado').setColor('#aaaaaa')
-      this.buyBtn.disableInteractive()
-    } else if (afford) {
-      this.buyBtnBg.setTexture('btn-primary')
-      this.buyBtnTxt.setText('Comprar').setColor('#ffffff')
-      this.buyBtn.setInteractive({ useHandCursor: true })
+      this.buyBtn.setVisible(false)
+      this.shopCoinIcon.setVisible(false)
+      this.shopPriceTxt.setVisible(false)
     } else {
-      this.buyBtnBg.setTexture('btn-blocked')
-      this.buyBtnTxt.setText('Sem moedas').setColor('#888888')
-      this.buyBtn.disableInteractive()
+      this.buyBtn.setVisible(true)
+      this.shopCoinIcon.setVisible(true)
+      this.shopPriceTxt.setVisible(true)
+      if (afford) {
+        this.buyBtnBg.setTexture('btn-primary')
+        this.buyBtnTxt.setText('Comprar').setColor('#ffffff')
+        this.buyBtn.setInteractive({ useHandCursor: true })
+      } else {
+        this.buyBtnBg.setTexture('btn-blocked')
+        this.buyBtnTxt.setText('Sem moedas').setColor('#888888')
+        this.buyBtn.disableInteractive()
+      }
     }
   }
 
