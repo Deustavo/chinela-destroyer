@@ -22,7 +22,7 @@ export interface UpgradeEffect {
 
 export interface ShopItem {
   id: string
-  type: 'shot' | 'upgrade' | 'shield' | 'ability'
+  type: 'shot' | 'upgrade' | 'shield' | 'ability' | 'none'
   name: string
   price: number
   description: string
@@ -32,4 +32,8 @@ export interface ShopItem {
   iconPath?: string
   shotConfig?: ShotConfig
   effect?: UpgradeEffect
+  /** Item only appears in the inventory tab, never in the shop. */
+  inventoryOnly?: boolean
+  /** Item is always treated as owned — no purchase required. */
+  alwaysOwned?: boolean
 }

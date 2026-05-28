@@ -62,6 +62,7 @@ export class PreloadScene extends Phaser.Scene {
 
     this.load.image('menu-shop-btn', '/assets/homeScreen/shop.png')
     this.load.image('shop-coin', '/assets/shop/coin.png')
+    this.load.image('shop-blocked', '/assets/shop/blocked.png')
 
     this.load.image('btn-trophy', '/assets/achievements/trophy.png')
     this.load.image('achievement-locked', '/assets/achievements/medal-blocked.png')

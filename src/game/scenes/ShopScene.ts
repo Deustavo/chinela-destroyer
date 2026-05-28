@@ -6,6 +6,7 @@ import { CoinManager } from '../utils/CoinManager'
 import { PurchaseManager } from '../utils/PurchaseManager'
 import { EquipManager } from '../utils/EquipManager'
 import { ITEM_REGISTRY } from '../items/registry'
+import type { ShopItem } from '../items/types'
 
 const W  = WORLD.width   // 405
 const H  = WORLD.height  // 720
@@ -21,7 +22,7 @@ const RAIL_TOP = 480                            // top edge of rail cards
 // ── Shop preview (large selected-item block) ─────────────────────────────────
 const PREV_SZ = 178
 const PREV_X  = CX
-const PREV_Y  = 210   // center of the block
+const PREV_Y  = 228   // center of the block
 
 // ── Inventory layout (player left | item right) ──────────────────────────────
 const INV_SZ  = 152
@@ -40,6 +41,7 @@ export class ShopScene extends Phaser.Scene {
   private tabInv!: Phaser.GameObjects.Text
 
   // ── Shop tab ─────────────────────────────────────────────────────────────
+  private shopItems: ShopItem[] = []
   private shopObjs: Showable[] = []
   private shopRail!: Phaser.GameObjects.Container
   private shopCardBgs: Phaser.GameObjects.Image[] = []
@@ -60,9 +62,10 @@ export class ShopScene extends Phaser.Scene {
   // ── Inventory tab ─────────────────────────────────────────────────────────
   private invObjs: Showable[] = []
   private invRail!: Phaser.GameObjects.Container
-  private invCardBgs:   Phaser.GameObjects.Image[] = []
-  private invCardIcons: Phaser.GameObjects.Image[] = []
-  private invCardNames: Phaser.GameObjects.Text[]  = []
+  private invCardBgs:     Phaser.GameObjects.Image[] = []
+  private invCardIcons:   Phaser.GameObjects.Image[] = []
+  private invCardNames:   Phaser.GameObjects.Text[]  = []
+  private invCardBlocked: Phaser.GameObjects.Image[] = []
   private invScrollX   = 0
   private invMaxScroll = 0
 
@@ -164,8 +167,9 @@ export class ShopScene extends Phaser.Scene {
 
   // ── Shop panel ───────────────────────────────────────────────────────────────
   private buildShopPanel() {
+    this.shopItems   = ITEM_REGISTRY.filter(i => !i.inventoryOnly)
     this.shopCardBgs = []
-    const first = ITEM_REGISTRY[0]
+    const first = this.shopItems[0]
 
     // Large preview block
     this.shopPreviewBg = this.add
@@ -176,7 +180,7 @@ export class ShopScene extends Phaser.Scene {
       .image(PREV_X, PREV_Y - 12, first.iconKey, first.iconFrame)
       .setDisplaySize(PREV_SZ * 0.58, PREV_SZ * 0.58).setDepth(3)
 
-    const nameY = PREV_Y + PREV_SZ / 2 + 10
+    const nameY = PREV_Y + PREV_SZ / 2 + 12
     this.shopPreviewName = this.add.text(PREV_X, nameY, first.name, {
       fontSize: '18px', color: '#ffffff',
       fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
@@ -211,12 +215,12 @@ export class ShopScene extends Phaser.Scene {
     this.refreshBuyBtn()
 
     // Scrollable card rail
-    const totalW = ITEM_REGISTRY.length * (CARD_SZ + CARD_GAP) - CARD_GAP
+    const totalW = this.shopItems.length * (CARD_SZ + CARD_GAP) - CARD_GAP
     this.shopMaxScroll = Math.max(0, totalW - RAIL_VW)
     this.shopRail      = this.add.container(RAIL_X0, RAIL_TOP).setDepth(3)
     this.shopCardBgs   = []
 
-    ITEM_REGISTRY.forEach((item, i) => {
+    this.shopItems.forEach((item, i) => {
       const cx = i * (CARD_SZ + CARD_GAP) + CARD_SZ / 2
       const cy = CARD_SZ / 2
 
@@ -292,23 +296,31 @@ export class ShopScene extends Phaser.Scene {
     const totalW = ITEM_REGISTRY.length * (CARD_SZ + CARD_GAP) - CARD_GAP
     this.invMaxScroll = Math.max(0, totalW - RAIL_VW)
     this.invRail      = this.add.container(RAIL_X0, RAIL_TOP).setDepth(3)
-    this.invCardBgs   = []
-    this.invCardIcons = []
-    this.invCardNames = []
+    this.invCardBgs     = []
+    this.invCardIcons   = []
+    this.invCardNames   = []
+    this.invCardBlocked = []
 
     ITEM_REGISTRY.forEach((item, i) => {
       const cx    = i * (CARD_SZ + CARD_GAP) + CARD_SZ / 2
       const cy    = CARD_SZ / 2
-      const owned = PurchaseManager.has(item.id)
+      const owned = !!item.alwaysOwned || PurchaseManager.has(item.id)
 
       const bg = this.add
         .image(cx, cy, this.invCardTex(i))
         .setDisplaySize(CARD_SZ, CARD_SZ)
       this.invCardBgs.push(bg)
 
+      const blocked = this.add
+        .image(cx, cy, 'shop-blocked')
+        .setDisplaySize(CARD_SZ * 0.55, CARD_SZ * 0.55)
+        .setVisible(!owned)
+      this.invCardBlocked.push(blocked)
+
+      const iconSz = item.alwaysOwned ? 0 : CARD_SZ * 0.65
       const icon = this.add
         .image(cx, cy, item.iconKey, item.iconFrame)
-        .setDisplaySize(CARD_SZ * 0.65, CARD_SZ * 0.65)
+        .setDisplaySize(iconSz, iconSz)
         .setVisible(owned)
       this.invCardIcons.push(icon)
 
@@ -325,7 +337,7 @@ export class ShopScene extends Phaser.Scene {
         if (PurchaseManager.has(ITEM_REGISTRY[i].id)) this.invEquipItem(i)
       })
 
-      this.invRail.add([bg, icon, nameTxt, hit])
+      this.invRail.add([bg, blocked, icon, nameTxt, hit])
     })
 
     const maskGfx = this.make.graphics()
@@ -338,12 +350,12 @@ export class ShopScene extends Phaser.Scene {
       this.invPreviewBg, this.invPreviewImg, this.invPreviewName,
     ]
 
-    // Pre-select equipped item so the preview isn't empty
-    const eqId = EquipManager.getEquipped()
-    if (eqId) {
-      const idx = ITEM_REGISTRY.findIndex(it => it.id === eqId)
-      if (idx !== -1) this.invShowPreview(idx)
-    }
+    // Default to 'nada' if nothing is equipped yet
+    if (!EquipManager.getEquipped()) EquipManager.equip('nada')
+
+    const eqId = EquipManager.getEquipped()!
+    const eqIdx = ITEM_REGISTRY.findIndex(it => it.id === eqId)
+    this.invShowPreview(eqIdx !== -1 ? eqIdx : 0)
   }
 
   // ── Tab switching ────────────────────────────────────────────────────────────
@@ -372,7 +384,7 @@ export class ShopScene extends Phaser.Scene {
 
   private shopSelectItem(idx: number) {
     this.shopSelectedIdx = idx
-    const item = ITEM_REGISTRY[idx]
+    const item = this.shopItems[idx]
     this.shopCardBgs.forEach((bg, i) => bg.setTexture(this.shopCardTex(i)))
     this.shopPreviewImg.setTexture(item.iconKey, item.iconFrame)
     this.shopPreviewName.setText(item.name)
@@ -382,7 +394,7 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private handleBuy() {
-    const item = ITEM_REGISTRY[this.shopSelectedIdx]
+    const item = this.shopItems[this.shopSelectedIdx]
     if (!item) return
     if (PurchaseManager.has(item.id)) return
     if (!CoinManager.spend(item.price)) return
@@ -392,7 +404,7 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private refreshBuyBtn() {
-    const item     = ITEM_REGISTRY[this.shopSelectedIdx]
+    const item     = this.shopItems[this.shopSelectedIdx]
     if (!item) return
     const owned  = PurchaseManager.has(item.id)
     const afford = CoinManager.getTotal() >= item.price
@@ -452,18 +464,24 @@ export class ShopScene extends Phaser.Scene {
     const item     = ITEM_REGISTRY[idx]
     const equipped = EquipManager.isEquipped(item.id)
     this.invPreviewBg.setTexture(equipped ? 'modal-bg3' : 'modal-bg')
-    this.invPreviewImg
-      .setTexture(item.iconKey, item.iconFrame)
-      .setDisplaySize(INV_SZ * 0.62, INV_SZ * 0.62)
+    if (item.alwaysOwned) {
+      this.invPreviewImg.setDisplaySize(0, 0)
+    } else {
+      this.invPreviewImg
+        .setTexture(item.iconKey, item.iconFrame)
+        .setDisplaySize(INV_SZ * 0.62, INV_SZ * 0.62)
+    }
     this.invPreviewName.setText(item.name)
   }
 
   private refreshInvCards() {
     this.invCardBgs.forEach((bg, i) => {
-      const owned = PurchaseManager.has(ITEM_REGISTRY[i].id)
+      const item  = ITEM_REGISTRY[i]
+      const owned = !!item.alwaysOwned || PurchaseManager.has(item.id)
       bg.setTexture(this.invCardTex(i))
+      this.invCardBlocked[i].setVisible(!owned)
       this.invCardIcons[i].setVisible(owned)
-      this.invCardNames[i].setVisible(owned)
+      this.invCardNames[i].setVisible(owned && !item.alwaysOwned)
     })
   }
 }
