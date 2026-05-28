@@ -73,7 +73,11 @@ export class GameOverScene extends Phaser.Scene {
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
-    const allElements: SceneObject[] = [fim, cat, de, jogo, scoreText, bestText, btnHome, btnPlay, labelHome, labelPlay]
+    const spaceHint = this.add
+      .text(cx, cy + 300, 'Pressione ESPAÇO para jogar novamente', { fontSize: '14px', color: '#aaaaaa', fontFamily: FONT_FAMILY })
+      .setOrigin(0.5)
+
+    const allElements: SceneObject[] = [fim, cat, de, jogo, scoreText, bestText, btnHome, btnPlay, labelHome, labelPlay, spaceHint]
 
     dropInFloat(this, fim,  { amplitude: 10, floatDuration: 1800, delay: 0   })
     dropInFloat(this, cat,  { amplitude: 8,  floatDuration: 2100, delay: 100 })
@@ -85,10 +89,13 @@ export class GameOverScene extends Phaser.Scene {
     dropIn(this, btnPlay,   500)
     dropIn(this, labelHome, 450)
     dropIn(this, labelPlay, 500)
+    dropIn(this, spaceHint, 550)
 
     if (this.achievementQueue.length > 0) {
       this.toastTimer = this.time.delayedCall(1500, () => this.showNextAchievementToast())
     }
+
+    this.input.keyboard!.once('keydown-SPACE', () => exitTo(this, 'main-scene', allElements))
 
     wireButtonLabel(btnHome, labelHome, () => exitTo(this, 'menu-scene', allElements))
     wireButtonLabel(btnPlay, labelPlay, () => exitTo(this, 'main-scene', allElements))
