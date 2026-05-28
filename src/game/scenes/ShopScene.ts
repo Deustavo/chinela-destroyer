@@ -27,7 +27,7 @@ const PREV_Y  = 210   // center of the block
 const INV_SZ  = 152
 const INV_L_X = Math.round(W * 0.27)  // 109 — player
 const INV_R_X = Math.round(W * 0.73)  // 296 — selected item
-const INV_CY  = 220
+const INV_CY  = 292
 
 type Showable = { setVisible(v: boolean): unknown }
 
@@ -246,12 +246,9 @@ export class ShopScene extends Phaser.Scene {
   // ── Inventory panel ──────────────────────────────────────────────────────────
   private buildInvPanel() {
     // Left block — player image
-    const playerBg = this.add
-      .image(INV_L_X, INV_CY, 'modal-bg3')
-      .setDisplaySize(INV_SZ, INV_SZ).setDepth(2)
     const playerImg = this.add
-      .image(INV_L_X, INV_CY, 'chinela', 0)
-      .setDisplaySize(INV_SZ * 0.78, INV_SZ * 0.78).setDepth(3)
+      .image(INV_L_X, INV_CY - 20, 'chinela', 0)
+      .setDisplaySize(INV_SZ * 1.1, INV_SZ * 1.1).setDepth(3)
 
     // Right block — selected item preview
     this.invPreviewBg = this.add
@@ -313,7 +310,7 @@ export class ShopScene extends Phaser.Scene {
     this.invRail.setMask(maskGfx.createGeometryMask())
 
     this.invObjs = [
-      playerBg, playerImg,
+      playerImg,
       this.invPreviewBg, this.invPreviewImg, this.invPreviewName,
     ]
 
