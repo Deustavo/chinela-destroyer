@@ -16,7 +16,7 @@ const CARD_SZ  = 88
 const CARD_GAP = 16
 const RAIL_VW  = 3 * CARD_SZ + 2 * CARD_GAP   // 296 px visible width
 const RAIL_X0  = Math.floor((W - RAIL_VW) / 2) // 54
-const RAIL_TOP = 440                            // top edge of rail cards
+const RAIL_TOP = 480                            // top edge of rail cards
 
 // ── Shop preview (large selected-item block) ─────────────────────────────────
 const PREV_SZ = 178
@@ -363,12 +363,10 @@ export class ShopScene extends Phaser.Scene {
   private handleBuy() {
     const item = ITEM_REGISTRY[this.shopSelectedIdx]
     if (!item) return
-    if (!PurchaseManager.has(item.id)) {
-      if (!CoinManager.spend(item.price)) return
-      PurchaseManager.buy(item.id)
-      this.coinCountText.setText(String(CoinManager.getTotal()))
-    }
-    EquipManager.equip(item.id)
+    if (PurchaseManager.has(item.id)) return
+    if (!CoinManager.spend(item.price)) return
+    PurchaseManager.buy(item.id)
+    this.coinCountText.setText(String(CoinManager.getTotal()))
     this.refreshBuyBtn()
   }
 
@@ -382,16 +380,11 @@ export class ShopScene extends Phaser.Scene {
     this.shopCardBgs.forEach((bg, i) => bg.setTexture(this.shopCardTex(i)))
     this.shopPreviewBg.setTexture(equipped ? 'modal-bg3' : 'modal-bg')
 
-    if (equipped) {
+    if (owned) {
       this.buyBtn
-        .setText('Equipado')
+        .setText('Comprado')
         .setStyle({ backgroundColor: '#444444', color: '#aaaaaa' })
         .disableInteractive()
-    } else if (owned) {
-      this.buyBtn
-        .setText('Equipar')
-        .setStyle({ backgroundColor: '#226688', color: '#ffffff' })
-        .setInteractive({ useHandCursor: true })
     } else if (afford) {
       this.buyBtn
         .setText('Comprar')
