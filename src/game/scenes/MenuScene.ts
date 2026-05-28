@@ -64,19 +64,14 @@ export class MenuScene extends Phaser.Scene {
     const btnShop = makeSecondaryBtn(cx + (BTN_W / 2 + BTN_GAP / 2), btnRowY, 'Itens')
     btnShop.setAlpha(0.9)
 
-    const btnTrophy = this.add
-      .image(WORLD.width - 44, WORLD.height - 44, 'btn-trophy')
-      .setDisplaySize(56, 56)
-      .setDepth(3)
-      .setInteractive({ useHandCursor: true })
-      .setAlpha(0.9)
+    const btnConquistas = makeSecondaryBtn(cx, btnRowY + 54, 'Conquistas')
 
     // Reduce hitbox height: play = 1/3, credits = 1/2 (both centered)
     const haBtn = btn.input!.hitArea as Phaser.Geom.Rectangle
     haBtn.y += haBtn.height / 3
     haBtn.height /= 3
 
-    const all: SceneObject[] = [logo, chinela, pera, btn, btnCredits, btnTrophy, btnShop]
+    const all: SceneObject[] = [logo, chinela, pera, btn, btnCredits, btnShop, btnConquistas]
 
     btn.on('pointerover', () => btn.setScale(2.0))
     btn.on('pointerout', () => btn.setScale(1.8))
@@ -86,23 +81,23 @@ export class MenuScene extends Phaser.Scene {
     btnCredits.on('pointerout', () => btnCredits.setScale(BTN_SCALE))
     btnCredits.on('pointerdown', () => exitTo(this, 'credits-scene', all))
 
-    btnTrophy.on('pointerover', () => btnTrophy.setAlpha(1))
-    btnTrophy.on('pointerout', () => btnTrophy.setAlpha(0.9))
-    btnTrophy.on('pointerdown', () => exitTo(this, 'achievements-scene', all))
-
     btnShop.on('pointerover', () => { btnShop.setAlpha(1); btnShop.setScale(BTN_SCALE + 0.12) })
     btnShop.on('pointerout', () => { btnShop.setAlpha(0.9); btnShop.setScale(BTN_SCALE) })
     btnShop.on('pointerdown', () => exitTo(this, 'shop-scene', all))
 
+    btnConquistas.on('pointerover', () => btnConquistas.setScale(BTN_SCALE + 0.12))
+    btnConquistas.on('pointerout', () => btnConquistas.setScale(BTN_SCALE))
+    btnConquistas.on('pointerdown', () => exitTo(this, 'achievements-scene', all))
+
     this.input.keyboard?.once('keydown-SPACE', () => exitTo(this, 'main-scene', all))
     this.input.keyboard?.once('keydown-ENTER', () => exitTo(this, 'main-scene', all))
 
-    dropInFloat(this, logo,       { amplitude: 8,  floatDuration: 2000, delay: 0   })
-    dropInFloat(this, chinela,    { amplitude: 12, floatDuration: 1800, delay: 120 })
-    dropInFloat(this, pera,       { amplitude: 10, floatDuration: 2200, delay: 240 })
-    dropInFloat(this, btn,        { amplitude: 6,  floatDuration: 1600, delay: 360 })
-    dropInFloat(this, btnCredits, { amplitude: 5,  floatDuration: 1700, delay: 440 })
-    dropInFloat(this, btnTrophy,  { amplitude: 4,  floatDuration: 1900, delay: 520 })
-    dropInFloat(this, btnShop,    { amplitude: 4,  floatDuration: 1900, delay: 560 })
+    dropInFloat(this, logo,          { amplitude: 8,  floatDuration: 2000, delay: 0   })
+    dropInFloat(this, chinela,       { amplitude: 12, floatDuration: 1800, delay: 120 })
+    dropInFloat(this, pera,          { amplitude: 10, floatDuration: 2200, delay: 240 })
+    dropInFloat(this, btn,           { amplitude: 6,  floatDuration: 1600, delay: 360 })
+    dropInFloat(this, btnCredits,    { amplitude: 5,  floatDuration: 1700, delay: 440 })
+    dropInFloat(this, btnShop,       { amplitude: 4,  floatDuration: 1900, delay: 520 })
+    dropInFloat(this, btnConquistas, { amplitude: 4,  floatDuration: 1900, delay: 600 })
   }
 }
