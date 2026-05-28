@@ -56,6 +56,7 @@ export class ShopScene extends Phaser.Scene {
   private shopPreviewDesc!: Phaser.GameObjects.Text
   private shopCoinIcon!:    Phaser.GameObjects.Image
   private shopPriceTxt!:    Phaser.GameObjects.Text
+  private shopOwnedTxt!:    Phaser.GameObjects.Text
   private buyBtn!:          Phaser.GameObjects.Container
   private buyBtnBg!:        Phaser.GameObjects.Image
   private buyBtnTxt!:       Phaser.GameObjects.Text
@@ -214,6 +215,10 @@ export class ShopScene extends Phaser.Scene {
       fontSize: '18px', color: '#ffd700',
       fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
     }).setOrigin(0, 0.5).setDepth(2)
+    this.shopOwnedTxt = this.add.text(PREV_X, priceY, 'adquirido', {
+      fontSize: '16px', color: '#44dd44',
+      fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
+    }).setOrigin(0.5, 0.5).setDepth(2).setVisible(false)
 
     const btnY = priceY + 36
     this.buyBtnBg = this.add.image(0, 0, 'btn-primary')
@@ -280,7 +285,7 @@ export class ShopScene extends Phaser.Scene {
     this.shopObjs = [
       this.shopPreviewBg, this.shopPreviewImg,
       this.shopPreviewName, this.shopPreviewDesc,
-      this.shopCoinIcon, this.shopPriceTxt, this.buyBtn,
+      this.shopCoinIcon, this.shopPriceTxt, this.shopOwnedTxt, this.buyBtn,
     ]
   }
 
@@ -394,6 +399,7 @@ export class ShopScene extends Phaser.Scene {
     if (isShop) {
       this.refreshBuyBtn()
     } else {
+      this.shopOwnedTxt.setVisible(false)
       this.refreshInvCards()
       NotificationManager.clearNewItem()
       this.hideInvNotifDot()
@@ -444,10 +450,12 @@ export class ShopScene extends Phaser.Scene {
       this.buyBtn.setVisible(false)
       this.shopCoinIcon.setVisible(false)
       this.shopPriceTxt.setVisible(false)
+      this.shopOwnedTxt.setVisible(true)
     } else {
       this.buyBtn.setVisible(true)
       this.shopCoinIcon.setVisible(true)
       this.shopPriceTxt.setVisible(true)
+      this.shopOwnedTxt.setVisible(false)
       if (afford) {
         this.buyBtnBg.setTexture('btn-primary')
         this.buyBtnTxt.setText('Comprar').setColor('#ffffff')
@@ -471,7 +479,6 @@ export class ShopScene extends Phaser.Scene {
     EquipManager.equip(ITEM_REGISTRY[idx].id)
     this.invShowPreview(idx)
     this.refreshInvCards()
-    this.refreshBuyBtn()
     this.jumpInvPreview()
   }
 
