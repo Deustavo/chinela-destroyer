@@ -141,7 +141,12 @@ export class ShopScene extends Phaser.Scene {
     const baseObjs: SceneObject[] = [
       title, this.tabShop, this.tabInv, divider, backBtn, labelBack,
     ]
-    const goBack = () => exitTo(this, 'menu-scene', baseObjs)
+    const goBack = () => {
+      const panelObjs = this.activeTab === 'shop'
+        ? [...this.shopObjs, this.shopRail]
+        : [...this.invObjs, this.invRail]
+      exitTo(this, 'menu-scene', [...baseObjs, ...panelObjs] as unknown as SceneObject[])
+    }
     backBtn.on('pointerdown', goBack)
     labelBack.on('pointerdown', goBack)
 
@@ -150,9 +155,8 @@ export class ShopScene extends Phaser.Scene {
     this.setTab('shop')
 
     // Entry animation for the default (shop) tab elements
-    const entryBase = baseObjs.length * 50 + 60
     ;[...this.shopObjs, this.shopRail].forEach((obj, i) => {
-      dropIn(this, obj as unknown as SceneObject, entryBase + i * 40, 700)
+      dropIn(this, obj as unknown as SceneObject, 80 + i * 20, 700)
     })
   }
 
