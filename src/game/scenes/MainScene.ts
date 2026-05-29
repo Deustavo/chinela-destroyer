@@ -7,6 +7,7 @@ import { AchievementManager } from '../achievements/AchievementManager'
 import { CoinManager } from '../utils/CoinManager'
 import { addCoinCounter } from '../utils/uiHelpers'
 import { TutorialOverlay } from '../utils/TutorialOverlay'
+import { EquipManager } from '../utils/EquipManager'
 
 export class MainScene extends Phaser.Scene {
   private player!: Player
@@ -503,9 +504,11 @@ export class MainScene extends Phaser.Scene {
         const stunDuration = proj.getData('stunDuration') as number | undefined
         if (stunDuration) this.enemy.applyStun(stunDuration)
         else this.enemy.showHit()
-        const total = CoinManager.add(2)
-        this.coinCountText.setText(String(total))
-        this.showCoinPopup(2)
+        if (EquipManager.getEquipped() === 'pomodoro-shot') {
+          const total = CoinManager.add(2)
+          this.coinCountText.setText(String(total))
+          this.showCoinPopup(2)
+        }
         this.playShotImpact(proj)
       }
     }
