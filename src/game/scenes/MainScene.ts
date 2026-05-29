@@ -8,6 +8,7 @@ import { CoinManager } from '../utils/CoinManager'
 import { addCoinCounter } from '../utils/uiHelpers'
 import { TutorialOverlay } from '../utils/TutorialOverlay'
 import { EquipManager } from '../utils/EquipManager'
+import { PlayerLoadout } from '../items/PlayerLoadout'
 
 export class MainScene extends Phaser.Scene {
   private player!: Player
@@ -88,7 +89,8 @@ export class MainScene extends Phaser.Scene {
 
     this.player = new Player(this)
     this.enemy = new Enemy(this)
-    this.touchControls = new TouchControls(this, () => this.player.requestShot())
+    const activeShotConfig = PlayerLoadout.getActiveShotConfig()
+    this.touchControls = new TouchControls(this, () => this.player.requestShot(), activeShotConfig.spriteKey, activeShotConfig.flyFrames[0])
 
     this.physics.add.collider(this.player.gameObject, this.platforms)
     this.physics.add.overlap(this.player.gameObject, this.collectibleCoins, (_p, coinObj) => {

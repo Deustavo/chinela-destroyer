@@ -17,7 +17,7 @@ export class TouchControls {
   private shotBtnY: number = 0
   private readonly shotBtnDisplaySize: number = 88
 
-  constructor(scene: Phaser.Scene, onShot?: () => void) {
+  constructor(scene: Phaser.Scene, onShot?: () => void, shotSpriteKey?: string, shotSpriteFrame?: number) {
     const y = WORLD.height - 60
 
     if (isTouchDevice()) {
@@ -31,8 +31,27 @@ export class TouchControls {
 
     this.shotBtnX = WORLD.width - 60
     this.shotBtnY = y - 95
-    const { image: shotImage, zone: shotBtn } = this.createButton(scene, this.shotBtnX, this.shotBtnY, 'btn-shot', this.shotBtnDisplaySize, 0.7)
-    this.shotImage = shotImage
+
+    if (shotSpriteKey) {
+      const { image: bgImage, zone: shotBtn } = this.createButton(scene, this.shotBtnX, this.shotBtnY, 'btn-shot', this.shotBtnDisplaySize, 0.7)
+      bgImage.setVisible(false)
+      const spriteIcon = scene.add
+        .image(this.shotBtnX, this.shotBtnY, shotSpriteKey, shotSpriteFrame ?? 0)
+        .setDisplaySize(this.shotBtnDisplaySize * 0.6, this.shotBtnDisplaySize * 0.6)
+        .setScrollFactor(0)
+        .setDepth(21)
+        .setAlpha(0.9)
+      this.shotImage = spriteIcon
+      if (onShot) {
+        shotBtn.on('pointerdown', onShot)
+      }
+    } else {
+      const { image: shotImage, zone: shotBtn } = this.createButton(scene, this.shotBtnX, this.shotBtnY, 'btn-shot', this.shotBtnDisplaySize, 0.7)
+      this.shotImage = shotImage
+      if (onShot) {
+        shotBtn.on('pointerdown', onShot)
+      }
+    }
 
     this.cooldownBar = scene.add.graphics().setScrollFactor(0).setDepth(23)
 
@@ -68,10 +87,6 @@ export class TouchControls {
       }
 
       scene.input.keyboard?.once('keydown-SPACE', hide)
-    }
-
-    if (onShot) {
-      shotBtn.on('pointerdown', onShot)
     }
   }
 
