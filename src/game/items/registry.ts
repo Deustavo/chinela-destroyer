@@ -107,8 +107,8 @@ export const ITEM_REGISTRY: ShopItem[] = [
     },
     levelStats: [
       { upgradeCost: 0,   description: 'Tamanho: P', displaySize: 48 },
-      { upgradeCost: 300, description: 'Tamanho: M', displaySize: 72 },
-      { upgradeCost: 600, description: 'Tamanho: G', displaySize: 96 },
+      { upgradeCost: 300, description: 'Tamanho: M', displaySize: 60 },
+      { upgradeCost: 600, description: 'Tamanho: G', displaySize: 72 },
     ],
   },
 ]
