@@ -26,9 +26,9 @@ const ARROW_R_X  = W - 40
 const SCROLL_STEP = CARD_SZ + CARD_GAP            // one card per click
 
 // ── Shop preview (large selected-item block) ─────────────────────────────────
-const PREV_SZ = 178
+const PREV_SZ = 160
 const PREV_X  = CX
-const PREV_Y  = 228   // center of the block
+const PREV_Y  = 200   // center of the block
 
 // ── Inventory layout (player left | item right) ──────────────────────────────
 const INV_SZ  = 152
@@ -86,11 +86,20 @@ export class ShopScene extends Phaser.Scene {
   private invNotifBounce?: Phaser.Tweens.Tween
 
   private initialTab: 'shop' | 'inventory' = 'shop'
+  private shopTutorial = false
+  private tutorialStep: 'buy' | 'equip' | null = null
+  private tutorialHintBg?: Phaser.GameObjects.Rectangle
+  private tutorialHintTxt?: Phaser.GameObjects.Text
+  private tutorialPulse?: Phaser.Tweens.Tween
+  private tutorialArrow?: Phaser.GameObjects.Text
+  private tutorialArrowTween?: Phaser.Tweens.Tween
 
   constructor() { super('shop-scene') }
 
-  init(data: { tab?: 'shop' | 'inventory' }) {
+  init(data: { tab?: 'shop' | 'inventory'; shopTutorial?: boolean }) {
     this.initialTab = data?.tab ?? 'shop'
+    this.shopTutorial = data?.shopTutorial ?? false
+    this.tutorialStep = this.shopTutorial ? 'buy' : null
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -171,6 +180,7 @@ export class ShopScene extends Phaser.Scene {
       this.invNotifDot,
     ]
     const goBack = () => {
+      if (this.tutorialStep === 'buy') return
       const panelObjs = this.activeTab === 'shop'
         ? [...this.shopObjs, this.shopRail]
         : [...this.invObjs, this.invRail]
@@ -190,6 +200,10 @@ export class ShopScene extends Phaser.Scene {
     initObjs.forEach((obj, i) => {
       dropIn(this, obj as unknown as SceneObject, 80 + i * 20, 700)
     })
+
+    if (this.shopTutorial) {
+      this.time.delayedCall(900, () => this.startTutorialBuyStep())
+    }
   }
 
   // ── Shop panel ───────────────────────────────────────────────────────────────
@@ -430,6 +444,7 @@ export class ShopScene extends Phaser.Scene {
 
   // ── Tab switching ────────────────────────────────────────────────────────────
   private setTab(tab: 'shop' | 'inventory') {
+    if (this.tutorialStep === 'buy' && tab === 'inventory') return
     this.activeTab = tab
     const isShop = tab === 'shop'
 
@@ -449,6 +464,7 @@ export class ShopScene extends Phaser.Scene {
       this.refreshInvCards()
       NotificationManager.clearNewItem()
       this.hideInvNotifDot()
+      if (this.tutorialStep === 'equip') this.startTutorialInvItemStep()
     }
 
   }
@@ -460,6 +476,7 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private shopSelectItem(idx: number) {
+    if (this.tutorialStep === 'buy' && idx !== 0) return
     this.shopSelectedIdx = idx
     const item = this.shopItems[idx]
     this.shopCardBgs.forEach((bg, i) => bg.setTexture(this.shopCardTex(i)))
@@ -473,6 +490,7 @@ export class ShopScene extends Phaser.Scene {
   private handleBuy() {
     const item = this.shopItems[this.shopSelectedIdx]
     if (!item) return
+    if (this.tutorialStep === 'buy' && item.id !== 'pomodoro-shot') return
     if (PurchaseManager.has(item.id)) return
     if (!CoinManager.spend(item.price)) return
     PurchaseManager.buy(item.id)
@@ -482,6 +500,10 @@ export class ShopScene extends Phaser.Scene {
     this.shopCardCoinIcons[this.shopSelectedIdx]?.setVisible(false)
     this.shopCardPriceTxts[this.shopSelectedIdx]?.setVisible(false)
     this.refreshBuyBtn()
+
+    if (this.tutorialStep === 'buy' && item.id === 'pomodoro-shot') {
+      this.time.delayedCall(600, () => this.startTutorialEquipStep())
+    }
   }
 
   private refreshBuyBtn() {
@@ -527,6 +549,11 @@ export class ShopScene extends Phaser.Scene {
     this.invShowPreview(idx)
     this.refreshInvCards()
     this.jumpInvPreview()
+
+    if (this.tutorialStep === 'equip' && ITEM_REGISTRY[idx].id === 'pomodoro-shot') {
+      this.tutorialStep = null
+      this.completeTutorial()
+    }
   }
 
   private jumpInvPreview() {
@@ -606,6 +633,116 @@ export class ShopScene extends Phaser.Scene {
       onComplete: () => {
         this.invNotifDot.setVisible(false).setScale(1)
       },
+    })
+  }
+
+  // ── Shop tutorial ────────────────────────────────────────────────────────────
+  private setTutorialHint(text: string) {
+    if (this.tutorialHintTxt) {
+      this.tutorialHintTxt.setText(text)
+      return
+    }
+    const panelW = W - 32
+    const panelY = H - 120
+    this.tutorialHintBg = this.add
+      .rectangle(CX, panelY, panelW, 52, 0x000000, 0.82)
+      .setStrokeStyle(2, 0xffd700, 1)
+      .setDepth(50)
+      .setAlpha(0)
+    this.tutorialHintTxt = this.add
+      .text(CX, panelY, text, {
+        fontSize: '15px', color: '#ffd700', align: 'center',
+        fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
+        lineSpacing: 2,
+      })
+      .setOrigin(0.5)
+      .setDepth(51)
+      .setAlpha(0)
+
+    this.tweens.add({ targets: [this.tutorialHintBg, this.tutorialHintTxt], alpha: 1, duration: 350 })
+  }
+
+  private showTutorialArrow(x: number, y: number, pointUp: boolean) {
+    this.hideTutorialArrow()
+    const symbol = pointUp ? '▲' : '▼'
+    this.tutorialArrow = this.add.text(x, y, symbol, {
+      fontSize: '28px', color: '#ffd700',
+      fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 4,
+    }).setOrigin(0.5).setDepth(52).setAlpha(0)
+    this.tweens.add({ targets: this.tutorialArrow, alpha: 1, duration: 300 })
+    this.tutorialArrowTween = this.tweens.add({
+      targets: this.tutorialArrow,
+      y: y + (pointUp ? -10 : 10),
+      duration: 480,
+      ease: 'Sine.InOut',
+      yoyo: true,
+      repeat: -1,
+      delay: 300,
+    })
+  }
+
+  private hideTutorialArrow() {
+    if (!this.tutorialArrow) return
+    this.tutorialArrowTween?.stop()
+    this.tutorialArrowTween = undefined
+    const arrow = this.tutorialArrow
+    this.tutorialArrow = undefined
+    this.tweens.add({ targets: arrow, alpha: 0, duration: 200, onComplete: () => arrow.destroy() })
+  }
+
+  private startTutorialBuyStep() {
+    if (this.tutorialStep !== 'buy') return
+    this.shopSelectItem(0)
+    this.setTutorialHint('Selecione o Pomodoro\ne clique em Comprar!')
+    this.showTutorialArrow(this.buyBtn.x, this.buyBtn.y - 34, false)
+    this.tutorialPulse = this.tweens.add({
+      targets: this.buyBtn,
+      scaleX: 1.08,
+      scaleY: 1.08,
+      duration: 500,
+      ease: 'Sine.InOut',
+      yoyo: true,
+      repeat: -1,
+    })
+  }
+
+  private startTutorialEquipStep() {
+    this.tutorialStep = 'equip'
+    this.tutorialPulse?.stop()
+    this.tutorialPulse = undefined
+    this.buyBtn.setScale(1)
+    this.setTutorialHint('Agora abra o Inventário\ne equipe o Pomodoro!')
+    this.showTutorialArrow(Math.round(W * 0.72), 114, true)
+  }
+
+  private startTutorialInvItemStep() {
+    const pomIdx = ITEM_REGISTRY.findIndex(it => it.id === 'pomodoro-shot')
+    if (pomIdx === -1) return
+    const cardX = RAIL_X0 + pomIdx * (CARD_SZ + CARD_GAP) + CARD_SZ / 2
+    this.showTutorialArrow(cardX, RAIL_TOP - 20, false)
+  }
+
+  private completeTutorial() {
+    this.tutorialPulse?.stop()
+    this.tutorialPulse = undefined
+    this.hideTutorialArrow()
+    if (!this.tutorialHintTxt) return
+    this.tutorialHintTxt
+      .setText('Perfeito! Pomodoro equipado!')
+      .setColor('#00ff88')
+    this.time.delayedCall(2000, () => {
+      const targets = [this.tutorialHintBg, this.tutorialHintTxt].filter(Boolean)
+      this.tweens.add({
+        targets,
+        alpha: 0,
+        duration: 400,
+        onComplete: () => {
+          this.tutorialHintBg?.destroy()
+          this.tutorialHintTxt?.destroy()
+          this.tutorialHintBg = undefined
+          this.tutorialHintTxt = undefined
+        },
+      })
     })
   }
 }

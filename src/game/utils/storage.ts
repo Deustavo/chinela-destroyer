@@ -14,6 +14,7 @@ export const STORAGE_KEYS = [
   'unlockedAchievements',
   'highScore',
   'tutorialSeen',
+  'shopTutorialSeen',
 ] as const
 
 let cryptoKey: CryptoKey | null = null

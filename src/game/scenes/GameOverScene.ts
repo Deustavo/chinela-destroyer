@@ -3,6 +3,8 @@ import { WORLD, FONT_FAMILY } from '../config/constants'
 import { addBackground, wireButtonLabel, addCoinCounter } from '../utils/uiHelpers'
 import { dropIn, dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
 import { storageGet, storageSet, storageRemove } from '../utils/storage'
+import { CoinManager } from '../utils/CoinManager'
+import { PurchaseManager } from '../utils/PurchaseManager'
 
 const SCALE = 3
 
@@ -93,14 +95,111 @@ export class GameOverScene extends Phaser.Scene {
     dropIn(this, labelPlay, 500)
     dropIn(this, spaceHint, 550)
 
+    const shouldShowShopTutorial =
+      storageGet('shopTutorialSeen') === null &&
+      CoinManager.getTotal() >= 10 &&
+      !PurchaseManager.has('pomodoro-shot')
+
+    if (shouldShowShopTutorial) {
+      storageSet('shopTutorialSeen', '1')
+      this.time.delayedCall(1500, () => this.showShopTutorialModal())
+    }
+
     if (this.achievementQueue.length > 0) {
-      this.toastTimer = this.time.delayedCall(1500, () => this.showNextAchievementToast())
+      const achievementDelay = shouldShowShopTutorial ? 4500 : 1500
+      this.toastTimer = this.time.delayedCall(achievementDelay, () => this.showNextAchievementToast())
     }
 
     this.input.keyboard!.once('keydown-SPACE', () => exitTo(this, 'main-scene', allElements))
 
     wireButtonLabel(btnHome, labelHome, () => exitTo(this, 'menu-scene', allElements))
     wireButtonLabel(btnPlay, labelPlay, () => exitTo(this, 'main-scene', allElements))
+  }
+
+  private showShopTutorialModal() {
+    const cx = WORLD.width / 2
+    const cy = WORLD.height / 2
+
+    const overlay = this.add
+      .rectangle(cx, cy, WORLD.width, WORLD.height, 0x000000, 0.72)
+      .setDepth(160)
+      .setInteractive()
+
+    const panelW = 290
+    const panelH = 220
+    const panel = this.add
+      .rectangle(cx, cy, panelW, panelH, 0x111111, 0.97)
+      .setStrokeStyle(2, 0xffd700, 1)
+      .setDepth(161)
+
+    const titleTxt = this.add
+      .text(cx, cy - 72, 'Compre um aprimoramento', {
+        fontSize: '20px', color: '#ffd700',
+        fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setDepth(162)
+
+    const bodyTxt = this.add
+      .text(cx, cy - 28, 'Vá à loja e compre o Pomodoro', {
+        fontSize: '15px', color: '#ffffff', align: 'center',
+        fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
+      })
+      .setOrigin(0.5)
+      .setDepth(162)
+
+    const iconBg = this.add
+      .rectangle(cx, cy + 26, 58, 58, 0x222222)
+      .setStrokeStyle(2, 0xffd700)
+      .setDepth(162)
+
+    const icon = this.add
+      .image(cx, cy + 26, 'player-shot3', 0)
+      .setDisplaySize(44, 44)
+      .setDepth(163)
+
+    const btnBg = this.add
+      .image(cx, cy + 82, 'btn-primary')
+      .setDisplaySize(176, 44)
+      .setDepth(162)
+      .setInteractive({ useHandCursor: true })
+
+    const btnTxt = this.add
+      .text(cx, cy + 82, 'Ir à Loja →', {
+        fontSize: '17px', color: '#ffffff',
+        fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
+      })
+      .setOrigin(0.5)
+      .setDepth(163)
+
+    const closeTxt = this.add
+      .text(cx + panelW / 2 - 18, cy - panelH / 2 + 18, '×', {
+        fontSize: '22px', color: '#888888', fontFamily: FONT_FAMILY,
+      })
+      .setOrigin(0.5)
+      .setDepth(163)
+      .setInteractive({ useHandCursor: true })
+
+    const modalObjs = [overlay, panel, titleTxt, bodyTxt, iconBg, icon, btnBg, btnTxt, closeTxt]
+    modalObjs.forEach(o => o.setAlpha(0))
+    this.tweens.add({ targets: modalObjs, alpha: 1, duration: 300 })
+
+    const dismiss = () => {
+      this.tweens.add({
+        targets: modalObjs, alpha: 0, duration: 250,
+        onComplete: () => modalObjs.forEach(o => o.destroy()),
+      })
+    }
+
+    const goToShop = () => {
+      modalObjs.forEach(o => o.destroy())
+      this.scene.start('shop-scene', { tab: 'shop', shopTutorial: true })
+    }
+
+    closeTxt.on('pointerdown', dismiss)
+    overlay.on('pointerdown', dismiss)
+    btnBg.on('pointerdown', goToShop)
+    btnTxt.on('pointerdown', goToShop)
   }
 
   private showNextAchievementToast() {
