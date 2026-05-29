@@ -77,7 +77,7 @@ export class MenuScene extends Phaser.Scene {
     if (NotificationManager.hasNewItem()) {
       const dotX = btnInventory.x + BTN_W / 2 - 10
       const dotY  = btnInventory.y - 12
-      const dot = this.add.circle(dotX, dotY, 8, 0xff7700).setDepth(5).setScale(0)
+      const dot = this.add.circle(dotX, dotY, 8, 0xff0000).setDepth(5).setScale(0)
       all.push(dot as unknown as SceneObject)
       this.tweens.add({
         targets: dot,

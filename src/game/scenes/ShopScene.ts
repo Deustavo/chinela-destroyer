@@ -122,7 +122,7 @@ export class ShopScene extends Phaser.Scene {
     const dotX = W * 0.72 + 58
     const dotY  = 82
     this.invNotifDotBaseY = dotY
-    this.invNotifDot = this.add.circle(dotX, dotY, 7, 0xff7700).setDepth(4).setScale(0).setVisible(false)
+    this.invNotifDot = this.add.circle(dotX, dotY, 7, 0xff0000).setDepth(4).setScale(0).setVisible(false)
     if (NotificationManager.hasNewItem()) this.showInvNotifDot()
 
     const divider = this.add
