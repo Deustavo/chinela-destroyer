@@ -41,6 +41,8 @@ export class MainScene extends Phaser.Scene {
   private shieldHUD: Phaser.GameObjects.Text | null = null
   private tutorialOverlay: TutorialOverlay | null = null
   private tutorialActive: boolean = false
+  private collectibleCoins!: Phaser.Physics.Arcade.Group
+  private platformSpawnCount: number = 0
 
   constructor() {
     super('main-scene')
@@ -64,6 +66,7 @@ export class MainScene extends Phaser.Scene {
     this.toastQueue = []
     this.toastActive = false
     this.lastCoinWorldY = WORLD.groundY
+    this.platformSpawnCount = 0
 
     this.bgTile = this.add.tileSprite(0, 0, WORLD.width, WORLD.height, 'bg')
       .setOrigin(0, 0)
@@ -74,6 +77,7 @@ export class MainScene extends Phaser.Scene {
 
     this.platforms = this.physics.add.staticGroup()
     this.movingPlatforms = this.physics.add.group()
+    this.collectibleCoins = this.physics.add.group()
 
     this.spawnGround()
 
@@ -86,6 +90,14 @@ export class MainScene extends Phaser.Scene {
     this.touchControls = new TouchControls(this, () => this.player.requestShot())
 
     this.physics.add.collider(this.player.gameObject, this.platforms)
+    this.physics.add.overlap(this.player.gameObject, this.collectibleCoins, (_p, coinObj) => {
+      const coin = coinObj as Phaser.Physics.Arcade.Image
+      if (!coin.active) return
+      coin.destroy()
+      const total = CoinManager.add(1)
+      this.coinCountText.setText(String(total))
+      this.showCoinPopup()
+    })
     this.physics.add.collider(this.player.gameObject, this.movingPlatforms, (_playerObj, platformObj) => {
       if (this.player.body.blocked.down) {
         const platBody = (platformObj as Phaser.Physics.Arcade.Image).body as Phaser.Physics.Arcade.Body
@@ -283,6 +295,11 @@ export class MainScene extends Phaser.Scene {
       ;(platform.body as Phaser.Physics.Arcade.StaticBody).enable = false
     }
 
+    this.platformSpawnCount++
+    if (!this.tutorialActive && this.platformSpawnCount % 8 === 0) {
+      this.spawnCollectibleCoin(x, this.lastPlatformY)
+    }
+
     if (Math.random() < 0.3) {
       const minX2 = Math.max(PLATFORMS.minX + half, x + PLATFORMS.width + PLATFORMS.width)
       const maxX2 = PLATFORMS.maxX - half
@@ -321,6 +338,25 @@ export class MainScene extends Phaser.Scene {
       platform.setAlpha(0)
       body.enable = false
     }
+  }
+
+  private spawnCollectibleCoin(x: number, platformY: number) {
+    const coinY = platformY - PLATFORMS.height - 14
+    const coin = this.collectibleCoins.create(x, coinY, 'shop-coin') as Phaser.Physics.Arcade.Image
+    coin.setDisplaySize(22, 22)
+    const body = coin.body as Phaser.Physics.Arcade.Body
+    body.setSize(22, 22)
+    body.allowGravity = false
+    body.immovable = true
+
+    this.tweens.add({
+      targets: coin,
+      y: coinY - 6,
+      duration: 700,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    })
   }
 
   private applyTutorialPlatformVisibility(hide: boolean): void {
@@ -573,6 +609,9 @@ export class MainScene extends Phaser.Scene {
     const cameraBottom = cameraTop + WORLD.height
     ;(this.platforms.getChildren() as Phaser.Physics.Arcade.Image[]).forEach((p) => {
       if (p.y > cameraBottom + PLATFORMS.despawnMargin) p.destroy()
+    })
+    ;(this.collectibleCoins.getChildren() as Phaser.Physics.Arcade.Image[]).forEach((c) => {
+      if (c.y > cameraBottom + PLATFORMS.despawnMargin) c.destroy()
     })
 
     const half = PLATFORMS.width / 2
