@@ -43,7 +43,7 @@ export const ITEM_REGISTRY: ShopItem[] = [
       impactFrameRate: 16,
       speed: 600,
       displaySize: 96,
-      cooldown: 4.0,
+      cooldown: 3,
       stunDuration: 1.5,
     },
   },
