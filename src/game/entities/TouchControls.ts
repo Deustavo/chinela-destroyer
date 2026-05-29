@@ -15,7 +15,7 @@ export class TouchControls {
   private cooldownBar: Phaser.GameObjects.Graphics | null = null
   private shotBtnX: number = 0
   private shotBtnY: number = 0
-  private readonly shotBtnDisplaySize: number = 88
+  private readonly shotBtnDisplaySize: number = 140
 
   constructor(scene: Phaser.Scene, onShot?: () => void, shotSpriteKey?: string, shotSpriteFrame?: number) {
     const y = WORLD.height - 60
@@ -102,7 +102,7 @@ export class TouchControls {
     const barW = this.shotBtnDisplaySize * 0.7
     const barH = 5
     const barX = this.shotBtnX - barW / 2
-    const barY = this.shotBtnY - this.shotBtnDisplaySize / 2 - barH - 4
+    const barY = this.shotBtnY - this.shotBtnDisplaySize / 3 - barH - 4
 
     this.cooldownBar.fillStyle(0x000000, 0.6)
     this.cooldownBar.fillRect(barX, barY, barW, barH)
