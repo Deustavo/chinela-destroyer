@@ -1,5 +1,6 @@
 import { SHOT } from '../config/constants'
 import { EquipManager } from '../utils/EquipManager'
+import { UpgradeManager } from '../utils/UpgradeManager'
 import { ITEM_REGISTRY } from './registry'
 import type { ShotConfig, UpgradeEffect } from './types'
 
@@ -20,7 +21,7 @@ const BASE_SHOT: ShotConfig = {
 
 export class PlayerLoadout {
   // Returns the resolved shot config to use this session.
-  // Picks the highest-price owned shot, then folds in all upgrade multipliers.
+  // Picks the equipped shot item, applies level overrides, then folds in upgrade multipliers.
   static getActiveShotConfig(): ShotConfig {
     const equipped = EquipManager.getEquipped()
     const equippedItem = equipped
@@ -29,11 +30,21 @@ export class PlayerLoadout {
 
     const base = equippedItem?.shotConfig ?? BASE_SHOT
 
+    let leveledBase = base
+    if (equippedItem?.levelStats) {
+      const rawLevel = UpgradeManager.getLevel(equippedItem.id)
+      const level = rawLevel > 0 ? rawLevel : 1  // treat 0 as 1 for migrated saves
+      const ls = equippedItem.levelStats[level - 1]
+      leveledBase = { ...base }
+      if (ls.cooldown    !== undefined) leveledBase = { ...leveledBase, cooldown:     ls.cooldown }
+      if (ls.displaySize !== undefined) leveledBase = { ...leveledBase, displaySize: ls.displaySize }
+    }
+
     return PlayerLoadout.getActiveEffects().reduce<ShotConfig>((cfg, fx) => {
       if (fx.stat === 'shotCooldownMultiplier') return { ...cfg, cooldown: cfg.cooldown * fx.value }
       if (fx.stat === 'shotSpeedMultiplier')    return { ...cfg, speed: cfg.speed * fx.value }
       return cfg
-    }, base)
+    }, leveledBase)
   }
 
   static getActiveEffects(): UpgradeEffect[] {

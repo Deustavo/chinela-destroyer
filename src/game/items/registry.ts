@@ -43,9 +43,14 @@ export const ITEM_REGISTRY: ShopItem[] = [
       impactFrameRate: 16,
       speed: 600,
       displaySize: 96,
-      cooldown: 3,
+      cooldown: 4,
       stunDuration: 1.5,
     },
+    levelStats: [
+      { upgradeCost: 0,  description: 'Cooldown: 4s',   cooldown: 4   },
+      { upgradeCost: 30, description: 'Cooldown: 3,5s', cooldown: 3.5 },
+      { upgradeCost: 60, description: 'Cooldown: 3s',   cooldown: 3   },
+    ],
   },
   {
     id: 'shield',
@@ -55,6 +60,11 @@ export const ITEM_REGISTRY: ShopItem[] = [
     description: 'Escudo absorve 1 tiro\n(recarga 10s)',
     iconKey: 'shield1',
     iconFrame: 0,
+    levelStats: [
+      { upgradeCost: 0,   description: 'Recarga: 12s', cooldown: 12 },
+      { upgradeCost: 80,  description: 'Recarga: 10s', cooldown: 10 },
+      { upgradeCost: 160, description: 'Recarga: 8s',  cooldown: 8  },
+    ],
   },
   {
     id: 'anjo-caido',
@@ -64,6 +74,11 @@ export const ITEM_REGISTRY: ShopItem[] = [
     description: 'Pulo duplo!\nAsas aparecem no 2º salto',
     iconKey: 'wings1',
     iconFrame: 0,
+    levelStats: [
+      { upgradeCost: 0,   description: 'Recarga: 4s', cooldown: 4 },
+      { upgradeCost: 150, description: 'Recarga: 2s', cooldown: 2 },
+      { upgradeCost: 300, description: 'Sem recarga', cooldown: 0 },
+    ],
   },
   {
     id: 'special-shot',
@@ -90,5 +105,10 @@ export const ITEM_REGISTRY: ShopItem[] = [
       displaySize: 48,
       cooldown: 0.5,
     },
+    levelStats: [
+      { upgradeCost: 0,   description: 'Tamanho: P', displaySize: 48 },
+      { upgradeCost: 300, description: 'Tamanho: M', displaySize: 72 },
+      { upgradeCost: 600, description: 'Tamanho: G', displaySize: 96 },
+    ],
   },
 ]

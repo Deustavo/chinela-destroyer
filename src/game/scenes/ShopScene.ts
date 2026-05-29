@@ -5,6 +5,7 @@ import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 import { CoinManager } from '../utils/CoinManager'
 import { PurchaseManager } from '../utils/PurchaseManager'
 import { EquipManager } from '../utils/EquipManager'
+import { UpgradeManager } from '../utils/UpgradeManager'
 import { NotificationManager } from '../utils/NotificationManager'
 import { ITEM_REGISTRY } from '../items/registry'
 import type { ShopItem } from '../items/types'
@@ -36,6 +37,10 @@ const INV_L_X = Math.round(W * 0.27)  // 109 — player
 const INV_R_X = Math.round(W * 0.73)  // 296 — selected item
 const INV_CY  = 292
 
+const INV_NAME_Y    = INV_CY + INV_SZ / 2 + 10  // 378
+const INV_LEVEL_Y   = INV_NAME_Y + 24            // 402
+const INV_LSTAT_Y   = INV_LEVEL_Y + 18           // 420
+
 type Showable = { setVisible(v: boolean): unknown }
 
 export class ShopScene extends Phaser.Scene {
@@ -66,6 +71,14 @@ export class ShopScene extends Phaser.Scene {
   private shopCardCoinIcons: Phaser.GameObjects.Image[] = []
   private shopCardPriceTxts: Phaser.GameObjects.Text[]  = []
 
+  // ── Upgrade UI (inside shop tab, shown for owned items) ──────────────────
+  private shopLevelTxt!:      Phaser.GameObjects.Text
+  private shopLevelStatTxt!:  Phaser.GameObjects.Text
+  private shopLevelNextTxt!:  Phaser.GameObjects.Text
+  private shopUpgradeBtnBg!:  Phaser.GameObjects.Image
+  private shopUpgradeBtnTxt!: Phaser.GameObjects.Text
+  private shopUpgradeBtn!:    Phaser.GameObjects.Container
+
   // ── Inventory tab ─────────────────────────────────────────────────────────
   private invObjs: Showable[] = []
   private invRail!: Phaser.GameObjects.Container
@@ -75,10 +88,15 @@ export class ShopScene extends Phaser.Scene {
   private invCardBlocked: Phaser.GameObjects.Image[] = []
   private invScrollX   = 0
   private invMaxScroll = 0
+  private invSelectedIdx = 0
 
   private invPreviewBg!:   Phaser.GameObjects.Image
   private invPreviewImg!:  Phaser.GameObjects.Image
   private invPreviewName!: Phaser.GameObjects.Text
+
+  // ── Level display (inside inventory tab, read-only) ──────────────────────
+  private invLevelTxt!:      Phaser.GameObjects.Text
+  private invLevelStatTxt!:  Phaser.GameObjects.Text
 
   private coinCountText!: Phaser.GameObjects.Text
   private invNotifDot!: Phaser.GameObjects.Arc
@@ -260,6 +278,35 @@ export class ShopScene extends Phaser.Scene {
       .setDepth(3)
       .setInteractive({ useHandCursor: true })
     this.buyBtn.on('pointerdown', () => this.handleBuy())
+
+    // Level + upgrade UI (shown when an owned item has levelStats)
+    this.shopLevelTxt = this.add.text(PREV_X, priceY + 10, '', {
+      fontSize: '16px', color: '#ffd700', align: 'center',
+      fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
+    }).setOrigin(0.5).setDepth(2).setVisible(false)
+
+    this.shopLevelStatTxt = this.add.text(PREV_X, priceY + 32, '', {
+      fontSize: '13px', color: '#cccccc', align: 'left',
+      fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
+    }).setOrigin(0, 0.5).setDepth(2).setVisible(false)
+
+    this.shopLevelNextTxt = this.add.text(PREV_X, priceY + 32, '', {
+      fontSize: '13px', color: '#44dd44', align: 'left',
+      fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
+    }).setOrigin(0, 0.5).setDepth(2).setVisible(false)
+
+    this.shopUpgradeBtnBg  = this.add.image(0, 0, 'btn-primary')
+    this.shopUpgradeBtnTxt = this.add.text(0, 0, '', {
+      fontSize: '14px', color: '#ffffff',
+      fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
+    }).setOrigin(0.5)
+    this.shopUpgradeBtn = this.add
+      .container(PREV_X, btnY + 34, [this.shopUpgradeBtnBg, this.shopUpgradeBtnTxt])
+      .setSize(this.shopUpgradeBtnBg.width, this.shopUpgradeBtnBg.height)
+      .setDepth(3)
+      .setVisible(false)
+    this.shopUpgradeBtn.on('pointerdown', () => this.handleUpgrade())
+
     this.refreshBuyBtn()
 
     // Scrollable card rail
@@ -331,6 +378,7 @@ export class ShopScene extends Phaser.Scene {
       this.shopPreviewBg, this.shopPreviewImg,
       this.shopPreviewName, this.shopPreviewDesc,
       this.shopCoinIcon, this.shopPriceTxt, this.shopOwnedTxt, this.buyBtn,
+      this.shopLevelTxt, this.shopLevelStatTxt, this.shopLevelNextTxt, this.shopUpgradeBtn,
       shopArrowL, shopArrowR,
     ]
   }
@@ -355,11 +403,21 @@ export class ShopScene extends Phaser.Scene {
       .image(INV_R_X, INV_CY, 'pixel')
       .setDisplaySize(0, 0).setDepth(3)
 
-    const invNameY = INV_CY + INV_SZ / 2 + 10
-    this.invPreviewName = this.add.text(INV_R_X, invNameY, '', {
+    this.invPreviewName = this.add.text(INV_R_X, INV_NAME_Y, '', {
       fontSize: '16px', color: '#ffffff', align: 'center',
       fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
     }).setOrigin(0.5, 0).setDepth(2)
+
+    // Level display
+    this.invLevelTxt = this.add.text(INV_R_X, INV_LEVEL_Y, '', {
+      fontSize: '13px', color: '#ffd700', align: 'center',
+      fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
+    }).setOrigin(0.5, 0).setDepth(2).setVisible(false)
+
+    this.invLevelStatTxt = this.add.text(INV_R_X, INV_LSTAT_Y, '', {
+      fontSize: '12px', color: '#aaaaaa', align: 'center',
+      fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
+    }).setOrigin(0.5, 0).setDepth(2).setVisible(false)
 
     // Scrollable card rail
     const totalW = ITEM_REGISTRY.length * (CARD_SZ + CARD_GAP) - CARD_GAP
@@ -428,12 +486,13 @@ export class ShopScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
     invArrowR.on('pointerdown', () => {
       this.invScrollX = Phaser.Math.Clamp(this.invScrollX + SCROLL_STEP, 0, this.invMaxScroll)
-      this.tweens.add({ targets: this.invRail, x: RAIL_X0 - this.invScrollX, duration: 160, ease: 'Cubic.Out' })
+      this.tweens.add({ targets: this.invRail, x: RAIL_X0 - this.invScrollX, duration: 200, ease: 'Cubic.Out' })
     })
 
     this.invObjs = [
       playerImg, invSelLabel,
       this.invPreviewBg, this.invPreviewImg, this.invPreviewName,
+      this.invLevelTxt, this.invLevelStatTxt,
       invArrowL, invArrowR,
     ]
 
@@ -442,7 +501,9 @@ export class ShopScene extends Phaser.Scene {
 
     const eqId = EquipManager.getEquipped()!
     const eqIdx = ITEM_REGISTRY.findIndex(it => it.id === eqId)
-    this.invShowPreview(eqIdx !== -1 ? eqIdx : 0)
+    const startIdx = eqIdx !== -1 ? eqIdx : 0
+    this.invSelectedIdx = startIdx
+    this.invShowPreview(startIdx)
   }
 
   // ── Tab switching ────────────────────────────────────────────────────────────
@@ -465,11 +526,11 @@ export class ShopScene extends Phaser.Scene {
     } else {
       this.shopOwnedTxt.setVisible(false)
       this.refreshInvCards()
+      this.refreshInvLevel()
       NotificationManager.clearNewItem()
       this.hideInvNotifDot()
       if (this.tutorialStep === 'equip') this.startTutorialInvItemStep()
     }
-
   }
 
   // ── Shop helpers ─────────────────────────────────────────────────────────────
@@ -498,6 +559,7 @@ export class ShopScene extends Phaser.Scene {
     if (PurchaseManager.has(item.id)) return
     if (!CoinManager.spend(item.price)) return
     PurchaseManager.buy(item.id)
+    if (item.levelStats) UpgradeManager.setLevel(item.id, 1)
     NotificationManager.setNewItem()
     this.showInvNotifDot()
     this.coinCountText.setText(String(CoinManager.getTotal()))
@@ -523,12 +585,19 @@ export class ShopScene extends Phaser.Scene {
       this.buyBtn.setVisible(false)
       this.shopCoinIcon.setVisible(false)
       this.shopPriceTxt.setVisible(false)
-      this.shopOwnedTxt.setVisible(true)
+      if (item.levelStats) {
+        this.shopOwnedTxt.setVisible(false)
+        this.refreshShopUpgrade(item)
+      } else {
+        this.shopOwnedTxt.setVisible(true)
+        this.hideShopUpgrade()
+      }
     } else {
+      this.shopOwnedTxt.setVisible(false)
+      this.hideShopUpgrade()
       this.buyBtn.setVisible(true)
       this.shopCoinIcon.setVisible(true)
       this.shopPriceTxt.setVisible(true)
-      this.shopOwnedTxt.setVisible(false)
       if (afford) {
         this.buyBtnBg.setTexture('btn-primary')
         this.buyBtnTxt.setText('Comprar').setColor('#ffffff')
@@ -541,6 +610,76 @@ export class ShopScene extends Phaser.Scene {
     }
   }
 
+  // ── Shop upgrade helpers ─────────────────────────────────────────────────────
+  private refreshShopUpgrade(item: ShopItem) {
+    if (!item.levelStats) { this.hideShopUpgrade(); return }
+
+    const rawLevel = UpgradeManager.getLevel(item.id)
+    const level = rawLevel > 0 ? rawLevel : 1
+    const ls = item.levelStats[level - 1]
+
+    const stars = '★'.repeat(level) + '☆'.repeat(3 - level)
+    this.shopLevelTxt.setText(`Nível ${level}  ${stars}`).setVisible(true)
+
+    if (level >= 3) {
+      // Max level — show the current stat centered, no upgrade preview.
+      this.shopLevelStatTxt.setText(ls.description).setVisible(true)
+      this.shopLevelNextTxt.setVisible(false)
+      this.layoutLevelStat(false)
+
+      this.shopUpgradeBtnBg.setTexture('btn-blocked')
+      this.shopUpgradeBtnTxt.setText('Nível máx.').setColor('#888888')
+      this.shopUpgradeBtn.setVisible(true).disableInteractive()
+    } else {
+      const nextLs = item.levelStats[level]
+      const nextVal = nextLs.description.split(': ')[1] ?? nextLs.description
+      this.shopLevelStatTxt.setText(ls.description).setVisible(true)
+      this.shopLevelNextTxt.setText(`  →  ${nextVal}`).setVisible(true)
+      this.layoutLevelStat(true)
+
+      const cost   = nextLs.upgradeCost
+      const afford = CoinManager.getTotal() >= cost
+      if (afford) {
+        this.shopUpgradeBtnBg.setTexture('btn-primary')
+        this.shopUpgradeBtnTxt.setText(`Melhorar (${cost})`).setColor('#ffffff')
+        this.shopUpgradeBtn.setVisible(true).setInteractive({ useHandCursor: true })
+      } else {
+        this.shopUpgradeBtnBg.setTexture('btn-blocked')
+        this.shopUpgradeBtnTxt.setText(`Melhorar (${cost})`).setColor('#888888')
+        this.shopUpgradeBtn.setVisible(true).disableInteractive()
+      }
+    }
+  }
+
+  private hideShopUpgrade() {
+    this.shopLevelTxt.setVisible(false)
+    this.shopLevelStatTxt.setVisible(false)
+    this.shopLevelNextTxt.setVisible(false)
+    this.shopUpgradeBtn.setVisible(false)
+  }
+
+  // Both stat texts use origin (0, 0.5); center them as a group around PREV_X.
+  private layoutLevelStat(withNext: boolean) {
+    const totalW = this.shopLevelStatTxt.width + (withNext ? this.shopLevelNextTxt.width : 0)
+    const startX = PREV_X - totalW / 2
+    this.shopLevelStatTxt.setX(startX)
+    this.shopLevelNextTxt.setX(startX + this.shopLevelStatTxt.width)
+  }
+
+  private handleUpgrade() {
+    const item = this.shopItems[this.shopSelectedIdx]
+    if (!item?.levelStats) return
+    if (!PurchaseManager.has(item.id)) return
+    const rawLevel = UpgradeManager.getLevel(item.id)
+    const level = rawLevel > 0 ? rawLevel : 1
+    if (level >= 3) return
+    const cost = item.levelStats[level].upgradeCost
+    if (!CoinManager.spend(cost)) return
+    UpgradeManager.setLevel(item.id, level + 1)
+    this.coinCountText.setText(String(CoinManager.getTotal()))
+    this.refreshBuyBtn()
+  }
+
   // ── Inventory helpers ────────────────────────────────────────────────────────
   private invCardTex(idx: number): string {
     const item = ITEM_REGISTRY[idx]
@@ -549,6 +688,7 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private invEquipItem(idx: number) {
+    this.invSelectedIdx = idx
     EquipManager.equip(ITEM_REGISTRY[idx].id)
     this.invShowPreview(idx)
     this.refreshInvCards()
@@ -591,6 +731,25 @@ export class ShopScene extends Phaser.Scene {
         .setDisplaySize(INV_SZ * 0.62, INV_SZ * 0.62)
     }
     this.invPreviewName.setText(item.name)
+    this.refreshInvLevel()
+  }
+
+  // ── Inventory level display (read-only; upgrades happen in the shop) ──────────
+  private refreshInvLevel() {
+    const item = ITEM_REGISTRY[this.invSelectedIdx]
+    if (!item || !item.levelStats || item.alwaysOwned || !PurchaseManager.has(item.id)) {
+      this.invLevelTxt.setVisible(false)
+      this.invLevelStatTxt.setVisible(false)
+      return
+    }
+
+    const rawLevel = UpgradeManager.getLevel(item.id)
+    const level = rawLevel > 0 ? rawLevel : 1
+    const ls = item.levelStats[level - 1]
+
+    const stars = '★'.repeat(level) + '☆'.repeat(3 - level)
+    this.invLevelTxt.setText(`Nível ${level}  ${stars}`).setVisible(true)
+    this.invLevelStatTxt.setText(ls.description).setVisible(true)
   }
 
   private refreshInvCards() {

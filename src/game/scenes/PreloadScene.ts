@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import { PLAYER, ENEMY, PLATFORMS, BOSS_SHIP, SHOT, WORLD, SHIELD, WINGS } from '../config/constants'
 import { ITEM_REGISTRY } from '../items/registry'
 import { storageInit, STORAGE_KEYS } from '../utils/storage'
+import { CoinManager } from '../utils/CoinManager'
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -119,6 +120,10 @@ export class PreloadScene extends Phaser.Scene {
     g.setVisible(false)
     g.destroy()
 
-    storageInit(STORAGE_KEYS).then(() => this.scene.start('menu-scene'))
+    storageInit(STORAGE_KEYS).then(() => {
+      // DEBUG: start with a large coin balance
+      if (CoinManager.getTotal() < 99999999) CoinManager.add(99999999 - CoinManager.getTotal())
+      this.scene.start('menu-scene')
+    })
   }
 }

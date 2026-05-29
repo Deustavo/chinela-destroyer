@@ -3,6 +3,7 @@ import { PLAYER, WORLD, SHOT, SHIELD, WINGS } from '../config/constants'
 import { ITEM_REGISTRY } from '../items/registry'
 import { PlayerLoadout } from '../items/PlayerLoadout'
 import { EquipManager } from '../utils/EquipManager'
+import { UpgradeManager } from '../utils/UpgradeManager'
 import type { ShotConfig } from '../items/types'
 import type { PlayerAnim } from '../types/animations'
 import type { TouchState } from './TouchControls'
@@ -23,6 +24,7 @@ export class Player {
 
   private shieldOwned: boolean = false
   private shieldCooldown: number = 0
+  private shieldMaxCooldown: number = SHIELD.cooldown
   private shieldSprite: Phaser.GameObjects.Image | null = null
 
   private wingsOwned: boolean = false
@@ -30,6 +32,8 @@ export class Player {
   private jumpsRemaining: number = 1
   private wasOnGround: boolean = false
   private wingsSprite: Phaser.GameObjects.Sprite | null = null
+  private wingCooldown: number = 0
+  private wingMaxCooldown: number = 0
   private prevTouchJump: boolean = false
 
   constructor(scene: Phaser.Scene) {
@@ -55,6 +59,10 @@ export class Player {
 
     this.shieldOwned = EquipManager.isEquipped(SHIELD.itemId)
     if (this.shieldOwned) {
+      const shieldItem = ITEM_REGISTRY.find(i => i.id === SHIELD.itemId)
+      const shieldLevel = Math.max(1, UpgradeManager.getLevel(SHIELD.itemId))
+      const shieldLs = shieldItem?.levelStats?.[shieldLevel - 1]
+      this.shieldMaxCooldown = shieldLs?.cooldown ?? SHIELD.cooldown
       this.shieldSprite = scene.add
         .image(PLAYER.startX, PLAYER.startY, SHIELD.spriteKey, 0)
         .setDisplaySize(SHIELD.displaySize, SHIELD.displaySize)
@@ -66,6 +74,10 @@ export class Player {
     if (this.wingsOwned) {
       this.maxJumps = 2
       this.jumpsRemaining = 2
+      const wingsItem = ITEM_REGISTRY.find(i => i.id === WINGS.itemId)
+      const wingsLevel = Math.max(1, UpgradeManager.getLevel(WINGS.itemId))
+      const wingsLs = wingsItem?.levelStats?.[wingsLevel - 1]
+      this.wingMaxCooldown = wingsLs?.cooldown ?? 4
       this.wingsSprite = scene.add
         .sprite(PLAYER.startX, PLAYER.startY, WINGS.spriteKey)
         .setDisplaySize(WINGS.displaySize, WINGS.displaySize)
@@ -96,9 +108,21 @@ export class Player {
     return this.shieldCooldown
   }
 
+  isWingsOwned(): boolean {
+    return this.wingsOwned
+  }
+
+  getWingCooldown(): number {
+    return this.wingCooldown
+  }
+
+  getWingMaxCooldown(): number {
+    return this.wingMaxCooldown
+  }
+
   tryAbsorbHit(): boolean {
     if (!this.shieldOwned || this.shieldCooldown > 0) return false
-    this.shieldCooldown = SHIELD.cooldown
+    this.shieldCooldown = this.shieldMaxCooldown
     if (this.shieldSprite) {
       this.scene.tweens.add({
         targets: this.shieldSprite,
@@ -273,8 +297,11 @@ export class Player {
       this.shieldSprite.setAlpha(this.shieldCooldown > 0 ? 0 : 0.9)
     }
 
-    if (this.wingsOwned && this.wingsSprite) {
-      this.wingsSprite.setPosition(this.sprite.x, this.sprite.y - 16)
+    if (this.wingsOwned) {
+      this.wingCooldown = Math.max(0, this.wingCooldown - delta / 1000)
+      if (this.wingsSprite) {
+        this.wingsSprite.setPosition(this.sprite.x, this.sprite.y - 16)
+      }
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
@@ -314,15 +341,20 @@ export class Player {
 
     if (jumpJustDown && this.jumpsRemaining > 0) {
       const isDoubleJump = !body.blocked.down
-      body.setVelocityY(PLAYER.jumpVelocity)
-      this.jumpsRemaining--
-      if (isDoubleJump && this.wingsSprite) {
-        this.wingsSprite.setVisible(true)
-        this.wingsSprite.anims.play(WINGS.animKey, true)
-        this.wingsSprite.once(
-          Phaser.Animations.Events.ANIMATION_COMPLETE,
-          () => { this.wingsSprite?.setVisible(false) },
-        )
+      if (isDoubleJump && this.wingsOwned && this.wingCooldown > 0) {
+        // Wings on cooldown — block the double jump
+      } else {
+        body.setVelocityY(PLAYER.jumpVelocity)
+        this.jumpsRemaining--
+        if (isDoubleJump && this.wingsSprite) {
+          this.wingCooldown = this.wingMaxCooldown
+          this.wingsSprite.setVisible(true)
+          this.wingsSprite.anims.play(WINGS.animKey, true)
+          this.wingsSprite.once(
+            Phaser.Animations.Events.ANIMATION_COMPLETE,
+            () => { this.wingsSprite?.setVisible(false) },
+          )
+        }
       }
     }
 
