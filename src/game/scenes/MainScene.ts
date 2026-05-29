@@ -332,7 +332,6 @@ export class MainScene extends Phaser.Scene {
       } else {
         p.setAlpha(1)
         ;(p.body as Phaser.Physics.Arcade.StaticBody).enable = true
-        p.refreshBody()
       }
     })
     ;(this.movingPlatforms.getChildren() as Phaser.Physics.Arcade.Image[]).forEach(p => {
