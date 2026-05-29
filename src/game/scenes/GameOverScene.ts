@@ -77,9 +77,11 @@ export class GameOverScene extends Phaser.Scene {
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
+    const isMobile = this.sys.game.device.input.touch
     const spaceHint = this.add
       .text(cx, cy + 300, 'Pressione ESPAÇO para jogar novamente', { fontSize: '14px', color: '#aaaaaa', fontFamily: FONT_FAMILY })
       .setOrigin(0.5)
+      .setVisible(!isMobile)
 
     const allElements: SceneObject[] = [fim, cat, de, jogo, scoreText, bestText, btnHome, btnPlay, labelHome, labelPlay, spaceHint]
 
