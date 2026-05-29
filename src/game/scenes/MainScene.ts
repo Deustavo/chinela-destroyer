@@ -467,6 +467,8 @@ export class MainScene extends Phaser.Scene {
 
     for (const proj of this.player.projectiles.getChildren() as Phaser.Physics.Arcade.Sprite[]) {
       if (!proj.active) continue
+      const projBody = proj.body as Phaser.Physics.Arcade.Body
+      if (!projBody?.enable) continue
       for (const vital of this.bossVitals) {
         if (vital.hit) continue
         const dx = proj.x - vital.screenX
@@ -493,16 +495,17 @@ export class MainScene extends Phaser.Scene {
 
     for (const proj of this.player.projectiles.getChildren() as Phaser.Physics.Arcade.Sprite[]) {
       if (!proj.active) continue
+      const projBody = proj.body as Phaser.Physics.Arcade.Body
+      if (!projBody?.enable) continue
       const dx = proj.x - ex
       const dy = proj.y - (cameraY + ey)
       if (Math.abs(dx) < r && Math.abs(dy) < r) {
         const stunDuration = proj.getData('stunDuration') as number | undefined
-        if (stunDuration) {
-          this.enemy.applyStun(stunDuration)
-          this.tryAwardCoin()
-        } else {
-          this.enemy.showHit()
-        }
+        if (stunDuration) this.enemy.applyStun(stunDuration)
+        else this.enemy.showHit()
+        const total = CoinManager.add(2)
+        this.coinCountText.setText(String(total))
+        this.showCoinPopup(2)
         this.playShotImpact(proj)
       }
     }
@@ -705,13 +708,13 @@ export class MainScene extends Phaser.Scene {
     })
   }
 
-  private showCoinPopup() {
+  private showCoinPopup(amount = 1) {
     const screenX = this.player.gameObject.x
     const screenY = this.player.gameObject.y - this.cameras.main.scrollY - 30
     const iconSize = 18
 
     const text = this.add
-      .text(screenX - 1, screenY, '+1', {
+      .text(screenX - 1, screenY, `+${amount}`, {
         fontSize: '20px',
         color: '#ffd700',
         fontFamily: FONT_FAMILY,
