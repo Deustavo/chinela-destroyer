@@ -268,7 +268,21 @@ export class MainScene extends Phaser.Scene {
     const half = PLATFORMS.width / 2
     const minX = Math.max(PLATFORMS.minX + half, this.lastPlatformX - PLATFORMS.maxHorizontalReach)
     const maxX = Math.min(PLATFORMS.maxX - half, this.lastPlatformX + PLATFORMS.maxHorizontalReach)
-    const x = Phaser.Math.Between(minX, maxX)
+    const minShift = PLATFORMS.width + 20
+    const leftMax = this.lastPlatformX - minShift
+    const rightMin = this.lastPlatformX + minShift
+    const hasLeft = minX < leftMax
+    const hasRight = rightMin < maxX
+    let x: number
+    if (hasLeft && hasRight) {
+      x = Math.random() < 0.5 ? Phaser.Math.Between(minX, leftMax) : Phaser.Math.Between(rightMin, maxX)
+    } else if (hasLeft) {
+      x = Phaser.Math.Between(minX, leftMax)
+    } else if (hasRight) {
+      x = Phaser.Math.Between(rightMin, maxX)
+    } else {
+      x = Phaser.Math.Between(minX, maxX)
+    }
     this.lastPlatformX = x
 
     const lastArenaIdx = this.nextBossArenaIdx - 1
@@ -304,7 +318,7 @@ export class MainScene extends Phaser.Scene {
     }
 
     if (Math.random() < 0.3) {
-      const minX2 = Math.max(PLATFORMS.minX + half, x + PLATFORMS.width + PLATFORMS.width)
+      const minX2 = Math.max(PLATFORMS.minX + half, x + PLATFORMS.width * 3)
       const maxX2 = PLATFORMS.maxX - half
       if (minX2 < maxX2) {
         const x2 = Phaser.Math.Between(minX2, maxX2)
@@ -314,6 +328,7 @@ export class MainScene extends Phaser.Scene {
           platform2.setAlpha(0)
           ;(platform2.body as Phaser.Physics.Arcade.StaticBody).enable = false
         }
+        this.lastPlatformX = x2
       }
     }
   }
