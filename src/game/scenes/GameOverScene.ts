@@ -111,6 +111,9 @@ export class GameOverScene extends Phaser.Scene {
     }
 
     this.input.keyboard!.once('keydown-SPACE', () => exitTo(this, 'main-scene', allElements))
+    const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') exitTo(this, 'menu-scene', allElements) }
+    window.addEventListener('keydown', onEsc)
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener('keydown', onEsc))
 
     wireButtonLabel(btnHome, labelHome, () => exitTo(this, 'menu-scene', allElements))
     wireButtonLabel(btnPlay, labelPlay, () => exitTo(this, 'main-scene', allElements))

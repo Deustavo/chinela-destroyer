@@ -188,6 +188,9 @@ export class ShopScene extends Phaser.Scene {
     }
     backBtn.on('pointerdown', goBack)
     labelBack.on('pointerdown', goBack)
+    const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') goBack() }
+    window.addEventListener('keydown', onEsc)
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener('keydown', onEsc))
 
     baseObjs.forEach((obj, i) => dropIn(this, obj, i * 50, 40))
 

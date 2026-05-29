@@ -138,7 +138,11 @@ export class CreditsScene extends Phaser.Scene {
     repoText.on('pointerout', () => { repoText.setAlpha(0.85).setColor('#aaaaaa'); btnGithub.setAlpha(0.85) })
     repoText.on('pointerdown', openRepo)
 
-    wireButtonLabel(btnBack, labelBack, () => exitTo(this, 'menu-scene', elements))
+    const goBack = () => exitTo(this, 'menu-scene', elements)
+    wireButtonLabel(btnBack, labelBack, goBack)
+    const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') goBack() }
+    window.addEventListener('keydown', onEsc)
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener('keydown', onEsc))
 
     dropIn(this, title,     0)
     dropIn(this, devText,   80)

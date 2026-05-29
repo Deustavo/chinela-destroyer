@@ -108,7 +108,11 @@ export class AchievementsScene extends Phaser.Scene {
 
     elements.push(backBtn, labelBack)
 
-    wireButtonLabel(backBtn, labelBack, () => exitTo(this, 'menu-scene', elements))
+    const goBack = () => exitTo(this, 'menu-scene', elements)
+    wireButtonLabel(backBtn, labelBack, goBack)
+    const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') goBack() }
+    window.addEventListener('keydown', onEsc)
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener('keydown', onEsc))
 
     elements.forEach((el, i) => dropIn(this, el, i * 40))
   }
