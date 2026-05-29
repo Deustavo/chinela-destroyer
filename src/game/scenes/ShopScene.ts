@@ -485,6 +485,7 @@ export class ShopScene extends Phaser.Scene {
     this.shopPreviewDesc.setText(item.description)
     this.shopPriceTxt.setText(`${item.price}`)
     this.refreshBuyBtn()
+    this.centerRailOnIndex(idx, 'shop')
   }
 
   private handleBuy() {
@@ -549,6 +550,7 @@ export class ShopScene extends Phaser.Scene {
     this.invShowPreview(idx)
     this.refreshInvCards()
     this.jumpInvPreview()
+    this.centerRailOnIndex(idx, 'inventory')
 
     if (this.tutorialStep === 'equip' && ITEM_REGISTRY[idx].id === 'pomodoro-shot') {
       this.tutorialStep = null
@@ -634,6 +636,22 @@ export class ShopScene extends Phaser.Scene {
         this.invNotifDot.setVisible(false).setScale(1)
       },
     })
+  }
+
+  private centerRailOnIndex(idx: number, tab: 'shop' | 'inventory') {
+    const cardCenter = idx * (CARD_SZ + CARD_GAP) + CARD_SZ / 2
+    const targetScrollX = Phaser.Math.Clamp(
+      cardCenter - RAIL_VW / 2,
+      0,
+      tab === 'shop' ? this.shopMaxScroll : this.invMaxScroll,
+    )
+    if (tab === 'shop') {
+      this.shopScrollX = targetScrollX
+      this.tweens.add({ targets: this.shopRail, x: RAIL_X0 - targetScrollX, duration: 200, ease: 'Cubic.Out' })
+    } else {
+      this.invScrollX = targetScrollX
+      this.tweens.add({ targets: this.invRail, x: RAIL_X0 - targetScrollX, duration: 200, ease: 'Cubic.Out' })
+    }
   }
 
   // ── Shop tutorial ────────────────────────────────────────────────────────────
