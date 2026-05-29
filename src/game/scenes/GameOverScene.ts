@@ -144,7 +144,7 @@ export class GameOverScene extends Phaser.Scene {
       .setDepth(162)
 
     const bodyTxt = this.add
-      .text(cx, cy - 28, 'Vá à loja e compre o Pomodoro', {
+      .text(cx, cy - 43, 'Vá à loja e compre o Pomodoro', {
         fontSize: '15px', color: '#ffffff', align: 'center',
         fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
       })
@@ -152,12 +152,12 @@ export class GameOverScene extends Phaser.Scene {
       .setDepth(162)
 
     const iconBg = this.add
-      .rectangle(cx, cy + 26, 58, 58, 0x222222)
+      .rectangle(cx, cy + 11, 58, 58, 0x222222)
       .setStrokeStyle(2, 0xffd700)
       .setDepth(162)
 
     const icon = this.add
-      .image(cx, cy + 26, 'player-shot3', 0)
+      .image(cx, cy + 11, 'player-shot3', 0)
       .setDisplaySize(44, 44)
       .setDepth(163)
 
