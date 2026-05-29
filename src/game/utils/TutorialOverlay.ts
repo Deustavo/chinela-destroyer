@@ -7,17 +7,41 @@ const TUTORIAL_KEY = 'tutorialSeen'
 
 const PANEL_W = 210
 const MIN_STEP_MS = 800
-const COMPLETE_PAUSE_MS = 2000
+const COMPLETE_PAUSE_MS = 1000
+
+// Index of the wrap step so the overlay knows when to show/hide edge arrows
+const WRAP_STEP_INDEX = 1
 
 interface Step {
   lines: string[]
   check: (player: Player, stepMs: number) => boolean
 }
 
+// Wrap detection uses a closure to track previous x across frames
+let _prevX: number | null = null
+let _wrapped = false
+function resetWrapDetector() {
+  _prevX = null
+  _wrapped = false
+}
+function checkWrap(p: Player): boolean {
+  const x = p.gameObject.x
+  if (_prevX !== null) {
+    const delta = Math.abs(x - _prevX)
+    if (delta > WORLD.width * 0.5) _wrapped = true
+  }
+  _prevX = x
+  return _wrapped
+}
+
 const STEPS: Step[] = [
   {
     lines: ['← → para mover', '(ou botões laterais)'],
     check: (p) => Math.abs(p.body.velocity.x) > 5,
+  },
+  {
+    lines: ['Atravesse a borda', 'da tela para sair', 'pelo outro lado!'],
+    check: (p) => checkWrap(p),
   },
   {
     lines: ['↑ ou W para pular', '(ou botão de pulo)'],
@@ -33,6 +57,12 @@ const STEPS: Step[] = [
   },
 ]
 
+const ARROW_COLOR = 0xffff00
+const ARROW_ALPHA = 0.85
+const ARROW_SIZE = 18  // tip half-width
+const ARROW_LEN = 28   // shaft length
+const ARROW_Y = WORLD.height / 2  // vertical center of screen (screen space)
+
 export class TutorialOverlay {
   private container: Phaser.GameObjects.Container
   private bg: Phaser.GameObjects.Rectangle
@@ -46,6 +76,7 @@ export class TutorialOverlay {
   private _done: boolean = false
   private scene: Phaser.Scene
   private player: Player
+  private wrapArrows: Phaser.GameObjects.Graphics | null = null
 
   static shouldShow(): boolean {
     return storageGet(TUTORIAL_KEY) === null
@@ -122,6 +153,7 @@ export class TutorialOverlay {
     this.completing = true
     this.completeMs = 0
     this.bg.setStrokeStyle(2, 0x00ff88, 1)
+    this.hideWrapArrows()
   }
 
   private advance(): void {
@@ -156,14 +188,71 @@ export class TutorialOverlay {
     this.bg.setStrokeStyle(2, 0xffffff, 0.5)
     this.hintText.setText(`${idx + 1} / ${STEPS.length}`)
     this.hintText.setPosition(0, h / 2 - 6)
+
+    if (idx === WRAP_STEP_INDEX) {
+      resetWrapDetector()
+      this.showWrapArrows()
+    } else {
+      this.hideWrapArrows()
+    }
   }
 
   private panelHeightFor(lineCount: number): number {
     return Math.max(80, lineCount * 22 + 42)
   }
 
+  // Draw two arrows: one pointing left at the right edge, one pointing right at the left edge.
+  // Both drawn in screen space (scrollFactor 0) to indicate wrap-around movement.
+  private showWrapArrows(): void {
+    if (this.wrapArrows) this.wrapArrows.destroy()
+
+    const g = this.scene.add
+      .graphics()
+      .setScrollFactor(0)
+      .setDepth(61)
+      .setAlpha(ARROW_ALPHA)
+
+    this.wrapArrows = g
+
+    const y = ARROW_Y
+    const s = ARROW_SIZE
+    const l = ARROW_LEN
+
+    g.fillStyle(ARROW_COLOR, 1)
+    g.lineStyle(3, ARROW_COLOR, 1)
+
+    // Left edge: arrow pointing left (←) — exit through left wall
+    const lx = 8 + s + l
+    g.fillTriangle(lx - s - l, y, lx - l, y - s, lx - l, y + s)
+    g.fillRect(lx - l, y - 4, l, 8)
+
+    // Right edge: arrow pointing right (→) — exit through right wall
+    const rx = WORLD.width - 8 - s - l
+    g.fillTriangle(rx + s + l, y, rx + l, y - s, rx + l, y + s)
+    g.fillRect(rx, y - 4, l, 8)
+
+    // Pulse tween
+    this.scene.tweens.add({
+      targets: g,
+      alpha: 0.3,
+      duration: 700,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    })
+  }
+
+  private hideWrapArrows(): void {
+    if (this.wrapArrows) {
+      this.scene.tweens.killTweensOf(this.wrapArrows)
+      this.wrapArrows.destroy()
+      this.wrapArrows = null
+    }
+  }
+
   private finish(): void {
     this._done = true
+    this.hideWrapArrows()
     storageSet(TUTORIAL_KEY, '1')
     this.scene.tweens.add({
       targets: this.container,
