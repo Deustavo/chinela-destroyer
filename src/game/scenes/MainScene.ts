@@ -209,12 +209,12 @@ export class MainScene extends Phaser.Scene {
     zone.on('pointerdown', () => this.pauseGame())
   }
 
-  private killPlayer() {
+  private killPlayer(bounceUp = true) {
     if (this.dead) return
     this.dead = true
     this.player.die(() => {
       this.scene.start('game-over-scene', { score: this.score, newAchievements: this.newlyUnlockedThisRun })
-    })
+    }, bounceUp)
   }
 
   private pauseGame() {
@@ -675,8 +675,8 @@ export class MainScene extends Phaser.Scene {
 
     this.checkAchievements()
 
-    if (this.player.gameObject.y > cameraBottom + 50) {
-      this.killPlayer()
+    if (this.player.gameObject.y > cameraBottom) {
+      this.killPlayer(false)
     }
   }
 
