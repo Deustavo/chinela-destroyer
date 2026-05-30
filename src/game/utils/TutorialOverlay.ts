@@ -68,6 +68,7 @@ export class TutorialOverlay {
   private bg: Phaser.GameObjects.Rectangle
   private bodyText: Phaser.GameObjects.Text
   private hintText: Phaser.GameObjects.Text
+  private skipText: Phaser.GameObjects.Text
   private stepIndex: number = 0
   private stepMs: number = 0
   private stepActionSeen: boolean = false
@@ -109,10 +110,22 @@ export class TutorialOverlay {
         color: '#aaaaaa',
         fontFamily: FONT_FAMILY,
       })
-      .setOrigin(0.5, 1)
+      .setOrigin(0, 1)
+
+    this.skipText = scene.add
+      .text(0, 0, 'Pular', {
+        fontSize: '12px',
+        color: '#ffcc00',
+        fontFamily: FONT_FAMILY,
+      })
+      .setOrigin(1, 1)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerover', () => this.skipText.setStyle({ color: '#ffffff' }))
+      .on('pointerout', () => this.skipText.setStyle({ color: '#ffcc00' }))
+      .on('pointerdown', () => this.finish())
 
     this.container = scene.add
-      .container(cx, cy, [this.bg, this.bodyText, this.hintText])
+      .container(cx, cy, [this.bg, this.bodyText, this.hintText, this.skipText])
       .setScrollFactor(0)
       .setDepth(60)
       .setAlpha(0)
@@ -187,7 +200,8 @@ export class TutorialOverlay {
     this.bg.setSize(PANEL_W, h)
     this.bg.setStrokeStyle(2, 0xffffff, 0.5)
     this.hintText.setText(`${idx + 1} / ${STEPS.length}`)
-    this.hintText.setPosition(0, h / 2 - 6)
+    this.hintText.setPosition(-PANEL_W / 2 + 8, h / 2 - 6)
+    this.skipText.setPosition(PANEL_W / 2 - 8, h / 2 - 6)
 
     if (idx === WRAP_STEP_INDEX) {
       resetWrapDetector()
