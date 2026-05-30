@@ -262,7 +262,7 @@ export class ShopScene extends Phaser.Scene {
       fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
     }).setOrigin(1, 0.5).setDepth(2)
     this.shopCoinIcon = this.add
-      .image(PREV_X + 8, priceY, 'shop-coin')
+      .image(PREV_X + 2, priceY + 1, 'shop-coin')
       .setDisplaySize(22, 22).setDepth(2)
     this.shopOwnedTxt = this.add.text(PREV_X, priceY, 'adquirido', {
       fontSize: '16px', color: '#44dd44',
@@ -341,12 +341,12 @@ export class ShopScene extends Phaser.Scene {
       }).setOrigin(0.5, 0)
 
       const owned = PurchaseManager.has(item.id)
-      const priceTxt = this.add.text(cx - 3, CARD_SZ + 28, `${item.price}`, {
+      const priceTxt = this.add.text(cx - 3, CARD_SZ + 32, `${item.price}`, {
         fontSize: '13px', color: '#ffd700',
         fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
       }).setOrigin(1, 0.5).setVisible(!owned)
       const coinIco = this.add
-        .image(cx + 8, CARD_SZ + 28, 'shop-coin')
+        .image(cx + 2, CARD_SZ + 33, 'shop-coin')
         .setDisplaySize(18, 18)
         .setVisible(!owned)
       this.shopCardCoinIcons.push(coinIco)
