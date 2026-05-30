@@ -106,9 +106,9 @@ export const ITEM_REGISTRY: ShopItem[] = [
       cooldown: 0.5,
     },
     levelStats: [
-      { upgradeCost: 0,   description: 'Tamanho: P', displaySize: 48 },
-      { upgradeCost: 300, description: 'Tamanho: M', displaySize: 60 },
-      { upgradeCost: 600, description: 'Tamanho: G', displaySize: 72 },
+      { upgradeCost: 0,   description: 'Normal', displaySize: 48 },
+      { upgradeCost: 300, description: 'Maiorzinho', displaySize: 60 },
+      { upgradeCost: 600, description: 'GRANDÃO', displaySize: 80 },
     ],
   },
 ]

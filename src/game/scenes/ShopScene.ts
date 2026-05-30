@@ -75,9 +75,11 @@ export class ShopScene extends Phaser.Scene {
   private shopLevelTxt!:      Phaser.GameObjects.Text
   private shopLevelStatTxt!:  Phaser.GameObjects.Text
   private shopLevelNextTxt!:  Phaser.GameObjects.Text
-  private shopUpgradeBtnBg!:  Phaser.GameObjects.Image
-  private shopUpgradeBtnTxt!: Phaser.GameObjects.Text
-  private shopUpgradeBtn!:    Phaser.GameObjects.Container
+  private shopUpgradeBtnBg!:   Phaser.GameObjects.Image
+  private shopUpgradeBtnTxt!:  Phaser.GameObjects.Text
+  private shopUpgradeCoinIco!: Phaser.GameObjects.Image
+  private shopUpgradeCostTxt!: Phaser.GameObjects.Text
+  private shopUpgradeBtn!:     Phaser.GameObjects.Container
 
   // ── Inventory tab ─────────────────────────────────────────────────────────
   private invObjs: Showable[] = []
@@ -255,13 +257,13 @@ export class ShopScene extends Phaser.Scene {
     }).setOrigin(0.5, 0).setDepth(2)
 
     const priceY = descY + 44
-    this.shopCoinIcon = this.add
-      .image(PREV_X - 20, priceY, 'shop-coin')
-      .setDisplaySize(22, 22).setDepth(2)
     this.shopPriceTxt = this.add.text(PREV_X - 5, priceY, `${first.price}`, {
       fontSize: '18px', color: '#ffd700',
       fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
-    }).setOrigin(0, 0.5).setDepth(2)
+    }).setOrigin(1, 0.5).setDepth(2)
+    this.shopCoinIcon = this.add
+      .image(PREV_X + 8, priceY, 'shop-coin')
+      .setDisplaySize(22, 22).setDepth(2)
     this.shopOwnedTxt = this.add.text(PREV_X, priceY, 'adquirido', {
       fontSize: '16px', color: '#44dd44',
       fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
@@ -296,12 +298,17 @@ export class ShopScene extends Phaser.Scene {
     }).setOrigin(0, 0.5).setDepth(2).setVisible(false)
 
     this.shopUpgradeBtnBg  = this.add.image(0, 0, 'btn-primary')
-    this.shopUpgradeBtnTxt = this.add.text(0, 0, '', {
+    this.shopUpgradeBtnTxt = this.add.text(-18, 0, '', {
       fontSize: '14px', color: '#ffffff',
       fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
-    }).setOrigin(0.5)
+    }).setOrigin(1, 0.5)
+    this.shopUpgradeCoinIco = this.add.image(-10, 0, 'shop-coin').setDisplaySize(16, 16)
+    this.shopUpgradeCostTxt = this.add.text(-1, 0, '', {
+      fontSize: '14px', color: '#ffd700',
+      fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
+    }).setOrigin(0, 0.5)
     this.shopUpgradeBtn = this.add
-      .container(PREV_X, btnY + 34, [this.shopUpgradeBtnBg, this.shopUpgradeBtnTxt])
+      .container(PREV_X, btnY + 34, [this.shopUpgradeBtnBg, this.shopUpgradeBtnTxt, this.shopUpgradeCoinIco, this.shopUpgradeCostTxt])
       .setSize(this.shopUpgradeBtnBg.width, this.shopUpgradeBtnBg.height)
       .setDepth(3)
       .setVisible(false)
@@ -334,14 +341,14 @@ export class ShopScene extends Phaser.Scene {
       }).setOrigin(0.5, 0)
 
       const owned = PurchaseManager.has(item.id)
-      const coinIco = this.add
-        .image(cx - 14, CARD_SZ + 28, 'shop-coin')
-        .setDisplaySize(18, 18)
-        .setVisible(!owned)
       const priceTxt = this.add.text(cx - 3, CARD_SZ + 28, `${item.price}`, {
         fontSize: '13px', color: '#ffd700',
         fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
-      }).setOrigin(0, 0.5).setVisible(!owned)
+      }).setOrigin(1, 0.5).setVisible(!owned)
+      const coinIco = this.add
+        .image(cx + 8, CARD_SZ + 28, 'shop-coin')
+        .setDisplaySize(18, 18)
+        .setVisible(!owned)
       this.shopCardCoinIcons.push(coinIco)
       this.shopCardPriceTxts.push(priceTxt)
 
@@ -628,7 +635,9 @@ export class ShopScene extends Phaser.Scene {
       this.layoutLevelStat(false)
 
       this.shopUpgradeBtnBg.setTexture('btn-blocked')
-      this.shopUpgradeBtnTxt.setText('Nível máx.').setColor('#888888')
+      this.shopUpgradeBtnTxt.setText('Nível máx.').setColor('#888888').setOrigin(0.5, 0.5).setX(0)
+      this.shopUpgradeCoinIco.setAlpha(0)
+      this.shopUpgradeCostTxt.setText('')
       this.shopUpgradeBtn.setVisible(true).disableInteractive()
     } else {
       const nextLs = item.levelStats[level]
@@ -639,13 +648,20 @@ export class ShopScene extends Phaser.Scene {
 
       const cost   = nextLs.upgradeCost
       const afford = CoinManager.getTotal() >= cost
+      this.shopUpgradeBtnTxt.setOrigin(0, 0.5).setText('Melhorar')
+      this.shopUpgradeCostTxt.setOrigin(0, 0.5).setText(`${cost}`)
+      this.layoutUpgradeBtn()
       if (afford) {
         this.shopUpgradeBtnBg.setTexture('btn-primary')
-        this.shopUpgradeBtnTxt.setText(`Melhorar (${cost})`).setColor('#ffffff')
+        this.shopUpgradeBtnTxt.setColor('#ffffff')
+        this.shopUpgradeCoinIco.setAlpha(1)
+        this.shopUpgradeCostTxt.setColor('#ffd700')
         this.shopUpgradeBtn.setVisible(true).setInteractive({ useHandCursor: true })
       } else {
         this.shopUpgradeBtnBg.setTexture('btn-blocked')
-        this.shopUpgradeBtnTxt.setText(`Melhorar (${cost})`).setColor('#888888')
+        this.shopUpgradeBtnTxt.setColor('#888888')
+        this.shopUpgradeCoinIco.setAlpha(0.5)
+        this.shopUpgradeCostTxt.setColor('#888888')
         this.shopUpgradeBtn.setVisible(true).disableInteractive()
       }
     }
@@ -656,6 +672,16 @@ export class ShopScene extends Phaser.Scene {
     this.shopLevelStatTxt.setVisible(false)
     this.shopLevelNextTxt.setVisible(false)
     this.shopUpgradeBtn.setVisible(false)
+  }
+
+  private layoutUpgradeBtn() {
+    const gap = 5
+    const iconW = 16
+    const totalW = this.shopUpgradeBtnTxt.width + gap + this.shopUpgradeCostTxt.width + gap + iconW
+    const startX = -totalW / 2
+    this.shopUpgradeBtnTxt.setX(startX)
+    this.shopUpgradeCostTxt.setX(startX + this.shopUpgradeBtnTxt.width + gap)
+    this.shopUpgradeCoinIco.setX(startX + this.shopUpgradeBtnTxt.width + gap + this.shopUpgradeCostTxt.width + gap + iconW / 2)
   }
 
   // Both stat texts use origin (0, 0.5); center them as a group around PREV_X.
