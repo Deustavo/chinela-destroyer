@@ -302,7 +302,7 @@ export class ShopScene extends Phaser.Scene {
       fontSize: '14px', color: '#ffffff',
       fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
     }).setOrigin(1, 0.5)
-    this.shopUpgradeCoinIco = this.add.image(-10, 0, 'shop-coin').setDisplaySize(20, 20)
+    this.shopUpgradeCoinIco = this.add.image(-10, 1, 'shop-coin').setDisplaySize(20, 20)
     this.shopUpgradeCostTxt = this.add.text(-1, 0, '', {
       fontSize: '14px', color: '#ffd700',
       fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
