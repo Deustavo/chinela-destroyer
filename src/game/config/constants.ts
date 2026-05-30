@@ -119,14 +119,14 @@ export const PLAYER = {
   spriteKey: 'chinela',
   spritesheet: {
     path: '/assets/player/chinela.png',
-    frameWidth: 128,
-    frameHeight: 128,
+    frameWidth: 64,
+    frameHeight: 64,
   },
   frames: {
     idle: [0],
-    walk: [2, 3, 4],
-    jumpUp: [5],
-    jumpDown: [6],
+    walk: [1, 2, 3],
+    jumpUp: [4],
+    jumpDown: [4],
   },
   animFrameRates: {
     idle: 1,

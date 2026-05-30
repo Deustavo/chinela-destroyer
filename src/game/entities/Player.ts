@@ -39,7 +39,7 @@ export class Player {
   constructor(scene: Phaser.Scene) {
     this.scene = scene
     this.sprite = scene.physics.add.sprite(PLAYER.startX, PLAYER.startY, PLAYER.spriteKey)
-    this.sprite.setScale(.5).setDepth(1)
+    this.sprite.setScale(0.8).setDepth(1)
     const body = this.body
     body.setCollideWorldBounds(false)
     const hitW = this.sprite.width * 0.5
