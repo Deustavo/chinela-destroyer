@@ -302,7 +302,7 @@ export class ShopScene extends Phaser.Scene {
       fontSize: '14px', color: '#ffffff',
       fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
     }).setOrigin(1, 0.5)
-    this.shopUpgradeCoinIco = this.add.image(-10, 0, 'shop-coin').setDisplaySize(16, 16)
+    this.shopUpgradeCoinIco = this.add.image(-10, 0, 'shop-coin').setDisplaySize(20, 20)
     this.shopUpgradeCostTxt = this.add.text(-1, 0, '', {
       fontSize: '14px', color: '#ffd700',
       fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
@@ -660,7 +660,7 @@ export class ShopScene extends Phaser.Scene {
       } else {
         this.shopUpgradeBtnBg.setTexture('btn-blocked')
         this.shopUpgradeBtnTxt.setColor('#888888')
-        this.shopUpgradeCoinIco.setAlpha(0.5)
+        this.shopUpgradeCoinIco.setAlpha(0.8)
         this.shopUpgradeCostTxt.setColor('#888888')
         this.shopUpgradeBtn.setVisible(true).disableInteractive()
       }
@@ -681,7 +681,7 @@ export class ShopScene extends Phaser.Scene {
     const startX = -totalW / 2
     this.shopUpgradeBtnTxt.setX(startX)
     this.shopUpgradeCostTxt.setX(startX + this.shopUpgradeBtnTxt.width + gap)
-    this.shopUpgradeCoinIco.setX(startX + this.shopUpgradeBtnTxt.width + gap + this.shopUpgradeCostTxt.width + gap + iconW / 2)
+    this.shopUpgradeCoinIco.setX(startX + this.shopUpgradeBtnTxt.width + gap + this.shopUpgradeCostTxt.width - 2 + iconW / 2)
   }
 
   // Both stat texts use origin (0, 0.5); center them as a group around PREV_X.
