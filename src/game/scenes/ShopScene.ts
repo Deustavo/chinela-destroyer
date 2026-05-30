@@ -186,17 +186,28 @@ export class ShopScene extends Phaser.Scene {
     })
     this.input.on('pointerup', () => { dragging = false })
 
-    // Back button
-    const homeY   = H - 62
-    const backBtn = this.add.image(CX, homeY, 'btn-home')
+    // Footer buttons — "Início" and "Jogar" centered as a pair
+    const homeY    = H - 62
+    const btnSpacing = 76  // center-to-center distance
+    const homeX   = Math.round(CX - btnSpacing / 2)
+    const playX   = Math.round(CX + btnSpacing / 2)
+
+    const backBtn = this.add.image(homeX, homeY, 'btn-home')
       .setDisplaySize(52, 52).setDepth(3).setAlpha(0.85)
       .setInteractive({ useHandCursor: true })
-    const labelBack = this.add.text(CX, homeY + 18, 'Início', {
+    const labelBack = this.add.text(homeX, homeY + 18, 'Início', {
+      fontSize: '15px', color: '#ffffff', fontFamily: FONT_FAMILY,
+    }).setOrigin(0.5).setDepth(3).setAlpha(0.85).setInteractive({ cursor: 'pointer' })
+
+    const playBtn = this.add.image(playX, homeY, 'btn-play')
+      .setDisplaySize(52, 52).setDepth(3).setAlpha(0.85)
+      .setInteractive({ useHandCursor: true })
+    const labelPlay = this.add.text(playX, homeY + 18, 'Jogar', {
       fontSize: '15px', color: '#ffffff', fontFamily: FONT_FAMILY,
     }).setOrigin(0.5).setDepth(3).setAlpha(0.85).setInteractive({ cursor: 'pointer' })
 
     const baseObjs: SceneObject[] = [
-      title, this.tabShop, this.tabInv, divider, backBtn, labelBack,
+      title, this.tabShop, this.tabInv, divider, backBtn, labelBack, playBtn, labelPlay,
       this.invNotifDot,
     ]
     const goBack = () => {
@@ -206,8 +217,17 @@ export class ShopScene extends Phaser.Scene {
         : [...this.invObjs, this.invRail]
       exitTo(this, 'menu-scene', [...baseObjs, ...panelObjs] as unknown as SceneObject[])
     }
+    const goPlay = () => {
+      if (this.tutorialStep === 'buy') return
+      const panelObjs = this.activeTab === 'shop'
+        ? [...this.shopObjs, this.shopRail]
+        : [...this.invObjs, this.invRail]
+      exitTo(this, 'main-scene', [...baseObjs, ...panelObjs] as unknown as SceneObject[])
+    }
     backBtn.on('pointerdown', goBack)
     labelBack.on('pointerdown', goBack)
+    playBtn.on('pointerdown', goPlay)
+    labelPlay.on('pointerdown', goPlay)
     const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') goBack() }
     window.addEventListener('keydown', onEsc)
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener('keydown', onEsc))
