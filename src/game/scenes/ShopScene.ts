@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
-import { addBackground, addCoinCounter } from '../utils/uiHelpers'
+import { addBackground } from '../utils/uiHelpers'
 import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 import { CoinManager } from '../utils/CoinManager'
 import { PurchaseManager } from '../utils/PurchaseManager'
@@ -100,7 +100,6 @@ export class ShopScene extends Phaser.Scene {
   private invLevelTxt!:      Phaser.GameObjects.Text
   private invLevelStatTxt!:  Phaser.GameObjects.Text
 
-  private coinCountText!: Phaser.GameObjects.Text
   private invNotifDot!: Phaser.GameObjects.Arc
   private invNotifDotBaseY = 0
   private invNotifBounce?: Phaser.Tweens.Tween
@@ -125,7 +124,6 @@ export class ShopScene extends Phaser.Scene {
   // ────────────────────────────────────────────────────────────────────────────
   create() {
     addBackground(this)
-    this.coinCountText = addCoinCounter(this)
 
     // Title
     const title = this.add.text(CX, 50, 'Itens', {
@@ -589,7 +587,6 @@ export class ShopScene extends Phaser.Scene {
     if (item.levelStats) UpgradeManager.setLevel(item.id, 1)
     NotificationManager.setNewItem()
     this.showInvNotifDot()
-    this.coinCountText.setText(String(CoinManager.getTotal()))
     this.shopCardCoinIcons[this.shopSelectedIdx]?.setVisible(false)
     this.shopCardPriceTxts[this.shopSelectedIdx]?.setVisible(false)
     this.refreshBuyBtn()
@@ -722,7 +719,6 @@ export class ShopScene extends Phaser.Scene {
     const cost = item.levelStats[level].upgradeCost
     if (!CoinManager.spend(cost)) return
     UpgradeManager.setLevel(item.id, level + 1)
-    this.coinCountText.setText(String(CoinManager.getTotal()))
     this.refreshBuyBtn()
   }
 
