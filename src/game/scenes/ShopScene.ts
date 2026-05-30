@@ -270,13 +270,13 @@ export class ShopScene extends Phaser.Scene {
     }).setOrigin(0.5, 0.5).setDepth(2).setVisible(false)
 
     const btnY = priceY + 36
-    this.buyBtnBg = this.add.image(0, 0, 'btn-primary')
+    this.buyBtnBg = this.add.image(0, 0, 'btn-primary').setScale(2)
     this.buyBtnTxt = this.add.text(0, 0, '', {
       fontSize: '14px', color: '#ffffff',
       fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
     }).setOrigin(0.5)
     this.buyBtn = this.add.container(PREV_X, btnY, [this.buyBtnBg, this.buyBtnTxt])
-      .setSize(this.buyBtnBg.width, this.buyBtnBg.height)
+      .setSize(this.buyBtnBg.width * 2, this.buyBtnBg.height * 2)
       .setDepth(3)
       .setInteractive({ useHandCursor: true })
     this.buyBtn.on('pointerdown', () => this.handleBuy())
@@ -297,7 +297,7 @@ export class ShopScene extends Phaser.Scene {
       fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
     }).setOrigin(0, 0.5).setDepth(2).setVisible(false)
 
-    this.shopUpgradeBtnBg  = this.add.image(0, 0, 'btn-primary')
+    this.shopUpgradeBtnBg  = this.add.image(0, 0, 'btn-primary').setScale(2)
     this.shopUpgradeBtnTxt = this.add.text(-18, 0, '', {
       fontSize: '14px', color: '#ffffff',
       fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
@@ -309,7 +309,7 @@ export class ShopScene extends Phaser.Scene {
     }).setOrigin(0, 0.5)
     this.shopUpgradeBtn = this.add
       .container(PREV_X, btnY + 34, [this.shopUpgradeBtnBg, this.shopUpgradeBtnTxt, this.shopUpgradeCoinIco, this.shopUpgradeCostTxt])
-      .setSize(this.shopUpgradeBtnBg.width, this.shopUpgradeBtnBg.height)
+      .setSize(this.shopUpgradeBtnBg.width * 2, this.shopUpgradeBtnBg.height * 2)
       .setDepth(3)
       .setVisible(false)
     this.shopUpgradeBtn.on('pointerdown', () => this.handleUpgrade())

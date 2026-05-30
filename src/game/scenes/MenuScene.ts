@@ -39,20 +39,20 @@ export class MenuScene extends Phaser.Scene {
 
     const BTN_SCALE = 1
     const btnTex = this.textures.get('btn-secondary').getSourceImage()
-    const BTN_W = (btnTex as HTMLImageElement).width * BTN_SCALE
+    const BTN_W = (btnTex as HTMLImageElement).width * BTN_SCALE * 2
     const BTN_GAP = 18
     const btnRow1Y = cy + 180
     const btnRow2Y = btnRow1Y + 54
 
     const makeSecondaryBtn = (x: number, y: number, label: string) => {
-      const bg = this.add.image(0, 0, 'btn-secondary')
+      const bg = this.add.image(0, 0, 'btn-secondary').setScale(2)
       const txt = this.add.text(0, 0, label, {
         fontFamily: FONT_FAMILY,
         fontSize: '20px',
         color: '#000000',
       }).setOrigin(0.5)
       const container = this.add.container(x, y, [bg, txt])
-        .setSize(bg.width, bg.height)
+        .setSize(bg.width * 2, bg.height * 2)
         .setScale(BTN_SCALE)
         .setDepth(3)
         .setInteractive({ useHandCursor: true })
