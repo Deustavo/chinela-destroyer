@@ -82,6 +82,9 @@ export class ShopScene extends Phaser.Scene {
   private shopUpgradeBtn!:     Phaser.GameObjects.Container
 
   // ── Inventory tab ─────────────────────────────────────────────────────────
+  private invPlayerImg!: Phaser.GameObjects.Image
+  private blinkTimer?: Phaser.Time.TimerEvent
+  private lickTimers: Phaser.Time.TimerEvent[] = []
   private invObjs: Showable[] = []
   private invRail!: Phaser.GameObjects.Container
   private invCardBgs:     Phaser.GameObjects.Image[] = []
@@ -411,7 +414,7 @@ export class ShopScene extends Phaser.Scene {
   // ── Inventory panel ──────────────────────────────────────────────────────────
   private buildInvPanel() {
     // Left block — player image
-    const playerImg = this.add
+    this.invPlayerImg = this.add
       .image(INV_L_X, INV_CY - 20, 'chinela', 0)
       .setDisplaySize(INV_SZ * 1.1, INV_SZ * 1.1).setDepth(3)
 
@@ -515,7 +518,7 @@ export class ShopScene extends Phaser.Scene {
     })
 
     this.invObjs = [
-      playerImg, invSelLabel,
+      this.invPlayerImg, invSelLabel,
       this.invPreviewBg, this.invPreviewImg, this.invPreviewName,
       this.invLevelTxt, this.invLevelStatTxt,
       invArrowL, invArrowR,
@@ -547,6 +550,7 @@ export class ShopScene extends Phaser.Scene {
     this.invRail.setVisible(!isShop)
 
     if (isShop) {
+      this.stopBlinkLoop()
       this.refreshBuyBtn()
     } else {
       this.shopOwnedTxt.setVisible(false)
@@ -555,6 +559,7 @@ export class ShopScene extends Phaser.Scene {
       NotificationManager.clearNewItem()
       this.hideInvNotifDot()
       if (this.tutorialStep === 'equip') this.startTutorialInvItemStep()
+      this.startBlinkLoop()
     }
   }
 
@@ -840,6 +845,49 @@ export class ShopScene extends Phaser.Scene {
         this.invNotifDot.setVisible(false).setScale(1)
       },
     })
+  }
+
+  private startBlinkLoop() {
+    this.scheduleNextBlink()
+  }
+
+  private scheduleNextBlink() {
+    const delay = Phaser.Math.Between(2000, 5000)
+    this.blinkTimer = this.time.delayedCall(delay, () => {
+      if (!this.invPlayerImg.visible) return
+      if (Math.random() < 0.35) {
+        this.playLickAnimation()
+      } else {
+        this.invPlayerImg.setFrame(5)
+        this.time.delayedCall(500, () => {
+          this.invPlayerImg.setFrame(0)
+          this.scheduleNextBlink()
+        })
+      }
+    })
+  }
+
+  private playLickAnimation() {
+    const lickFrames = [6, 7, 8, 7, 8, 7, 8, 6, 0]
+    const lickDelays = [200, 180, 180, 180, 180, 180, 180, 200, 0]
+    let accumulated = 0
+    lickFrames.forEach((frame, i) => {
+      const t = this.time.delayedCall(accumulated, () => {
+        if (!this.invPlayerImg.visible) return
+        this.invPlayerImg.setFrame(frame)
+        if (i === lickFrames.length - 1) this.scheduleNextBlink()
+      })
+      this.lickTimers.push(t)
+      accumulated += lickDelays[i]
+    })
+  }
+
+  private stopBlinkLoop() {
+    this.blinkTimer?.remove()
+    this.blinkTimer = undefined
+    this.lickTimers.forEach(t => t.remove())
+    this.lickTimers = []
+    this.invPlayerImg?.setFrame(0)
   }
 
   private centerRailOnIndex(idx: number, tab: 'shop' | 'inventory') {
