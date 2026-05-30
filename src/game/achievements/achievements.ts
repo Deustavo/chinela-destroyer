@@ -15,13 +15,6 @@ export const ACHIEVEMENTS: Achievement[] = [
     unlockedIconKey: 'achievement-1',
   },
   {
-    id: 'height_200',
-    name: 'Subindo na vida',
-    description: 'Alcance altura 200',
-    heightThreshold: 200,
-    unlockedIconKey: 'achievement-2',
-  },
-  {
     id: 'height_500',
     name: 'Lenda das Alturas',
     description: 'Alcance altura 500',

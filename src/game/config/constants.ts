@@ -143,7 +143,7 @@ export const SHIELD = {
     frameWidth: 64,
     frameHeight: 64,
   },
-  cooldown: 10,
+  cooldown: 12,
   displaySize: 88,
 } as const
 

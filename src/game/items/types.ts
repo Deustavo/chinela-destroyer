@@ -20,6 +20,17 @@ export interface UpgradeEffect {
   value: number
 }
 
+export interface LevelStats {
+  /** Coins required to reach this level (0 for level 1 / base). */
+  upgradeCost: number
+  /** Short description shown in the inventory upgrade panel. */
+  description: string
+  /** Effective cooldown at this level (shot cooldown, shield recharge, wing recharge). */
+  cooldown?: number
+  /** Effective projectile display size at this level. */
+  displaySize?: number
+}
+
 export interface ShopItem {
   id: string
   type: 'shot' | 'upgrade' | 'shield' | 'ability' | 'none'
@@ -36,4 +47,6 @@ export interface ShopItem {
   inventoryOnly?: boolean
   /** Item is always treated as owned — no purchase required. */
   alwaysOwned?: boolean
+  /** Three-level progression. Index 0 = level 1 (base), 1 = level 2, 2 = level 3. */
+  levelStats?: readonly [LevelStats, LevelStats, LevelStats]
 }

@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
-import { addModalOverlay, addCoinCounter } from '../utils/uiHelpers'
+import { addModalOverlay } from '../utils/uiHelpers'
 
 export class PauseScene extends Phaser.Scene {
   constructor() {
@@ -12,7 +12,6 @@ export class PauseScene extends Phaser.Scene {
     const cy = WORLD.height / 2
 
     addModalOverlay(this)
-    addCoinCounter(this)
 
     this.add
       .text(cx, cy - 80, 'PAUSADO', { fontSize: '42px', color: '#ffffff', fontStyle: 'bold', fontFamily: FONT_FAMILY })
@@ -106,8 +105,36 @@ export class PauseScene extends Phaser.Scene {
   }
 
   private goHome() {
-    this.scene.stop('main-scene')
-    this.scene.stop()
-    this.scene.start('menu-scene')
+    const cx = WORLD.width / 2
+    const cy = WORLD.height / 2
+
+    const overlay = this.add.rectangle(cx, cy, WORLD.width, WORLD.height, 0x000000, 0.6).setDepth(10).setInteractive()
+    const panel = this.add.rectangle(cx, cy, 280, 160, 0x111111, 1).setStrokeStyle(2, 0x555555).setDepth(11)
+    const msg = this.add.text(cx, cy - 38, 'Sair para o Início?', {
+      fontSize: '20px', color: '#ffffff', fontFamily: FONT_FAMILY,
+    }).setOrigin(0.5).setDepth(12)
+    const sub = this.add.text(cx, cy - 10, 'O progresso atual será perdido.', {
+      fontSize: '13px', color: '#aaaaaa', fontFamily: FONT_FAMILY,
+    }).setOrigin(0.5).setDepth(12)
+
+    const btnYes = this.add.text(cx - 54, cy + 44, 'Sair', {
+      fontSize: '18px', color: '#ff6666', fontFamily: FONT_FAMILY,
+      backgroundColor: '#2a1010', padding: { x: 18, y: 8 },
+    }).setOrigin(0.5).setDepth(12).setInteractive({ useHandCursor: true })
+
+    const btnNo = this.add.text(cx + 54, cy + 44, 'Cancelar', {
+      fontSize: '18px', color: '#ffffff', fontFamily: FONT_FAMILY,
+      backgroundColor: '#1a1a2a', padding: { x: 18, y: 8 },
+    }).setOrigin(0.5).setDepth(12).setInteractive({ useHandCursor: true })
+
+    btnYes.on('pointerdown', () => {
+      this.scene.stop('main-scene')
+      this.scene.stop()
+      this.scene.start('menu-scene')
+    })
+    btnNo.on('pointerdown', () => {
+      overlay.destroy(); panel.destroy(); msg.destroy()
+      sub.destroy(); btnYes.destroy(); btnNo.destroy()
+    })
   }
 }

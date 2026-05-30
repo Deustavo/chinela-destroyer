@@ -41,6 +41,7 @@ export class MainScene extends Phaser.Scene {
   private lastCoinWorldY!: number
   private coinCountText!: Phaser.GameObjects.Text
   private shieldHUD: Phaser.GameObjects.Text | null = null
+  private wingsHUD: Phaser.GameObjects.Text | null = null
   private tutorialOverlay: TutorialOverlay | null = null
   private tutorialActive: boolean = false
   private collectibleCoins!: Phaser.Physics.Arcade.Group
@@ -61,6 +62,7 @@ export class MainScene extends Phaser.Scene {
     this.mothershipFrameTimer = 0
     this.mothershipFrame = 0
     this.shieldHUD = null
+    this.wingsHUD = null
     this.lastPlatformY = WORLD.groundY - WORLD.groundHeight / 2
     this.lastPlatformX = WORLD.width / 2
     this.sessionUnlocked = AchievementManager.getUnlocked()
@@ -155,6 +157,19 @@ export class MainScene extends Phaser.Scene {
     if (this.player.isShieldOwned()) {
       this.shieldHUD = this.add
         .text(16, 44, 'Escudo: pronto', {
+          fontSize: '18px',
+          color: '#00ff88',
+          fontFamily: FONT_FAMILY,
+          stroke: '#000000',
+          strokeThickness: 3,
+        })
+        .setScrollFactor(0)
+        .setDepth(20)
+    }
+
+    if (this.player.isWingsOwned() && this.player.getWingMaxCooldown() > 0) {
+      this.wingsHUD = this.add
+        .text(16, 68, 'Asas: prontas', {
           fontSize: '18px',
           color: '#00ff88',
           fontFamily: FONT_FAMILY,
@@ -660,6 +675,15 @@ export class MainScene extends Phaser.Scene {
         this.shieldHUD.setText(`Escudo: ${Math.ceil(cd)}s`).setColor('#ff8800')
       } else {
         this.shieldHUD.setText('Escudo: pronto').setColor('#00ff88')
+      }
+    }
+
+    if (this.wingsHUD) {
+      const cd = this.player.getWingCooldown()
+      if (cd > 0) {
+        this.wingsHUD.setText(`Asas: ${Math.ceil(cd)}s`).setColor('#ff8800')
+      } else {
+        this.wingsHUD.setText('Asas: prontas').setColor('#00ff88')
       }
     }
 

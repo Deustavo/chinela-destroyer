@@ -12,6 +12,24 @@ const COMPLETE_PAUSE_MS = 1000
 // Index of the wrap step so the overlay knows when to show/hide edge arrows
 const WRAP_STEP_INDEX = 1
 
+const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0
+
+interface ButtonHint { x: number; y: number; r: number }
+
+const BTN_Y = WORLD.height - 60
+const SHOT_BTN_X = WORLD.width - 60
+const SHOT_BTN_Y = BTN_Y - 95
+
+// Which steps show button highlight circles on touch devices
+const STEP_BUTTON_HINTS: Record<number, ButtonHint[]> = {
+  0: [
+    { x: 60, y: BTN_Y, r: 58 },
+    { x: 175, y: BTN_Y, r: 58 },
+  ],
+  2: [{ x: SHOT_BTN_X, y: BTN_Y, r: 58 }],
+  3: [{ x: SHOT_BTN_X, y: SHOT_BTN_Y, r: 50 }],
+}
+
 interface Step {
   lines: string[]
   check: (player: Player, stepMs: number) => boolean
@@ -68,6 +86,7 @@ export class TutorialOverlay {
   private bg: Phaser.GameObjects.Rectangle
   private bodyText: Phaser.GameObjects.Text
   private hintText: Phaser.GameObjects.Text
+  private skipText: Phaser.GameObjects.Text
   private stepIndex: number = 0
   private stepMs: number = 0
   private stepActionSeen: boolean = false
@@ -77,6 +96,7 @@ export class TutorialOverlay {
   private scene: Phaser.Scene
   private player: Player
   private wrapArrows: Phaser.GameObjects.Graphics | null = null
+  private buttonCircles: Phaser.GameObjects.Graphics | null = null
 
   static shouldShow(): boolean {
     return storageGet(TUTORIAL_KEY) === null
@@ -109,10 +129,22 @@ export class TutorialOverlay {
         color: '#aaaaaa',
         fontFamily: FONT_FAMILY,
       })
-      .setOrigin(0.5, 1)
+      .setOrigin(0, 1)
+
+    this.skipText = scene.add
+      .text(0, 0, 'Pular', {
+        fontSize: '12px',
+        color: '#ffcc00',
+        fontFamily: FONT_FAMILY,
+      })
+      .setOrigin(1, 1)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerover', () => this.skipText.setStyle({ color: '#ffffff' }))
+      .on('pointerout', () => this.skipText.setStyle({ color: '#ffcc00' }))
+      .on('pointerdown', () => this.finish())
 
     this.container = scene.add
-      .container(cx, cy, [this.bg, this.bodyText, this.hintText])
+      .container(cx, cy, [this.bg, this.bodyText, this.hintText, this.skipText])
       .setScrollFactor(0)
       .setDepth(60)
       .setAlpha(0)
@@ -154,6 +186,7 @@ export class TutorialOverlay {
     this.completeMs = 0
     this.bg.setStrokeStyle(2, 0x00ff88, 1)
     this.hideWrapArrows()
+    this.hideButtonCircles()
   }
 
   private advance(): void {
@@ -187,13 +220,21 @@ export class TutorialOverlay {
     this.bg.setSize(PANEL_W, h)
     this.bg.setStrokeStyle(2, 0xffffff, 0.5)
     this.hintText.setText(`${idx + 1} / ${STEPS.length}`)
-    this.hintText.setPosition(0, h / 2 - 6)
+    this.hintText.setPosition(-PANEL_W / 2 + 8, h / 2 - 6)
+    this.skipText.setPosition(PANEL_W / 2 - 8, h / 2 - 6)
 
     if (idx === WRAP_STEP_INDEX) {
       resetWrapDetector()
       this.showWrapArrows()
     } else {
       this.hideWrapArrows()
+    }
+
+    const hints = STEP_BUTTON_HINTS[idx]
+    if (hints && isTouchDevice()) {
+      this.showButtonCircles(hints)
+    } else {
+      this.hideButtonCircles()
     }
   }
 
@@ -250,9 +291,46 @@ export class TutorialOverlay {
     }
   }
 
+  private showButtonCircles(hints: ButtonHint[]): void {
+    this.hideButtonCircles()
+
+    const g = this.scene.add
+      .graphics()
+      .setScrollFactor(0)
+      .setDepth(61)
+      .setAlpha(0.9)
+
+    this.buttonCircles = g
+
+    for (const { x, y, r } of hints) {
+      g.lineStyle(3, 0xffff00, 1)
+      g.strokeCircle(x, y, r)
+      g.lineStyle(1.5, 0xffff00, 0.35)
+      g.strokeCircle(x, y, r + 8)
+    }
+
+    this.scene.tweens.add({
+      targets: g,
+      alpha: 0.25,
+      duration: 600,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    })
+  }
+
+  private hideButtonCircles(): void {
+    if (this.buttonCircles) {
+      this.scene.tweens.killTweensOf(this.buttonCircles)
+      this.buttonCircles.destroy()
+      this.buttonCircles = null
+    }
+  }
+
   private finish(): void {
     this._done = true
     this.hideWrapArrows()
+    this.hideButtonCircles()
     storageSet(TUTORIAL_KEY, '1')
     this.scene.tweens.add({
       targets: this.container,

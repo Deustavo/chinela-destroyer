@@ -31,28 +31,35 @@ export class MenuScene extends Phaser.Scene {
       .setScale(2)
       .setDepth(2)
 
-    const btn = this.add
-      .image(cx, cy + 116, 'menu-play-btn')
-      .setScale(1.8)
-      .setDepth(3)
-      .setInteractive({ useHandCursor: true })
-
     const BTN_SCALE = 1
     const btnTex = this.textures.get('btn-secondary').getSourceImage()
-    const BTN_W = (btnTex as HTMLImageElement).width * BTN_SCALE
+    const BTN_W = (btnTex as HTMLImageElement).width * BTN_SCALE * 2
     const BTN_GAP = 18
     const btnRow1Y = cy + 180
     const btnRow2Y = btnRow1Y + 54
 
+    const PRIMARY_SCALE = 1.3
+    const primaryBg = this.add.image(0, 0, 'btn-primary').setScale(2)
+    const primaryTxt = this.add.text(0, 0, 'Jogar!', {
+      fontFamily: FONT_FAMILY,
+      fontSize: '28px',
+      color: '#000000',
+    }).setOrigin(0.5)
+    const btn = this.add.container(cx, cy + 116, [primaryBg, primaryTxt])
+      .setSize(primaryBg.width * 2, primaryBg.height * 2)
+      .setScale(PRIMARY_SCALE)
+      .setDepth(3)
+      .setInteractive({ useHandCursor: true })
+
     const makeSecondaryBtn = (x: number, y: number, label: string) => {
-      const bg = this.add.image(0, 0, 'btn-secondary')
+      const bg = this.add.image(0, 0, 'btn-secondary').setScale(2)
       const txt = this.add.text(0, 0, label, {
         fontFamily: FONT_FAMILY,
         fontSize: '20px',
         color: '#000000',
       }).setOrigin(0.5)
       const container = this.add.container(x, y, [bg, txt])
-        .setSize(bg.width, bg.height)
+        .setSize(bg.width * 2, bg.height * 2)
         .setScale(BTN_SCALE)
         .setDepth(3)
         .setInteractive({ useHandCursor: true })
@@ -66,11 +73,6 @@ export class MenuScene extends Phaser.Scene {
     const btnInventory  = makeSecondaryBtn(colRight, btnRow1Y, 'Inventário')
     const btnConquistas = makeSecondaryBtn(colLeft,  btnRow2Y, 'Conquistas')
     const btnCredits    = makeSecondaryBtn(colRight, btnRow2Y, 'Créditos')
-
-    // Reduce hitbox height on play button
-    const haBtn = btn.input!.hitArea as Phaser.Geom.Rectangle
-    haBtn.y += haBtn.height / 3
-    haBtn.height /= 3
 
     const all: SceneObject[] = [logo, chinela, pera, btn, btnShop, btnInventory, btnConquistas, btnCredits]
 
@@ -98,8 +100,8 @@ export class MenuScene extends Phaser.Scene {
       })
     }
 
-    btn.on('pointerover', () => btn.setScale(2.0))
-    btn.on('pointerout', () => btn.setScale(1.8))
+    btn.on('pointerover', () => btn.setScale(PRIMARY_SCALE + 0.12))
+    btn.on('pointerout', () => btn.setScale(PRIMARY_SCALE))
     btn.on('pointerdown', () => exitTo(this, 'main-scene', all))
 
     btnShop.on('pointerover', () => btnShop.setScale(BTN_SCALE + 0.12))

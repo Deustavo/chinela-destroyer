@@ -164,14 +164,14 @@ export class AchievementsScene extends Phaser.Scene {
       wordWrap: { width: MODAL_SIZE - 48 },
     }).setOrigin(0.5).setDepth(DEPTH + 2)
 
-    const closeBg = this.add.image(0, 0, 'btn-secondary')
+    const closeBg = this.add.image(0, 0, 'btn-secondary').setScale(2)
     const closeTxt = this.add.text(0, 0, 'Fechar', {
       fontFamily: FONT_FAMILY,
       fontSize: '20px',
       color: '#000000',
     }).setOrigin(0.5)
     const closeBtn = this.add.container(cx, cy + 124, [closeBg, closeTxt])
-      .setSize(closeBg.width, closeBg.height)
+      .setSize(closeBg.width * 2, closeBg.height * 2)
       .setDepth(DEPTH + 2)
       .setInteractive({ useHandCursor: true })
 
