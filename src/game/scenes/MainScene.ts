@@ -38,6 +38,7 @@ export class MainScene extends Phaser.Scene {
   private mothershipFrame: number = 0
   private currentLockedPlatforms: Phaser.Physics.Arcade.Image[] = []
   private bossVitals: Array<{ screenX: number; screenY: number; hit: boolean; circle: Phaser.GameObjects.Arc }> = []
+  private bossVitalArrows: Phaser.GameObjects.Graphics[] = []
   private playerPlatformVelX: number = 0
   private mothershipTraps!: Phaser.Physics.Arcade.Group
   private mothershipThrowTimer: number = 0
@@ -74,6 +75,7 @@ export class MainScene extends Phaser.Scene {
     this.toastActive = false
     this.lastCoinWorldY = WORLD.groundY
     this.platformSpawnCount = 0
+    this.bossVitalArrows = []
 
     this.bgTile = this.add.tileSprite(0, 0, WORLD.width, WORLD.height, 'bg')
       .setOrigin(0, 0)
@@ -493,6 +495,54 @@ export class MainScene extends Phaser.Scene {
 
       return { screenX, screenY: shipScreenY, hit: false, circle }
     })
+
+    if (bossIdx === 0) this.spawnFirstBossArrows(this.bossVitals, shipScreenY)
+  }
+
+  private spawnFirstBossArrows(
+    vitals: typeof this.bossVitals,
+    shipScreenY: number,
+  ): void {
+    const ARROW_COLOR = 0xffff00
+    const TIP_OFFSET = 30
+    const HALF_W = 13
+    const HEAD_H = 18
+    const SHAFT_W = 5
+    const SHAFT_H = 20
+
+    this.bossVitalArrows = vitals.map(vital => {
+      const x = vital.screenX
+      const tipY = shipScreenY + TIP_OFFSET
+      const baseY = tipY + HEAD_H
+
+      const g = this.add.graphics()
+        .setScrollFactor(0)
+        .setDepth(17)
+        .setAlpha(0.9)
+
+      g.fillStyle(ARROW_COLOR, 1)
+      g.fillTriangle(x, tipY, x - HALF_W, baseY, x + HALF_W, baseY)
+      g.fillRect(x - SHAFT_W / 2, baseY, SHAFT_W, SHAFT_H)
+
+      this.tweens.add({
+        targets: g,
+        alpha: 0.2,
+        duration: 550,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      })
+
+      return g
+    })
+  }
+
+  private clearBossVitalArrows(): void {
+    this.bossVitalArrows.forEach(a => {
+      this.tweens.killTweensOf(a)
+      a.destroy()
+    })
+    this.bossVitalArrows = []
   }
 
   private checkBossVitalHits() {
@@ -513,6 +563,7 @@ export class MainScene extends Phaser.Scene {
           vital.hit = true
           vital.circle.setFillStyle(0x333333).setStrokeStyle(0)
           this.tweens.killTweensOf(vital.circle)
+          if (this.bossVitalArrows.length > 0) this.clearBossVitalArrows()
           this.playShotImpact(proj)
           this.tryAwardCoin()
           if (this.bossVitals.every(v => v.hit)) this.defeatBoss()
@@ -559,6 +610,7 @@ export class MainScene extends Phaser.Scene {
     }
 
     this.bossesDefeated.add(this.activeBossIdx)
+    this.clearBossVitalArrows()
     this.onBossDefeated()
     this.mothershipTraps.clear(true, true)
     if (this.mothershipSprite) {

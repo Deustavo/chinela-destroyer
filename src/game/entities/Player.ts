@@ -7,6 +7,7 @@ import { UpgradeManager } from '../utils/UpgradeManager'
 import type { ShotConfig } from '../items/types'
 import type { PlayerAnim } from '../types/animations'
 import type { TouchState } from './TouchControls'
+import { playSfx } from '../utils/AudioManager'
 
 export class Player {
   private sprite: Phaser.Physics.Arcade.Sprite
@@ -123,7 +124,7 @@ export class Player {
   tryAbsorbHit(): boolean {
     if (!this.shieldOwned || this.shieldCooldown > 0) return false
     this.shieldCooldown = this.shieldMaxCooldown
-    this.scene.sound.play('break-shield', { volume: 0.6 })
+    playSfx(this.scene, 'break-shield', 0.6)
     if (this.shieldSprite) {
       this.scene.tweens.add({
         targets: this.shieldSprite,
@@ -159,7 +160,7 @@ export class Player {
     if (config.stunDuration) proj.setData('stunDuration', config.stunDuration)
 
     this.projectiles.add(proj)
-    this.scene.sound.play(config.soundKey ?? 'laser', { volume: 0.5 })
+    playSfx(this.scene, config.soundKey ?? 'laser', 0.5)
 
     const projBody = proj.body as Phaser.Physics.Arcade.Body
     projBody.setAllowGravity(false)
@@ -299,10 +300,10 @@ export class Player {
       } else {
         body.setVelocityY(PLAYER.jumpVelocity)
         this.jumpsRemaining--
-        if (!isDoubleJump) this.scene.sound.play('jump', { volume: 0.2 })
+        if (!isDoubleJump) playSfx(this.scene, 'jump', 0.2)
         if (isDoubleJump && this.wingsSprite) {
           this.wingCooldown = this.wingMaxCooldown
-          this.scene.sound.play('wings', { volume: 0.5 })
+          playSfx(this.scene, 'wings', 0.5)
           this.wingsSprite.setVisible(true)
           this.wingsSprite.anims.play(WINGS.animKey, true)
           this.wingsSprite.once(

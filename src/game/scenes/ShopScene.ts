@@ -109,6 +109,8 @@ export class ShopScene extends Phaser.Scene {
   private invNotifDotBaseY = 0
   private invNotifBounce?: Phaser.Tweens.Tween
 
+  private coinCounterTxt!: Phaser.GameObjects.Text
+
   private initialTab: 'shop' | 'inventory' = 'shop'
   private shopTutorial = false
   private tutorialStep: 'buy' | 'equip' | null = null
@@ -131,7 +133,7 @@ export class ShopScene extends Phaser.Scene {
   // ────────────────────────────────────────────────────────────────────────────
   create() {
     addBackground(this)
-    addCoinCounter(this)
+    this.coinCounterTxt = addCoinCounter(this)
     applySceneMuffle(this)
 
     // Title
@@ -606,6 +608,7 @@ export class ShopScene extends Phaser.Scene {
     this.showInvNotifDot()
     this.shopCardCoinIcons[this.shopSelectedIdx]?.setVisible(false)
     this.shopCardPriceTxts[this.shopSelectedIdx]?.setVisible(false)
+    this.coinCounterTxt.setText(String(CoinManager.getTotal()))
     this.refreshBuyBtn()
 
     if (this.tutorialStep === 'buy' && item.id === 'pomodoro-shot') {
@@ -737,6 +740,7 @@ export class ShopScene extends Phaser.Scene {
     if (!CoinManager.spend(cost)) return
     UpgradeManager.setLevel(item.id, level + 1)
     playSfx(this, 'coin-spend', 0.7)
+    this.coinCounterTxt.setText(String(CoinManager.getTotal()))
     this.refreshBuyBtn()
   }
 
