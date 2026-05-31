@@ -130,6 +130,34 @@ export class MenuScene extends Phaser.Scene {
     dropInFloat(this, btnConquistas, { amplitude: 4,  floatDuration: 1900, delay: 560 })
     dropInFloat(this, btnCredits,    { amplitude: 4,  floatDuration: 1800, delay: 620 })
     dropInFloat(this, audioBtn,      { amplitude: 4,  floatDuration: 1800, delay: 680 })
+
+    this.showMusicCredit()
+  }
+
+  private showMusicCredit() {
+    const { width, height } = this.cameras.main
+    const text = this.add.text(width / 2, height - 24, '♫ Jeremy Black - Helios ♪', {
+      fontSize: '15px',
+      color: '#ffffff',
+      fontFamily: FONT_FAMILY,
+      stroke: '#000000',
+      strokeThickness: 3,
+    })
+      .setOrigin(0.5, 1)
+      .setScrollFactor(0)
+      .setDepth(50)
+      .setAlpha(0)
+
+    this.tweens.add({ targets: text, alpha: 1, duration: 400 })
+
+    const dismiss = () => {
+      if (!text.active) return
+      this.tweens.add({ targets: text, alpha: 0, duration: 400, onComplete: () => text.destroy() })
+      this.input.off('pointerdown', dismiss)
+    }
+
+    this.time.delayedCall(10000, dismiss)
+    this.input.once('pointerdown', dismiss)
   }
 
   shutdown() {
