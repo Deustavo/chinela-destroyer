@@ -228,7 +228,7 @@ export class MainScene extends Phaser.Scene {
       .setAlpha(0.85)
 
     const zone = this.add.zone(x, y, size, size).setScrollFactor(0).setDepth(22).setInteractive()
-    zone.on('pointerdown', () => this.pauseGame())
+    zone.on('pointerdown', () => { this.sound.play('button-click'); this.pauseGame() })
   }
 
   private killPlayer(bounceUp = true) {

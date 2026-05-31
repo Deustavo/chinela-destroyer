@@ -85,14 +85,16 @@ export class MenuScene extends Phaser.Scene {
       })
     }
 
+    const playClick = () => this.sound.play('button-click')
+
     btn.on('pointerover', () => btn.setScale(PRIMARY_SCALE + 0.12))
     btn.on('pointerout', () => btn.setScale(PRIMARY_SCALE))
-    btn.on('pointerdown', () => exitTo(this, 'main-scene', all))
+    btn.on('pointerdown', () => { playClick(); exitTo(this, 'main-scene', all) })
 
-    btnShop.on('pointerdown',       () => exitTo(this, 'shop-scene', all, { tab: 'shop' }))
-    btnInventory.on('pointerdown',  () => exitTo(this, 'shop-scene', all, { tab: 'inventory' }))
-    btnConquistas.on('pointerdown', () => exitTo(this, 'achievements-scene', all))
-    btnCredits.on('pointerdown',    () => exitTo(this, 'credits-scene', all))
+    btnShop.on('pointerdown',       () => { playClick(); exitTo(this, 'shop-scene', all, { tab: 'shop' }) })
+    btnInventory.on('pointerdown',  () => { playClick(); exitTo(this, 'shop-scene', all, { tab: 'inventory' }) })
+    btnConquistas.on('pointerdown', () => { playClick(); exitTo(this, 'achievements-scene', all) })
+    btnCredits.on('pointerdown',    () => { playClick(); exitTo(this, 'credits-scene', all) })
 
     this.input.keyboard?.once('keydown-SPACE', () => exitTo(this, 'main-scene', all))
     this.input.keyboard?.once('keydown-ENTER', () => exitTo(this, 'main-scene', all))

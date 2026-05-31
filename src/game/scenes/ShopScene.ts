@@ -119,6 +119,8 @@ export class ShopScene extends Phaser.Scene {
 
   constructor() { super('shop-scene') }
 
+  private playClick() { this.sound.play('button-click') }
+
   init(data: { tab?: 'shop' | 'inventory'; shopTutorial?: boolean }) {
     this.initialTab = data?.tab ?? 'shop'
     this.shopTutorial = data?.shopTutorial ?? false
@@ -148,8 +150,8 @@ export class ShopScene extends Phaser.Scene {
       fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
     }).setOrigin(0.5).setDepth(2).setInteractive({ useHandCursor: true })
 
-    this.tabShop.on('pointerdown', () => this.setTab('shop'))
-    this.tabInv.on('pointerdown', () => this.setTab('inventory'))
+    this.tabShop.on('pointerdown', () => { this.playClick(); this.setTab('shop') })
+    this.tabInv.on('pointerdown', () => { this.playClick(); this.setTab('inventory') })
 
     // Notification dot on "Inventário" tab
     const dotX = W * 0.72 + 58
@@ -228,10 +230,10 @@ export class ShopScene extends Phaser.Scene {
         : [...this.invObjs, this.invRail]
       exitTo(this, 'main-scene', [...baseObjs, ...panelObjs] as unknown as SceneObject[])
     }
-    backBtn.on('pointerdown', goBack)
-    labelBack.on('pointerdown', goBack)
-    playBtn.on('pointerdown', goPlay)
-    labelPlay.on('pointerdown', goPlay)
+    backBtn.on('pointerdown', () => { this.playClick(); goBack() })
+    labelBack.on('pointerdown', () => { this.playClick(); goBack() })
+    playBtn.on('pointerdown', () => { this.playClick(); goPlay() })
+    labelPlay.on('pointerdown', () => { this.playClick(); goPlay() })
     bindEscapeKey(this, goBack)
 
     baseObjs.forEach((obj, i) => dropIn(this, obj, i * 50, 40))
@@ -377,7 +379,7 @@ export class ShopScene extends Phaser.Scene {
       const hit = this.add
         .rectangle(cx, cy, CARD_SZ, CARD_SZ, 0xffffff, 0)
         .setInteractive({ useHandCursor: true })
-      hit.on('pointerdown', () => this.shopSelectItem(i))
+      hit.on('pointerdown', () => { this.playClick(); this.shopSelectItem(i) })
 
       this.shopRail.add([bg, icon, nameTxt, coinIco, priceTxt, hit])
     })
@@ -391,6 +393,7 @@ export class ShopScene extends Phaser.Scene {
       .setDisplaySize(ARROW_SIZE, ARROW_SIZE).setDepth(3).setAlpha(0.9)
       .setInteractive({ useHandCursor: true })
     shopArrowL.on('pointerdown', () => {
+      this.playClick()
       this.shopScrollX = Phaser.Math.Clamp(this.shopScrollX - SCROLL_STEP, 0, this.shopMaxScroll)
       this.tweens.add({ targets: this.shopRail, x: RAIL_X0 - this.shopScrollX, duration: 160, ease: 'Cubic.Out' })
     })
@@ -399,6 +402,7 @@ export class ShopScene extends Phaser.Scene {
       .setDisplaySize(ARROW_SIZE, ARROW_SIZE).setDepth(3).setAlpha(0.9)
       .setInteractive({ useHandCursor: true })
     shopArrowR.on('pointerdown', () => {
+      this.playClick()
       this.shopScrollX = Phaser.Math.Clamp(this.shopScrollX + SCROLL_STEP, 0, this.shopMaxScroll)
       this.tweens.add({ targets: this.shopRail, x: RAIL_X0 - this.shopScrollX, duration: 160, ease: 'Cubic.Out' })
     })
@@ -492,6 +496,7 @@ export class ShopScene extends Phaser.Scene {
         .rectangle(cx, cy, CARD_SZ, CARD_SZ, 0xffffff, 0)
         .setInteractive({ useHandCursor: true })
       hit.on('pointerdown', () => {
+        this.playClick()
         const reg = ITEM_REGISTRY[i]
         if (!!reg.alwaysOwned || PurchaseManager.has(reg.id)) this.invEquipItem(i)
       })
@@ -508,6 +513,7 @@ export class ShopScene extends Phaser.Scene {
       .setDisplaySize(ARROW_SIZE, ARROW_SIZE).setDepth(3).setAlpha(0.9)
       .setInteractive({ useHandCursor: true })
     invArrowL.on('pointerdown', () => {
+      this.playClick()
       this.invScrollX = Phaser.Math.Clamp(this.invScrollX - SCROLL_STEP, 0, this.invMaxScroll)
       this.tweens.add({ targets: this.invRail, x: RAIL_X0 - this.invScrollX, duration: 160, ease: 'Cubic.Out' })
     })
@@ -516,6 +522,7 @@ export class ShopScene extends Phaser.Scene {
       .setDisplaySize(ARROW_SIZE, ARROW_SIZE).setDepth(3).setAlpha(0.9)
       .setInteractive({ useHandCursor: true })
     invArrowR.on('pointerdown', () => {
+      this.playClick()
       this.invScrollX = Phaser.Math.Clamp(this.invScrollX + SCROLL_STEP, 0, this.invMaxScroll)
       this.tweens.add({ targets: this.invRail, x: RAIL_X0 - this.invScrollX, duration: 200, ease: 'Cubic.Out' })
     })

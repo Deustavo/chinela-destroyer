@@ -27,6 +27,8 @@ export class AchievementsScene extends Phaser.Scene {
     super('achievements-scene')
   }
 
+  private playClick() { this.sound.play('button-click') }
+
   create() {
     const cx = WORLD.width / 2
     const unlocked = AchievementManager.getUnlocked()
@@ -73,7 +75,7 @@ export class AchievementsScene extends Phaser.Scene {
 
       icon.on('pointerover', () => icon.setScale(1.12))
       icon.on('pointerout', () => icon.setScale(1))
-      icon.on('pointerdown', () => this.openModal(achievement, isUnlocked))
+      icon.on('pointerdown', () => { this.playClick(); this.openModal(achievement, isUnlocked) })
 
       const label = this.add
         .text(x, y + ICON_SIZE / 2 + 6, isUnlocked ? achievement.name : '???', {
@@ -109,7 +111,7 @@ export class AchievementsScene extends Phaser.Scene {
 
     elements.push(backBtn, labelBack)
 
-    const goBack = () => exitTo(this, 'menu-scene', elements)
+    const goBack = () => { this.playClick(); exitTo(this, 'menu-scene', elements) }
     wireButtonLabel(backBtn, labelBack, goBack)
     bindEscapeKey(this, goBack)
 
@@ -129,7 +131,7 @@ export class AchievementsScene extends Phaser.Scene {
     const DEPTH = 10
 
     const overlay = addModalOverlay(this, DEPTH).setInteractive().setAlpha(0)
-    overlay.on('pointerdown', () => this.closeModal())
+    overlay.on('pointerdown', () => { this.playClick(); this.closeModal() })
 
     const panel = this.add.image(cx, cy, 'modal-bg')
       .setDisplaySize(MODAL_SIZE, MODAL_SIZE)
@@ -163,7 +165,7 @@ export class AchievementsScene extends Phaser.Scene {
       wordWrap: { width: MODAL_SIZE - 48 },
     }).setOrigin(0.5).setDepth(DEPTH + 2)
 
-    const closeBtn = createSecondaryButton(this, cx, cy + 124, 'Fechar', () => this.closeModal())
+    const closeBtn = createSecondaryButton(this, cx, cy + 124, 'Fechar', () => { this.playClick(); this.closeModal() })
       .setDepth(DEPTH + 2)
 
     this.modal = { overlay, panel, icon, nameText, descText, closeBtn }
