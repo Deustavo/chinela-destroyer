@@ -138,6 +138,12 @@ export class PreloadScene extends Phaser.Scene {
     g.setVisible(false)
     g.destroy()
 
+    const loadingScreen = document.getElementById('loading-screen')
+    if (loadingScreen) {
+      loadingScreen.classList.add('hidden')
+      setTimeout(() => loadingScreen.remove(), 400)
+    }
+
     storageInit(STORAGE_KEYS).then(() => {
       this.scene.start('menu-scene')
       this.scene.launch('music-scene')

@@ -2,8 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="icon" type="image/png" href="/assets/homeScreen/chinela.png" />
+    <link rel="apple-touch-icon" href="/assets/homeScreen/chinela.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Chinela Destroyer</title>
     <style>
@@ -21,20 +21,63 @@
     <meta property="og:title" content="Chinela Destroyer" />
     <meta property="og:description" content="Leve a chinela o mais alto que puder! Um jogo de habilidade e reflexo." />
     <meta property="og:url" content="https://chinela-destroyer.vercel.app/" />
-    <meta property="og:image" content="https://chinela-destroyer.vercel.app/favicon.png" />
+    <meta property="og:image" content="https://chinela-destroyer.vercel.app/assets/homeScreen/chinela.png" />
     <meta property="og:image:alt" content="Chinela Destroyer logo" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Chinela Destroyer" />
     <meta name="twitter:description" content="Leve a chinela o mais alto que puder! Um jogo de habilidade e reflexo." />
-    <meta name="twitter:image" content="https://chinela-destroyer.vercel.app/favicon.png" />
+    <meta name="twitter:image" content="https://chinela-destroyer.vercel.app/assets/homeScreen/chinela.png" />
+
+    <style>
+      #loading-screen {
+        position: fixed;
+        inset: 0;
+        background: #222;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+        z-index: 9999;
+        transition: opacity 0.4s ease;
+      }
+      #loading-screen.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #loading-screen img {
+        width: 120px;
+        animation: bounce 0.8s ease-in-out infinite alternate;
+      }
+      #loading-screen p {
+        color: #fff;
+        font-family: 'Comic Neue', 'Comic Sans MS', cursive;
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        animation: pulse 1s ease-in-out infinite alternate;
+      }
+      @keyframes bounce {
+        from { transform: translateY(0); }
+        to   { transform: translateY(-16px); }
+      }
+      @keyframes pulse {
+        from { opacity: 0.5; }
+        to   { opacity: 1; }
+      }
+    </style>
 
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3556083878693417"
          crossorigin="anonymous"></script>
   </head>
   <body>
+    <div id="loading-screen">
+      <img src="/assets/homeScreen/chinela.png" alt="loading" />
+      <p>Carregando...</p>
+    </div>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
