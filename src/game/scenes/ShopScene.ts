@@ -85,6 +85,7 @@ export class ShopScene extends Phaser.Scene {
   private invPlayerImg!: Phaser.GameObjects.Image
   private blinkTimer?: Phaser.Time.TimerEvent
   private lickTimers: Phaser.Time.TimerEvent[] = []
+  private wagTimers: Phaser.Time.TimerEvent[] = []
   private invObjs: Showable[] = []
   private invRail!: Phaser.GameObjects.Container
   private invCardBgs:     Phaser.GameObjects.Image[] = []
@@ -853,8 +854,11 @@ export class ShopScene extends Phaser.Scene {
     const delay = Phaser.Math.Between(2000, 5000)
     this.blinkTimer = this.time.delayedCall(delay, () => {
       if (!this.invPlayerImg.visible) return
-      if (Math.random() < 0.35) {
+      const roll = Math.random()
+      if (roll < 0.35) {
         this.playLickAnimation()
+      } else if (roll < 0.60) {
+        this.playWagAnimation()
       } else {
         this.invPlayerImg.setFrame(5)
         this.time.delayedCall(500, () => {
@@ -880,11 +884,28 @@ export class ShopScene extends Phaser.Scene {
     })
   }
 
+  private playWagAnimation() {
+    const wagFrames = [9, 0, 9, 0, 9, 0]
+    const wagDelays = [280, 200, 280, 200, 280, 0]
+    let accumulated = 0
+    wagFrames.forEach((frame, i) => {
+      const t = this.time.delayedCall(accumulated, () => {
+        if (!this.invPlayerImg.visible) return
+        this.invPlayerImg.setFrame(frame)
+        if (i === wagFrames.length - 1) this.scheduleNextBlink()
+      })
+      this.wagTimers.push(t)
+      accumulated += wagDelays[i]
+    })
+  }
+
   private stopBlinkLoop() {
     this.blinkTimer?.remove()
     this.blinkTimer = undefined
     this.lickTimers.forEach(t => t.remove())
     this.lickTimers = []
+    this.wagTimers.forEach(t => t.remove())
+    this.wagTimers = []
     this.invPlayerImg?.setFrame(0)
   }
 
