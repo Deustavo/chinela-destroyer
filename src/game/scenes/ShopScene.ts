@@ -766,7 +766,8 @@ export class ShopScene extends Phaser.Scene {
         })
       },
     })
-    const key = `miado${Phaser.Math.Between(1, 4)}`
+    const miados = [1, 3, 4]
+    const key = `miado${miados[Phaser.Math.Between(0, miados.length - 1)]}`
     this.sound.play(key, { volume: 0.7 })
   }
 

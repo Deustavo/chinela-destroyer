@@ -7,6 +7,7 @@ import { PauseScene } from './scenes/PauseScene'
 import { CreditsScene } from './scenes/CreditsScene'
 import { AchievementsScene } from './scenes/AchievementsScene'
 import { ShopScene } from './scenes/ShopScene'
+import { MusicScene } from './scenes/MusicScene'
 import { WORLD } from './config/constants'
 
 export class Game extends Phaser.Game {
@@ -32,7 +33,7 @@ export class Game extends Phaser.Game {
           fixedStep: false,
         },
       },
-      scene: [PreloadScene, MenuScene, MainScene, GameOverScene, PauseScene, CreditsScene, AchievementsScene, ShopScene],
+      scene: [PreloadScene, MenuScene, MainScene, GameOverScene, PauseScene, CreditsScene, AchievementsScene, ShopScene, MusicScene],
     })
   }
 }
