@@ -5,6 +5,7 @@ import { dropIn, dropInFloat, exitTo, type SceneObject } from '../utils/sceneTra
 import { storageGet, storageSet, storageRemove } from '../utils/storage'
 import { CoinManager } from '../utils/CoinManager'
 import { PurchaseManager } from '../utils/PurchaseManager'
+import { playSfx } from '../utils/AudioManager'
 
 const SCALE = 3
 
@@ -113,11 +114,11 @@ export class GameOverScene extends Phaser.Scene {
       this.toastTimer = this.time.delayedCall(achievementDelay, () => this.showNextAchievementToast())
     }
 
-    this.input.keyboard!.once('keydown-SPACE', () => exitTo(this, 'main-scene', allElements))
-    bindEscapeKey(this, () => exitTo(this, 'menu-scene', allElements))
+    this.input.keyboard!.once('keydown-SPACE', () => { playSfx(this, 'button-click'); exitTo(this, 'main-scene', allElements) })
+    bindEscapeKey(this, () => { playSfx(this, 'button-click'); exitTo(this, 'menu-scene', allElements) })
 
-    wireButtonLabel(btnHome, labelHome, () => exitTo(this, 'menu-scene', allElements))
-    wireButtonLabel(btnPlay, labelPlay, () => exitTo(this, 'main-scene', allElements))
+    wireButtonLabel(btnHome, labelHome, () => { playSfx(this, 'button-click'); exitTo(this, 'menu-scene', allElements) })
+    wireButtonLabel(btnPlay, labelPlay, () => { playSfx(this, 'button-click'); exitTo(this, 'main-scene', allElements) })
   }
 
   private showShopTutorialModal() {

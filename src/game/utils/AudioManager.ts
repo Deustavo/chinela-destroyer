@@ -7,13 +7,13 @@ const KEY_SFX_MUTED   = 'audio_sfx_muted'
 
 export const AudioManager = {
   getMusicLevel(): number {
-    return Math.max(1, Math.min(10, parseInt(localStorage.getItem(KEY_MUSIC_LEVEL) ?? '7', 10)))
+    return Math.max(1, Math.min(10, parseInt(localStorage.getItem(KEY_MUSIC_LEVEL) ?? '5', 10)))
   },
   setMusicLevel(v: number): void {
     localStorage.setItem(KEY_MUSIC_LEVEL, String(Math.max(1, Math.min(10, v))))
   },
   getSfxLevel(): number {
-    return Math.max(1, Math.min(10, parseInt(localStorage.getItem(KEY_SFX_LEVEL) ?? '7', 10)))
+    return Math.max(1, Math.min(10, parseInt(localStorage.getItem(KEY_SFX_LEVEL) ?? '5', 10)))
   },
   setSfxLevel(v: number): void {
     localStorage.setItem(KEY_SFX_LEVEL, String(Math.max(1, Math.min(10, v))))
