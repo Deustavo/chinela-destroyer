@@ -107,6 +107,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.audio('theme', '/audio/theme.mp3')
     this.load.audio('coin-collected', '/audio/coincolected.mp3')
     this.load.audio('button-click', '/audio/buttonclick.mp3')
+    this.load.audio('coin-spend', '/audio/coinspend.mp3')
 
     // Load assets for all registered shop items
     for (const item of ITEM_REGISTRY) {

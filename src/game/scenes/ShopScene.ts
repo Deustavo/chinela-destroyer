@@ -593,6 +593,7 @@ export class ShopScene extends Phaser.Scene {
     if (!CoinManager.spend(item.price)) return
     PurchaseManager.buy(item.id)
     if (item.levelStats) UpgradeManager.setLevel(item.id, 1)
+    this.sound.play('coin-spend', { volume: 0.7 })
     NotificationManager.setNewItem()
     this.showInvNotifDot()
     this.shopCardCoinIcons[this.shopSelectedIdx]?.setVisible(false)
@@ -727,6 +728,7 @@ export class ShopScene extends Phaser.Scene {
     const cost = item.levelStats[level].upgradeCost
     if (!CoinManager.spend(cost)) return
     UpgradeManager.setLevel(item.id, level + 1)
+    this.sound.play('coin-spend', { volume: 0.7 })
     this.refreshBuyBtn()
   }
 
