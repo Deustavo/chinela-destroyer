@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
 import { addBackground, addCoinCounter, bindEscapeKey, applySceneMuffle } from '../utils/uiHelpers'
+import { playSfx } from '../utils/AudioManager'
 import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 import { CoinManager } from '../utils/CoinManager'
 import { PurchaseManager } from '../utils/PurchaseManager'
@@ -119,7 +120,7 @@ export class ShopScene extends Phaser.Scene {
 
   constructor() { super('shop-scene') }
 
-  private playClick() { this.sound.play('button-click') }
+  private playClick() { playSfx(this, 'button-click') }
 
   init(data: { tab?: 'shop' | 'inventory'; shopTutorial?: boolean }) {
     this.initialTab = data?.tab ?? 'shop'
@@ -600,7 +601,7 @@ export class ShopScene extends Phaser.Scene {
     if (!CoinManager.spend(item.price)) return
     PurchaseManager.buy(item.id)
     if (item.levelStats) UpgradeManager.setLevel(item.id, 1)
-    this.sound.play('coin-spend', { volume: 0.7 })
+    playSfx(this, 'coin-spend', 0.7)
     NotificationManager.setNewItem()
     this.showInvNotifDot()
     this.shopCardCoinIcons[this.shopSelectedIdx]?.setVisible(false)
@@ -735,7 +736,7 @@ export class ShopScene extends Phaser.Scene {
     const cost = item.levelStats[level].upgradeCost
     if (!CoinManager.spend(cost)) return
     UpgradeManager.setLevel(item.id, level + 1)
-    this.sound.play('coin-spend', { volume: 0.7 })
+    playSfx(this, 'coin-spend', 0.7)
     this.refreshBuyBtn()
   }
 
@@ -778,7 +779,7 @@ export class ShopScene extends Phaser.Scene {
     })
     const miados = [1, 3, 4]
     const key = `miado${miados[Phaser.Math.Between(0, miados.length - 1)]}`
-    this.sound.play(key, { volume: 0.7 })
+    playSfx(this, key, 0.7)
   }
 
   private jumpInvPreview() {

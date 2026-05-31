@@ -11,6 +11,7 @@ import { showIconToast } from '../utils/toastHelpers'
 import { TutorialOverlay } from '../utils/TutorialOverlay'
 import { EquipManager } from '../utils/EquipManager'
 import { PlayerLoadout } from '../items/PlayerLoadout'
+import { playSfx } from '../utils/AudioManager'
 
 export class MainScene extends Phaser.Scene {
   private player!: Player
@@ -101,7 +102,7 @@ export class MainScene extends Phaser.Scene {
       const coin = coinObj as Phaser.Physics.Arcade.Image
       if (!coin.active) return
       coin.destroy()
-      this.sound.play('coin-collected', { volume: 0.6 })
+      playSfx(this, 'coin-collected', 0.6)
       const total = CoinManager.add(1)
       this.coinCountText.setText(String(total))
       this.showCoinPopup()
@@ -119,7 +120,7 @@ export class MainScene extends Phaser.Scene {
         ;(trap as Phaser.Physics.Arcade.Image).destroy()
         return
       }
-      this.sound.play('punch')
+      playSfx(this, 'punch')
       this.killPlayer()
     })
 
@@ -128,7 +129,7 @@ export class MainScene extends Phaser.Scene {
         ;(trap as Phaser.Physics.Arcade.Image).destroy()
         return
       }
-      this.sound.play('punch')
+      playSfx(this, 'punch')
       this.killPlayer()
     })
 
@@ -136,7 +137,7 @@ export class MainScene extends Phaser.Scene {
       this.player.projectiles,
       this.enemy.trapGroup,
       (_shot, _trap) => {
-        this.sound.play('coin-collected', { volume: 0.6 })
+        playSfx(this, 'coin-collected', 0.6)
         this.playShotImpact(_shot as Phaser.Physics.Arcade.Sprite)
         ;(_trap as Phaser.Physics.Arcade.Image).destroy()
         this.tryAwardCoin()
@@ -147,7 +148,7 @@ export class MainScene extends Phaser.Scene {
       this.player.projectiles,
       this.mothershipTraps,
       (_shot, _trap) => {
-        this.sound.play('coin-collected', { volume: 0.6 })
+        playSfx(this, 'coin-collected', 0.6)
         this.playShotImpact(_shot as Phaser.Physics.Arcade.Sprite)
         ;(_trap as Phaser.Physics.Arcade.Image).destroy()
         this.tryAwardCoin()
@@ -228,13 +229,13 @@ export class MainScene extends Phaser.Scene {
       .setAlpha(0.85)
 
     const zone = this.add.zone(x, y, size, size).setScrollFactor(0).setDepth(22).setInteractive()
-    zone.on('pointerdown', () => { this.sound.play('button-click'); this.pauseGame() })
+    zone.on('pointerdown', () => { playSfx(this, 'button-click'); this.pauseGame() })
   }
 
   private killPlayer(bounceUp = true) {
     if (this.dead) return
     this.dead = true
-    this.sound.play('laugh')
+    playSfx(this, 'laugh')
     this.player.die(() => {
       this.scene.start('game-over-scene', { score: this.score, newAchievements: this.newlyUnlockedThisRun })
     }, bounceUp)
@@ -539,7 +540,7 @@ export class MainScene extends Phaser.Scene {
         if (stunDuration) this.enemy.applyStun(stunDuration)
         else this.enemy.showHit()
         if (EquipManager.getEquipped() === 'pomodoro-shot') {
-          this.sound.play('coin-collected', { volume: 0.6 })
+          playSfx(this, 'coin-collected', 0.6)
           const total = CoinManager.add(2)
           this.coinCountText.setText(String(total))
           this.showCoinPopup(2)
@@ -703,7 +704,7 @@ export class MainScene extends Phaser.Scene {
     this.checkAchievements()
 
     if (this.player.gameObject.y > cameraBottom) {
-      this.sound.play('falling')
+      playSfx(this, 'falling')
       this.killPlayer(false)
     }
   }

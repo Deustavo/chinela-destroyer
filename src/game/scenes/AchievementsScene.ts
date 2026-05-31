@@ -3,6 +3,7 @@ import { WORLD, FONT_FAMILY } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
 import type { Achievement } from '../achievements/achievements'
 import { addBackground, addModalOverlay, wireButtonLabel, addCoinCounter, bindEscapeKey, createSecondaryButton, applySceneMuffle } from '../utils/uiHelpers'
+import { playSfx } from '../utils/AudioManager'
 import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 
 const COLS = 3
@@ -27,7 +28,7 @@ export class AchievementsScene extends Phaser.Scene {
     super('achievements-scene')
   }
 
-  private playClick() { this.sound.play('button-click') }
+  private playClick() { playSfx(this, 'button-click') }
 
   create() {
     const cx = WORLD.width / 2

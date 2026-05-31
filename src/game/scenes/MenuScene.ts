@@ -3,8 +3,12 @@ import { WORLD, FONT_FAMILY } from '../config/constants'
 import { addBackground, addCoinCounter, createSecondaryButton } from '../utils/uiHelpers'
 import { dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
 import { NotificationManager } from '../utils/NotificationManager'
+import { AudioVolumePanel } from '../utils/AudioVolumePanel'
+import { playSfx } from '../utils/AudioManager'
 
 export class MenuScene extends Phaser.Scene {
+  private audioPanel?: AudioVolumePanel
+
   constructor() {
     super('menu-scene')
   }
@@ -59,7 +63,25 @@ export class MenuScene extends Phaser.Scene {
     const btnConquistas = createSecondaryButton(this, colLeft,  btnRow2Y, 'Conquistas', undefined, BTN_SCALE)
     const btnCredits    = createSecondaryButton(this, colRight, btnRow2Y, 'Créditos',   undefined, BTN_SCALE)
 
-    const all: SceneObject[] = [logo, chinela, pera, btn, btnShop, btnInventory, btnConquistas, btnCredits]
+    // Audio button — top-left corner
+    const audioBtn = this.add.image(28, 28, 'btn-audio')
+      .setDisplaySize(38, 38)
+      .setOrigin(0.5)
+      .setDepth(5)
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true })
+
+    audioBtn.on('pointerover', () => audioBtn.setAlpha(0.75))
+    audioBtn.on('pointerout',  () => audioBtn.setAlpha(1))
+    audioBtn.on('pointerdown', () => {
+      playSfx(this, 'button-click')
+      this.audioPanel?.show()
+    })
+
+    // Audio volume panel (built once, shown on demand)
+    this.audioPanel = new AudioVolumePanel(this)
+
+    const all: SceneObject[] = [logo, chinela, pera, btn, btnShop, btnInventory, btnConquistas, btnCredits, audioBtn]
 
     if (NotificationManager.hasNewItem()) {
       const dotX = btnInventory.x + BTN_W / 2 - 10
@@ -85,7 +107,7 @@ export class MenuScene extends Phaser.Scene {
       })
     }
 
-    const playClick = () => this.sound.play('button-click')
+    const playClick = () => playSfx(this, 'button-click')
 
     btn.on('pointerover', () => btn.setScale(PRIMARY_SCALE + 0.12))
     btn.on('pointerout', () => btn.setScale(PRIMARY_SCALE))
@@ -107,5 +129,11 @@ export class MenuScene extends Phaser.Scene {
     dropInFloat(this, btnInventory,  { amplitude: 4,  floatDuration: 1900, delay: 500 })
     dropInFloat(this, btnConquistas, { amplitude: 4,  floatDuration: 1900, delay: 560 })
     dropInFloat(this, btnCredits,    { amplitude: 4,  floatDuration: 1800, delay: 620 })
+    dropInFloat(this, audioBtn,      { amplitude: 4,  floatDuration: 1800, delay: 680 })
+  }
+
+  shutdown() {
+    this.audioPanel?.destroy()
+    this.audioPanel = undefined
   }
 }

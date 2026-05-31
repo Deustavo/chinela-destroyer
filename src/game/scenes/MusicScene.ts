@@ -1,7 +1,7 @@
 import Phaser from 'phaser'
+import { AudioManager } from '../utils/AudioManager'
 
-const VOLUME_NORMAL = 0.5
-const VOLUME_MUFFLED = 0.2
+const VOLUME_MUFFLED = 0.12
 
 export class MusicScene extends Phaser.Scene {
   private music!: Phaser.Sound.BaseSound & { volume: number }
@@ -11,8 +11,14 @@ export class MusicScene extends Phaser.Scene {
   }
 
   create() {
-    this.music = this.sound.add('theme', { loop: true, volume: VOLUME_NORMAL }) as Phaser.Sound.BaseSound & { volume: number }
+    this.music = this.sound.add('theme', { loop: true, volume: AudioManager.getMusicVolume() }) as Phaser.Sound.BaseSound & { volume: number }
     this.music.play()
+  }
+
+  applyMusicVolume() {
+    if (!this.music) return
+    this.tweens.killTweensOf(this.music)
+    this.music.volume = AudioManager.getMusicVolume()
   }
 
   setMuffled(muffled: boolean) {
@@ -20,7 +26,7 @@ export class MusicScene extends Phaser.Scene {
     this.tweens.killTweensOf(this.music)
     this.tweens.add({
       targets: this.music,
-      volume: muffled ? VOLUME_MUFFLED : VOLUME_NORMAL,
+      volume: muffled ? Math.min(VOLUME_MUFFLED, AudioManager.getMusicVolume()) : AudioManager.getMusicVolume(),
       duration: 400,
       ease: 'Sine.InOut',
     })

@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
 import { addModalOverlay } from '../utils/uiHelpers'
+import { playSfx } from '../utils/AudioManager'
 
 export class PauseScene extends Phaser.Scene {
   constructor() {
@@ -36,8 +37,8 @@ export class PauseScene extends Phaser.Scene {
 
     btnPlay.on('pointerover', () => btnPlay.setAlpha(1))
     btnPlay.on('pointerout', () => btnPlay.setAlpha(0.85))
-    btnPlay.on('pointerdown', () => { this.sound.play('button-click'); this.startCountdown() })
-    labelPlay.setInteractive({ cursor: 'pointer' }).on('pointerdown', () => { this.sound.play('button-click'); this.startCountdown() })
+    btnPlay.on('pointerdown', () => { playSfx(this, 'button-click'); this.startCountdown() })
+    labelPlay.setInteractive({ cursor: 'pointer' }).on('pointerdown', () => { playSfx(this, 'button-click'); this.startCountdown() })
 
     const btnHome = this.add
       .image(cx - btnSize / 2 - gap / 2, cy + 20, 'btn-home')
@@ -53,8 +54,8 @@ export class PauseScene extends Phaser.Scene {
 
     btnHome.on('pointerover', () => btnHome.setAlpha(1))
     btnHome.on('pointerout', () => btnHome.setAlpha(0.85))
-    btnHome.on('pointerdown', () => { this.sound.play('button-click'); this.goHome() })
-    labelHome.setInteractive({ cursor: 'pointer' }).on('pointerdown', () => { this.sound.play('button-click'); this.goHome() })
+    btnHome.on('pointerdown', () => { playSfx(this, 'button-click'); this.goHome() })
+    labelHome.setInteractive({ cursor: 'pointer' }).on('pointerdown', () => { playSfx(this, 'button-click'); this.goHome() })
 
     this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC).once('down', () => this.startCountdown())
   }
@@ -128,13 +129,13 @@ export class PauseScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(12).setInteractive({ useHandCursor: true })
 
     btnYes.on('pointerdown', () => {
-      this.sound.play('button-click')
+      playSfx(this, 'button-click')
       this.scene.stop('main-scene')
       this.scene.stop()
       this.scene.start('menu-scene')
     })
     btnNo.on('pointerdown', () => {
-      this.sound.play('button-click')
+      playSfx(this, 'button-click')
       overlay.destroy(); panel.destroy(); msg.destroy()
       sub.destroy(); btnYes.destroy(); btnNo.destroy()
     })

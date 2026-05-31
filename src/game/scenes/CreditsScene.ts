@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
 import { addBackground, wireButtonLabel, addCoinCounter, bindEscapeKey, applySceneMuffle } from '../utils/uiHelpers'
+import { playSfx } from '../utils/AudioManager'
 import { dropIn, dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
 
 export class CreditsScene extends Phaser.Scene {
@@ -139,7 +140,7 @@ export class CreditsScene extends Phaser.Scene {
     repoText.on('pointerout', () => { repoText.setAlpha(0.85).setColor('#aaaaaa'); btnGithub.setAlpha(0.85) })
     repoText.on('pointerdown', openRepo)
 
-    const goBack = () => { this.sound.play('button-click'); exitTo(this, 'menu-scene', elements) }
+    const goBack = () => { playSfx(this, 'button-click'); exitTo(this, 'menu-scene', elements) }
     wireButtonLabel(btnBack, labelBack, goBack)
     bindEscapeKey(this, goBack)
 
