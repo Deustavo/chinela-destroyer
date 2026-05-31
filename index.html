@@ -39,7 +39,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 24px;
+        gap: 0px;
         z-index: 9999;
         transition: opacity 0.4s ease;
       }
@@ -57,6 +57,7 @@
         font-size: 22px;
         font-weight: 700;
         letter-spacing: 2px;
+        margin-top: -10px;
         animation: pulse 1s ease-in-out infinite alternate;
       }
       @keyframes bounce {
@@ -76,7 +77,7 @@
   <body>
     <div id="loading-screen">
       <img src="/assets/homeScreen/chinela.png" alt="loading" />
-      <p>Carregando...</p>
+      <p>Carregando</p>
     </div>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
