@@ -123,6 +123,7 @@ export class Player {
   tryAbsorbHit(): boolean {
     if (!this.shieldOwned || this.shieldCooldown > 0) return false
     this.shieldCooldown = this.shieldMaxCooldown
+    this.scene.sound.play('break-shield', { volume: 0.6 })
     if (this.shieldSprite) {
       this.scene.tweens.add({
         targets: this.shieldSprite,
@@ -298,9 +299,10 @@ export class Player {
       } else {
         body.setVelocityY(PLAYER.jumpVelocity)
         this.jumpsRemaining--
-        this.scene.sound.play('jump', { volume: 0.6 })
+        if (!isDoubleJump) this.scene.sound.play('jump', { volume: 0.2 })
         if (isDoubleJump && this.wingsSprite) {
           this.wingCooldown = this.wingMaxCooldown
+          this.scene.sound.play('wings', { volume: 0.5 })
           this.wingsSprite.setVisible(true)
           this.wingsSprite.anims.play(WINGS.animKey, true)
           this.wingsSprite.once(
