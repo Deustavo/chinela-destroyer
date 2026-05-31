@@ -2,8 +2,11 @@ import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
 import { addModalOverlay } from '../utils/uiHelpers'
 import { playSfx } from '../utils/AudioManager'
+import { AudioVolumePanel } from '../utils/AudioVolumePanel'
 
 export class PauseScene extends Phaser.Scene {
+  private audioPanel?: AudioVolumePanel
+
   constructor() {
     super('pause-scene')
   }
@@ -56,6 +59,25 @@ export class PauseScene extends Phaser.Scene {
     btnHome.on('pointerout', () => btnHome.setAlpha(0.85))
     btnHome.on('pointerdown', () => { playSfx(this, 'button-click'); this.goHome() })
     labelHome.setInteractive({ cursor: 'pointer' }).on('pointerdown', () => { playSfx(this, 'button-click'); this.goHome() })
+
+    const audioBtn = this.add.image(cx, cy + 112, 'btn-audio')
+      .setDisplaySize(40, 40)
+      .setDepth(1)
+      .setInteractive({ useHandCursor: true })
+      .setAlpha(0.85)
+
+    this.add.text(cx, cy + 132, 'Volume', labelStyle)
+      .setOrigin(0.5, 0)
+      .setDepth(1)
+
+    audioBtn.on('pointerover', () => audioBtn.setAlpha(1))
+    audioBtn.on('pointerout', () => audioBtn.setAlpha(0.85))
+    audioBtn.on('pointerdown', () => {
+      playSfx(this, 'button-click')
+      this.audioPanel?.show()
+    })
+
+    this.audioPanel = new AudioVolumePanel(this)
 
     this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC).once('down', () => this.startCountdown())
   }
