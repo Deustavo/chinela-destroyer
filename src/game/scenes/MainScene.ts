@@ -101,6 +101,7 @@ export class MainScene extends Phaser.Scene {
       const coin = coinObj as Phaser.Physics.Arcade.Image
       if (!coin.active) return
       coin.destroy()
+      this.sound.play('coin-collected', { volume: 0.6 })
       const total = CoinManager.add(1)
       this.coinCountText.setText(String(total))
       this.showCoinPopup()
@@ -135,6 +136,7 @@ export class MainScene extends Phaser.Scene {
       this.player.projectiles,
       this.enemy.trapGroup,
       (_shot, _trap) => {
+        this.sound.play('coin-collected', { volume: 0.6 })
         this.playShotImpact(_shot as Phaser.Physics.Arcade.Sprite)
         ;(_trap as Phaser.Physics.Arcade.Image).destroy()
         this.tryAwardCoin()
@@ -145,6 +147,7 @@ export class MainScene extends Phaser.Scene {
       this.player.projectiles,
       this.mothershipTraps,
       (_shot, _trap) => {
+        this.sound.play('coin-collected', { volume: 0.6 })
         this.playShotImpact(_shot as Phaser.Physics.Arcade.Sprite)
         ;(_trap as Phaser.Physics.Arcade.Image).destroy()
         this.tryAwardCoin()
@@ -536,6 +539,7 @@ export class MainScene extends Phaser.Scene {
         if (stunDuration) this.enemy.applyStun(stunDuration)
         else this.enemy.showHit()
         if (EquipManager.getEquipped() === 'pomodoro-shot') {
+          this.sound.play('coin-collected', { volume: 0.6 })
           const total = CoinManager.add(2)
           this.coinCountText.setText(String(total))
           this.showCoinPopup(2)
