@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
-import { addBackground, addCoinCounter } from '../utils/uiHelpers'
+import { addBackground, addCoinCounter, createSecondaryButton } from '../utils/uiHelpers'
 import { dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
 import { NotificationManager } from '../utils/NotificationManager'
 
@@ -51,28 +51,13 @@ export class MenuScene extends Phaser.Scene {
       .setDepth(3)
       .setInteractive({ useHandCursor: true })
 
-    const makeSecondaryBtn = (x: number, y: number, label: string) => {
-      const bg = this.add.image(0, 0, 'btn-secondary').setScale(2)
-      const txt = this.add.text(0, 0, label, {
-        fontFamily: FONT_FAMILY,
-        fontSize: '20px',
-        color: '#000000',
-      }).setOrigin(0.5)
-      const container = this.add.container(x, y, [bg, txt])
-        .setSize(bg.width * 2, bg.height * 2)
-        .setScale(BTN_SCALE)
-        .setDepth(3)
-        .setInteractive({ useHandCursor: true })
-      return container
-    }
-
     const colLeft  = cx - (BTN_W / 2 + BTN_GAP / 2)
     const colRight = cx + (BTN_W / 2 + BTN_GAP / 2)
 
-    const btnShop       = makeSecondaryBtn(colLeft,  btnRow1Y, 'Loja')
-    const btnInventory  = makeSecondaryBtn(colRight, btnRow1Y, 'Inventário')
-    const btnConquistas = makeSecondaryBtn(colLeft,  btnRow2Y, 'Conquistas')
-    const btnCredits    = makeSecondaryBtn(colRight, btnRow2Y, 'Créditos')
+    const btnShop       = createSecondaryButton(this, colLeft,  btnRow1Y, 'Loja',       undefined, BTN_SCALE)
+    const btnInventory  = createSecondaryButton(this, colRight, btnRow1Y, 'Inventário', undefined, BTN_SCALE)
+    const btnConquistas = createSecondaryButton(this, colLeft,  btnRow2Y, 'Conquistas', undefined, BTN_SCALE)
+    const btnCredits    = createSecondaryButton(this, colRight, btnRow2Y, 'Créditos',   undefined, BTN_SCALE)
 
     const all: SceneObject[] = [logo, chinela, pera, btn, btnShop, btnInventory, btnConquistas, btnCredits]
 
@@ -104,21 +89,10 @@ export class MenuScene extends Phaser.Scene {
     btn.on('pointerout', () => btn.setScale(PRIMARY_SCALE))
     btn.on('pointerdown', () => exitTo(this, 'main-scene', all))
 
-    btnShop.on('pointerover', () => btnShop.setScale(BTN_SCALE + 0.12))
-    btnShop.on('pointerout', () => btnShop.setScale(BTN_SCALE))
-    btnShop.on('pointerdown', () => exitTo(this, 'shop-scene', all, { tab: 'shop' }))
-
-    btnInventory.on('pointerover', () => btnInventory.setScale(BTN_SCALE + 0.12))
-    btnInventory.on('pointerout', () => btnInventory.setScale(BTN_SCALE))
-    btnInventory.on('pointerdown', () => exitTo(this, 'shop-scene', all, { tab: 'inventory' }))
-
-    btnConquistas.on('pointerover', () => btnConquistas.setScale(BTN_SCALE + 0.12))
-    btnConquistas.on('pointerout', () => btnConquistas.setScale(BTN_SCALE))
+    btnShop.on('pointerdown',       () => exitTo(this, 'shop-scene', all, { tab: 'shop' }))
+    btnInventory.on('pointerdown',  () => exitTo(this, 'shop-scene', all, { tab: 'inventory' }))
     btnConquistas.on('pointerdown', () => exitTo(this, 'achievements-scene', all))
-
-    btnCredits.on('pointerover', () => btnCredits.setScale(BTN_SCALE + 0.12))
-    btnCredits.on('pointerout', () => btnCredits.setScale(BTN_SCALE))
-    btnCredits.on('pointerdown', () => exitTo(this, 'credits-scene', all))
+    btnCredits.on('pointerdown',    () => exitTo(this, 'credits-scene', all))
 
     this.input.keyboard?.once('keydown-SPACE', () => exitTo(this, 'main-scene', all))
     this.input.keyboard?.once('keydown-ENTER', () => exitTo(this, 'main-scene', all))

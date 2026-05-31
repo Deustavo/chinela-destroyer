@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
 import type { Achievement } from '../achievements/achievements'
-import { addBackground, addModalOverlay, wireButtonLabel, addCoinCounter } from '../utils/uiHelpers'
+import { addBackground, addModalOverlay, wireButtonLabel, addCoinCounter, bindEscapeKey, createSecondaryButton } from '../utils/uiHelpers'
 import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 
 const COLS = 3
@@ -110,9 +110,7 @@ export class AchievementsScene extends Phaser.Scene {
 
     const goBack = () => exitTo(this, 'menu-scene', elements)
     wireButtonLabel(backBtn, labelBack, goBack)
-    const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') goBack() }
-    window.addEventListener('keydown', onEsc)
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener('keydown', onEsc))
+    bindEscapeKey(this, goBack)
 
     elements.forEach((el, i) => dropIn(this, el, i * 40))
   }
@@ -164,20 +162,8 @@ export class AchievementsScene extends Phaser.Scene {
       wordWrap: { width: MODAL_SIZE - 48 },
     }).setOrigin(0.5).setDepth(DEPTH + 2)
 
-    const closeBg = this.add.image(0, 0, 'btn-secondary').setScale(2)
-    const closeTxt = this.add.text(0, 0, 'Fechar', {
-      fontFamily: FONT_FAMILY,
-      fontSize: '20px',
-      color: '#000000',
-    }).setOrigin(0.5)
-    const closeBtn = this.add.container(cx, cy + 124, [closeBg, closeTxt])
-      .setSize(closeBg.width * 2, closeBg.height * 2)
+    const closeBtn = createSecondaryButton(this, cx, cy + 124, 'Fechar', () => this.closeModal())
       .setDepth(DEPTH + 2)
-      .setInteractive({ useHandCursor: true })
-
-    closeBtn.on('pointerover', () => closeBtn.setScale(1.12))
-    closeBtn.on('pointerout', () => closeBtn.setScale(1))
-    closeBtn.on('pointerdown', () => this.closeModal())
 
     this.modal = { overlay, panel, icon, nameText, descText, closeBtn }
 

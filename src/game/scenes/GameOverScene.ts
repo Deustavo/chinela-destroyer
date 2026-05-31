@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
-import { addBackground, wireButtonLabel, addCoinCounter } from '../utils/uiHelpers'
+import { addBackground, wireButtonLabel, addCoinCounter, bindEscapeKey } from '../utils/uiHelpers'
 import { dropIn, dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
 import { storageGet, storageSet, storageRemove } from '../utils/storage'
 import { CoinManager } from '../utils/CoinManager'
@@ -113,9 +113,7 @@ export class GameOverScene extends Phaser.Scene {
     }
 
     this.input.keyboard!.once('keydown-SPACE', () => exitTo(this, 'main-scene', allElements))
-    const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') exitTo(this, 'menu-scene', allElements) }
-    window.addEventListener('keydown', onEsc)
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener('keydown', onEsc))
+    bindEscapeKey(this, () => exitTo(this, 'menu-scene', allElements))
 
     wireButtonLabel(btnHome, labelHome, () => exitTo(this, 'menu-scene', allElements))
     wireButtonLabel(btnPlay, labelPlay, () => exitTo(this, 'main-scene', allElements))

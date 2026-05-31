@@ -1,17 +1,12 @@
 import { ACHIEVEMENTS } from './achievements'
 import type { Achievement } from './achievements'
-import { storageGet, storageSet } from '../utils/storage'
+import { storageGet, storageSet, parseJson } from '../utils/storage'
 
 const STORAGE_KEY = 'unlockedAchievements'
 
 export class AchievementManager {
   static getUnlocked(): Set<string> {
-    try {
-      const raw = storageGet(STORAGE_KEY)
-      return new Set(raw ? JSON.parse(raw) : [])
-    } catch {
-      return new Set()
-    }
+    return new Set(parseJson<string[]>(storageGet(STORAGE_KEY), []))
   }
 
   static isUnlocked(id: string): boolean {

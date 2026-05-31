@@ -5,7 +5,9 @@ import { TouchControls } from '../entities/TouchControls'
 import { WORLD, PLATFORMS, BOSS_SHIP, BOSSES, ENEMY, FONT_FAMILY } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
 import { CoinManager } from '../utils/CoinManager'
-import { addCoinCounter } from '../utils/uiHelpers'
+import { addCoinCounter, showFloatingPopup } from '../utils/uiHelpers'
+import { rotatedVelocity } from '../utils/mathHelpers'
+import { showIconToast } from '../utils/toastHelpers'
 import { TutorialOverlay } from '../utils/TutorialOverlay'
 import { EquipManager } from '../utils/EquipManager'
 import { PlayerLoadout } from '../items/PlayerLoadout'
@@ -450,13 +452,7 @@ export class MainScene extends Phaser.Scene {
     const worldOriginY = this.cameras.main.scrollY + screenOriginY
 
     const { x: px, y: py } = this.player.gameObject
-    const dx = px - screenOriginX
-    const dy = py - worldOriginY
-    const len = Math.sqrt(dx * dx + dy * dy) || 1
-    const cos = Math.cos(angleOffset)
-    const sin = Math.sin(angleOffset)
-    const vx = ((dx / len) * cos - (dy / len) * sin) * BOSS_SHIP.projectileSpeed
-    const vy = ((dx / len) * sin + (dy / len) * cos) * BOSS_SHIP.projectileSpeed
+    const { vx, vy } = rotatedVelocity(screenOriginX, worldOriginY, px, py, BOSS_SHIP.projectileSpeed, angleOffset)
 
     const frame = Phaser.Math.Between(0, 3)
     const trap = this.mothershipTraps.create(screenOriginX, worldOriginY, ENEMY.trapsKey, frame) as Phaser.Physics.Arcade.Image
@@ -714,70 +710,16 @@ export class MainScene extends Phaser.Scene {
   }
 
   private showBossRewardPopup(amount: number) {
-    const screenX = WORLD.width / 2
-    const screenY = WORLD.height / 2
-    const iconSize = 22
-
-    const text = this.add
-      .text(screenX - 2, screenY, `+${amount}`, {
-        fontSize: '28px',
-        color: '#ffd700',
-        fontFamily: FONT_FAMILY,
-        stroke: '#000000',
-        strokeThickness: 4,
-      })
-      .setScrollFactor(0)
-      .setDepth(40)
-      .setOrigin(1, 0.5)
-
-    const icon = this.add
-      .image(screenX + 2, screenY, 'shop-coin')
-      .setDisplaySize(iconSize, iconSize)
-      .setScrollFactor(0)
-      .setDepth(40)
-      .setOrigin(0, 0.5)
-
-    this.tweens.add({
-      targets: [text, icon],
-      y: screenY - 60,
-      alpha: 0,
-      duration: 1400,
-      ease: 'Quad.easeOut',
-      onComplete: () => { text.destroy(); icon.destroy() },
+    showFloatingPopup(this, WORLD.width / 2, WORLD.height / 2, 'shop-coin', `+${amount}`, {
+      fontSize: '28px', iconSize: 22, yOffset: 60, duration: 1400,
     })
   }
 
   private showCoinPopup(amount = 1) {
     const screenX = this.player.gameObject.x
     const screenY = this.player.gameObject.y - this.cameras.main.scrollY - 30
-    const iconSize = 18
-
-    const text = this.add
-      .text(screenX - 1, screenY, `+${amount}`, {
-        fontSize: '20px',
-        color: '#ffd700',
-        fontFamily: FONT_FAMILY,
-        stroke: '#000000',
-        strokeThickness: 3,
-      })
-      .setScrollFactor(0)
-      .setDepth(40)
-      .setOrigin(1, 0.5)
-
-    const icon = this.add
-      .image(screenX + 1, screenY, 'shop-coin')
-      .setDisplaySize(iconSize, iconSize)
-      .setScrollFactor(0)
-      .setDepth(40)
-      .setOrigin(0, 0.5)
-
-    this.tweens.add({
-      targets: [text, icon],
-      y: screenY - 40,
-      alpha: 0,
-      duration: 900,
-      ease: 'Quad.easeOut',
-      onComplete: () => { text.destroy(); icon.destroy() },
+    showFloatingPopup(this, screenX, screenY, 'shop-coin', `+${amount}`, {
+      yOffset: 40, duration: 900,
     })
   }
 
@@ -795,36 +737,6 @@ export class MainScene extends Phaser.Scene {
     const next = this.toastQueue.shift()
     if (!next) { this.toastActive = false; return }
     this.toastActive = true
-
-    const iconSize = 28
-    const padding = 4
-    const panelW = iconSize + padding * 2
-    const panelH = iconSize + padding
-    const finalX = panelW / 2 + 8
-    const startX = -(panelW + 10)
-    const panelY = 28
-
-    const container = this.add.container(startX, panelY).setScrollFactor(0).setDepth(50)
-    const panel = this.add.rectangle(0, 0, panelW, panelH, 0x111111, 0.82).setStrokeStyle(1, 0xffd700)
-    const icon = this.add.image(0, 0, next.iconKey).setDisplaySize(iconSize, iconSize)
-    container.add([panel, icon])
-
-    this.tweens.add({
-      targets: container,
-      x: finalX,
-      duration: 300,
-      ease: 'Cubic.easeOut',
-      onComplete: () => {
-        this.time.delayedCall(1800, () => {
-          this.tweens.add({
-            targets: container,
-            x: -(panelW + 10),
-            duration: 250,
-            ease: 'Cubic.easeIn',
-            onComplete: () => { container.destroy(); this.showNextToast() },
-          })
-        })
-      },
-    })
+    showIconToast(this, next.iconKey, () => this.showNextToast())
   }
 }

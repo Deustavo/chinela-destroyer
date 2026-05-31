@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
-import { addBackground } from '../utils/uiHelpers'
+import { addBackground, bindEscapeKey } from '../utils/uiHelpers'
 import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 import { CoinManager } from '../utils/CoinManager'
 import { PurchaseManager } from '../utils/PurchaseManager'
@@ -229,9 +229,7 @@ export class ShopScene extends Phaser.Scene {
     labelBack.on('pointerdown', goBack)
     playBtn.on('pointerdown', goPlay)
     labelPlay.on('pointerdown', goPlay)
-    const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') goBack() }
-    window.addEventListener('keydown', onEsc)
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener('keydown', onEsc))
+    bindEscapeKey(this, goBack)
 
     baseObjs.forEach((obj, i) => dropIn(this, obj, i * 50, 40))
 

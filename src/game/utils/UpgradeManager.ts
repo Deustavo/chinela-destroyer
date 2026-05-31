@@ -1,12 +1,10 @@
-import { storageGet, storageSet } from './storage'
+import { storageGet, storageSet, parseJson } from './storage'
 
 const KEY = 'item-levels'
 
 export class UpgradeManager {
   private static getMap(): Record<string, number> {
-    const raw = storageGet(KEY)
-    if (!raw) return {}
-    try { return JSON.parse(raw) as Record<string, number> } catch { return {} }
+    return parseJson(storageGet(KEY), {} as Record<string, number>)
   }
 
   static getLevel(itemId: string): number {

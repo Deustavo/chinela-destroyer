@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
-import { addBackground, wireButtonLabel, addCoinCounter } from '../utils/uiHelpers'
+import { addBackground, wireButtonLabel, addCoinCounter, bindEscapeKey } from '../utils/uiHelpers'
 import { dropIn, dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
 
 export class CreditsScene extends Phaser.Scene {
@@ -140,9 +140,7 @@ export class CreditsScene extends Phaser.Scene {
 
     const goBack = () => exitTo(this, 'menu-scene', elements)
     wireButtonLabel(btnBack, labelBack, goBack)
-    const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') goBack() }
-    window.addEventListener('keydown', onEsc)
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener('keydown', onEsc))
+    bindEscapeKey(this, goBack)
 
     dropIn(this, title,     0)
     dropIn(this, devText,   80)

@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { WORLD, ENEMY } from '../config/constants'
+import { rotatedVelocity } from '../utils/mathHelpers'
 
 export class Enemy {
   private scene: Phaser.Scene
@@ -219,13 +220,7 @@ export class Enemy {
     const worldX = this.sprite.x
     const worldY = cameraScrollY + this.sprite.y + ENEMY.displayHeight / 2
 
-    const dx = playerX - worldX
-    const dy = playerY - worldY
-    const len = Math.sqrt(dx * dx + dy * dy) || 1
-    const cos = Math.cos(angleOffset)
-    const sin = Math.sin(angleOffset)
-    const vx = ((dx / len) * cos - (dy / len) * sin) * ENEMY.projectileSpeed * speedMult
-    const vy = ((dx / len) * sin + (dy / len) * cos) * ENEMY.projectileSpeed * speedMult
+    const { vx, vy } = rotatedVelocity(worldX, worldY, playerX, playerY, ENEMY.projectileSpeed * speedMult, angleOffset)
 
     const trapFrame = Phaser.Math.Between(0, 3)
     const trap = this.traps.create(worldX, worldY, ENEMY.trapsKey, trapFrame) as Phaser.Physics.Arcade.Image

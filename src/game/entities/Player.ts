@@ -173,81 +173,31 @@ export class Player {
   private registerAnimations(scene: Phaser.Scene) {
     const { frames, animFrameRates, spriteKey } = PLAYER
 
-    scene.anims.create({
-      key: 'idle' satisfies PlayerAnim,
-      frames: scene.anims.generateFrameNumbers(spriteKey, { frames: [...frames.idle] }),
-      frameRate: animFrameRates.idle,
-      repeat: -1,
-    })
-
-    scene.anims.create({
-      key: 'walk' satisfies PlayerAnim,
-      frames: scene.anims.generateFrameNumbers(spriteKey, { frames: [...frames.walk] }),
-      frameRate: animFrameRates.walk,
-      repeat: -1,
-    })
-
-    scene.anims.create({
-      key: 'jump-up' satisfies PlayerAnim,
-      frames: scene.anims.generateFrameNumbers(spriteKey, { frames: [...frames.jumpUp] }),
-      frameRate: animFrameRates.jump,
-      repeat: 0,
-    })
-
-    scene.anims.create({
-      key: 'jump-down' satisfies PlayerAnim,
-      frames: scene.anims.generateFrameNumbers(spriteKey, { frames: [...frames.jumpDown] }),
-      frameRate: animFrameRates.jump,
-      repeat: 0,
-    })
-
-    // Base shot (not a registry item — every player has this)
-    if (!scene.anims.exists('shot-fly')) {
-      scene.anims.create({
-        key: 'shot-fly',
-        frames: scene.anims.generateFrameNumbers(SHOT.spriteKey, { frames: [...SHOT.flyFrames] }),
-        frameRate: SHOT.flyFrameRate,
-        repeat: -1,
-      })
-    }
-    if (!scene.anims.exists('shot-impact')) {
-      scene.anims.create({
-        key: 'shot-impact',
-        frames: scene.anims.generateFrameNumbers(SHOT.spriteKey, { frames: [...SHOT.impactFrames] }),
-        frameRate: SHOT.impactFrameRate,
-        repeat: 0,
-      })
+    const reg = (key: string, sk: string, fr: number[], frameRate: number, repeat: number) => {
+      if (!scene.anims.exists(key)) {
+        scene.anims.create({
+          key,
+          frames: scene.anims.generateFrameNumbers(sk, { frames: [...fr] }),
+          frameRate,
+          repeat,
+        })
+      }
     }
 
-    if (!scene.anims.exists(WINGS.animKey)) {
-      scene.anims.create({
-        key: WINGS.animKey,
-        frames: scene.anims.generateFrameNumbers(WINGS.spriteKey, { frames: [...WINGS.frames] }),
-        frameRate: WINGS.frameRate,
-        repeat: 0,
-      })
-    }
+    scene.anims.create({ key: 'idle'      satisfies PlayerAnim, frames: scene.anims.generateFrameNumbers(spriteKey, { frames: [...frames.idle]     }), frameRate: animFrameRates.idle, repeat: -1 })
+    scene.anims.create({ key: 'walk'      satisfies PlayerAnim, frames: scene.anims.generateFrameNumbers(spriteKey, { frames: [...frames.walk]     }), frameRate: animFrameRates.walk, repeat: -1 })
+    scene.anims.create({ key: 'jump-up'   satisfies PlayerAnim, frames: scene.anims.generateFrameNumbers(spriteKey, { frames: [...frames.jumpUp]   }), frameRate: animFrameRates.jump, repeat:  0 })
+    scene.anims.create({ key: 'jump-down' satisfies PlayerAnim, frames: scene.anims.generateFrameNumbers(spriteKey, { frames: [...frames.jumpDown] }), frameRate: animFrameRates.jump, repeat:  0 })
 
-    // All registered shot items
+    reg('shot-fly',    SHOT.spriteKey,  [...SHOT.flyFrames],    SHOT.flyFrameRate,    -1)
+    reg('shot-impact', SHOT.spriteKey,  [...SHOT.impactFrames], SHOT.impactFrameRate,  0)
+    reg(WINGS.animKey, WINGS.spriteKey, [...WINGS.frames],      WINGS.frameRate,       0)
+
     for (const item of ITEM_REGISTRY) {
       if (item.type !== 'shot' || !item.shotConfig) continue
       const cfg = item.shotConfig
-      if (!scene.anims.exists(cfg.flyAnimKey)) {
-        scene.anims.create({
-          key: cfg.flyAnimKey,
-          frames: scene.anims.generateFrameNumbers(cfg.spriteKey, { frames: [...cfg.flyFrames] }),
-          frameRate: cfg.flyFrameRate,
-          repeat: -1,
-        })
-      }
-      if (!scene.anims.exists(cfg.impactAnimKey)) {
-        scene.anims.create({
-          key: cfg.impactAnimKey,
-          frames: scene.anims.generateFrameNumbers(cfg.spriteKey, { frames: [...cfg.impactFrames] }),
-          frameRate: cfg.impactFrameRate,
-          repeat: 0,
-        })
-      }
+      reg(cfg.flyAnimKey,    cfg.spriteKey, [...cfg.flyFrames],    cfg.flyFrameRate,    -1)
+      reg(cfg.impactAnimKey, cfg.spriteKey, [...cfg.impactFrames], cfg.impactFrameRate,  0)
     }
   }
 
@@ -289,16 +239,17 @@ export class Player {
   }
 
   update(delta: number, touch?: TouchState, platformVelX: number = 0) {
-    this.shotCooldown = Math.max(0, this.shotCooldown - delta / 1000)
+    const tick = (v: number) => Math.max(0, v - delta / 1000)
+    this.shotCooldown = tick(this.shotCooldown)
 
     if (this.shieldOwned && this.shieldSprite) {
-      this.shieldCooldown = Math.max(0, this.shieldCooldown - delta / 1000)
+      this.shieldCooldown = tick(this.shieldCooldown)
       this.shieldSprite.setPosition(this.sprite.x, this.sprite.y - 4)
       this.shieldSprite.setAlpha(this.shieldCooldown > 0 ? 0 : 0.9)
     }
 
     if (this.wingsOwned) {
-      this.wingCooldown = Math.max(0, this.wingCooldown - delta / 1000)
+      this.wingCooldown = tick(this.wingCooldown)
       if (this.wingsSprite) {
         this.wingsSprite.setPosition(this.sprite.x, this.sprite.y - 16)
       }
