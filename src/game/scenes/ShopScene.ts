@@ -416,6 +416,8 @@ export class ShopScene extends Phaser.Scene {
     this.invPlayerImg = this.add
       .image(INV_L_X, INV_CY - 20, 'chinela', 0)
       .setDisplaySize(INV_SZ * 1.1, INV_SZ * 1.1).setDepth(3)
+      .setInteractive({ useHandCursor: true })
+    this.invPlayerImg.on('pointerdown', () => this.jumpInvPlayer())
 
     // Right block — selected item preview
     const invSelLabel = this.add.text(INV_R_X, INV_CY - INV_SZ / 2 - 14, 'Selecionado', {
@@ -745,6 +747,26 @@ export class ShopScene extends Phaser.Scene {
       this.tutorialStep = null
       this.completeTutorial()
     }
+  }
+
+  private jumpInvPlayer() {
+    const baseY = INV_CY - 20
+    this.tweens.add({
+      targets: this.invPlayerImg,
+      y: baseY - 30,
+      duration: 130,
+      ease: 'Cubic.Out',
+      onComplete: () => {
+        this.tweens.add({
+          targets: this.invPlayerImg,
+          y: baseY,
+          duration: 200,
+          ease: 'Bounce.Out',
+        })
+      },
+    })
+    const key = `miado${Phaser.Math.Between(1, 4)}`
+    this.sound.play(key, { volume: 0.7 })
   }
 
   private jumpInvPreview() {
