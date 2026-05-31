@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
 import { CoinManager } from './CoinManager'
+import type { MusicScene } from '../scenes/MusicScene'
 
 const BTN_HOVER_DELTA = 0.12
 
@@ -138,6 +139,16 @@ export function bindEscapeKey(scene: Phaser.Scene, callback: () => void): void {
   const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') callback() }
   window.addEventListener('keydown', handler)
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener('keydown', handler))
+}
+
+/**
+ * Muffle background music when this scene is active; restore on shutdown.
+ */
+export function applySceneMuffle(scene: Phaser.Scene): void {
+  const musicScene = scene.scene.get('music-scene') as MusicScene | null
+  if (!musicScene) return
+  musicScene.setMuffled(true)
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => musicScene.setMuffled(false))
 }
 
 /**

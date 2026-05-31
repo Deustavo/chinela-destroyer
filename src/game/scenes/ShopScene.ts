@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
-import { addBackground, addCoinCounter, bindEscapeKey } from '../utils/uiHelpers'
+import { addBackground, addCoinCounter, bindEscapeKey, applySceneMuffle } from '../utils/uiHelpers'
 import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 import { CoinManager } from '../utils/CoinManager'
 import { PurchaseManager } from '../utils/PurchaseManager'
@@ -129,6 +129,7 @@ export class ShopScene extends Phaser.Scene {
   create() {
     addBackground(this)
     addCoinCounter(this)
+    applySceneMuffle(this)
 
     // Title
     const title = this.add.text(CX, 50, 'Itens', {

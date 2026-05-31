@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
-import { addBackground, wireButtonLabel, addCoinCounter, bindEscapeKey } from '../utils/uiHelpers'
+import { addBackground, wireButtonLabel, addCoinCounter, bindEscapeKey, applySceneMuffle } from '../utils/uiHelpers'
 import { dropIn, dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
 
 export class CreditsScene extends Phaser.Scene {
@@ -14,6 +14,7 @@ export class CreditsScene extends Phaser.Scene {
 
     addBackground(this)
     addCoinCounter(this)
+    applySceneMuffle(this)
 
     const title = this.add
       .text(cx, cy - 240, 'Créditos', {

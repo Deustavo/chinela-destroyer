@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
-import { addBackground, wireButtonLabel, addCoinCounter, bindEscapeKey } from '../utils/uiHelpers'
+import { addBackground, wireButtonLabel, addCoinCounter, bindEscapeKey, applySceneMuffle } from '../utils/uiHelpers'
 import { dropIn, dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
 import { storageGet, storageSet, storageRemove } from '../utils/storage'
 import { CoinManager } from '../utils/CoinManager'
@@ -32,6 +32,7 @@ export class GameOverScene extends Phaser.Scene {
 
     addBackground(this)
     addCoinCounter(this)
+    applySceneMuffle(this)
 
     const fim  = this.add.image(cx - 65, cy - 130, 'gameover-fim').setScale(SCALE).setOrigin(0.5)
     const cat  = this.add.image(cx + 65, cy - 150, 'gameover-chinela').setScale(SCALE).setOrigin(0.5)
