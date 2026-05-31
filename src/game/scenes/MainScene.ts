@@ -379,7 +379,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   private spawnCollectibleCoin(x: number, platformY: number) {
-    const coinY = platformY - PLATFORMS.height - 14
+    const coinY = platformY - PLATFORMS.height - 4
     const coin = this.collectibleCoins.create(x, coinY, 'shop-coin') as Phaser.Physics.Arcade.Image
     coin.setDisplaySize(22, 22)
     const body = coin.body as Phaser.Physics.Arcade.Body
