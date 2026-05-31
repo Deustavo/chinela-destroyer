@@ -11,6 +11,7 @@ export interface ShotConfig {
   displaySize: number
   cooldown: number
   stunDuration?: number
+  soundKey?: string
 }
 
 // Multiplier-based stat modifiers that stack with upgrades.

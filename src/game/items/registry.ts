@@ -45,6 +45,7 @@ export const ITEM_REGISTRY: ShopItem[] = [
       displaySize: 96,
       cooldown: 4,
       stunDuration: 1.5,
+      soundKey: 'throwPomodoro',
     },
     levelStats: [
       { upgradeCost: 0,  description: 'Cooldown: 4s',   cooldown: 4   },
@@ -104,6 +105,7 @@ export const ITEM_REGISTRY: ShopItem[] = [
       speed: 600,
       displaySize: 48,
       cooldown: 0.5,
+      soundKey: 'throwBolinbolacho',
     },
     levelStats: [
       { upgradeCost: 0,   description: 'Normal', displaySize: 48 },

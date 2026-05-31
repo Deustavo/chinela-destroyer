@@ -159,7 +159,7 @@ export class Player {
     if (config.stunDuration) proj.setData('stunDuration', config.stunDuration)
 
     this.projectiles.add(proj)
-    this.scene.sound.play('laser', { volume: 0.5 })
+    this.scene.sound.play(config.soundKey ?? 'laser', { volume: 0.5 })
 
     const projBody = proj.body as Phaser.Physics.Arcade.Body
     projBody.setAllowGravity(false)
