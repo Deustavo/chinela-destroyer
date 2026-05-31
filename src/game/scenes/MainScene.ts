@@ -118,6 +118,7 @@ export class MainScene extends Phaser.Scene {
         ;(trap as Phaser.Physics.Arcade.Image).destroy()
         return
       }
+      this.sound.play('punch')
       this.killPlayer()
     })
 
@@ -126,6 +127,7 @@ export class MainScene extends Phaser.Scene {
         ;(trap as Phaser.Physics.Arcade.Image).destroy()
         return
       }
+      this.sound.play('punch')
       this.killPlayer()
     })
 
@@ -229,6 +231,7 @@ export class MainScene extends Phaser.Scene {
   private killPlayer(bounceUp = true) {
     if (this.dead) return
     this.dead = true
+    this.sound.play('laugh')
     this.player.die(() => {
       this.scene.start('game-over-scene', { score: this.score, newAchievements: this.newlyUnlockedThisRun })
     }, bounceUp)
@@ -696,6 +699,7 @@ export class MainScene extends Phaser.Scene {
     this.checkAchievements()
 
     if (this.player.gameObject.y > cameraBottom) {
+      this.sound.play('falling')
       this.killPlayer(false)
     }
   }

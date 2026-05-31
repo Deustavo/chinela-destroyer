@@ -97,6 +97,10 @@ export class PreloadScene extends Phaser.Scene {
       frameHeight: WINGS.spritesheet.frameHeight,
     })
 
+    this.load.audio('laugh', '/audio/laugh.mp3')
+    this.load.audio('punch', '/audio/punch.mp3')
+    this.load.audio('falling', '/audio/falling.mp3')
+
     // Load assets for all registered shop items
     for (const item of ITEM_REGISTRY) {
       if (item.type === 'shot' && item.shotConfig) {
