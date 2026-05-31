@@ -18,7 +18,7 @@ export class CreditsScene extends Phaser.Scene {
     applySceneMuffle(this)
 
     const title = this.add
-      .text(cx, cy - 240, 'Créditos', {
+      .text(cx, cy - 260, 'Créditos', {
         fontSize: '48px',
         color: '#ffffff',
         fontFamily: FONT_FAMILY,
@@ -26,7 +26,7 @@ export class CreditsScene extends Phaser.Scene {
       .setOrigin(0.5)
 
     const devText = this.add
-      .text(cx, cy - 140, 'Feito por Deustavo. Siga meu github para mais projetos <3', {
+      .text(cx, cy - 180, 'Feito por Deustavo. Siga meu github para mais projetos <3', {
         fontSize: '20px',
         color: '#ffffff',
         fontFamily: FONT_FAMILY,
@@ -36,13 +36,13 @@ export class CreditsScene extends Phaser.Scene {
       .setOrigin(0.5)
 
     const btnGithub = this.add
-      .image(cx - 76, cy - 80, 'credits-github')
+      .image(cx - 76, cy - 130, 'credits-github')
       .setDisplaySize(48, 48)
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
     const repoText = this.add
-      .text(cx - 76 + 20, cy - 78, '/Deustavo/chinela-destroyer', {
+      .text(cx - 76 + 20, cy - 128, '/Deustavo/chinela-destroyer', {
         fontSize: '14px',
         color: '#aaaaaa',
         fontFamily: FONT_FAMILY,
@@ -52,11 +52,11 @@ export class CreditsScene extends Phaser.Scene {
       .setAlpha(0.85)
 
     const gatas = this.add
-      .image(cx, cy + 70, 'credits-gatas')
+      .image(cx, cy + 20, 'credits-gatas')
       .setDisplaySize(240, 160)
 
     const nameChinela = this.add
-      .text(cx - 42, cy - 10, 'Chinela', {
+      .text(cx - 42, cy - 40, 'Chinela', {
         fontSize: '24px',
         fontStyle: 'bold',
         color: '#ffdd88',
@@ -68,7 +68,7 @@ export class CreditsScene extends Phaser.Scene {
       .setOrigin(0.5)
 
     const arrowChinela = this.add
-      .text(cx - 42, cy + 18, '↓', {
+      .text(cx - 42, cy - 20, '↓', {
         fontSize: '26px',
         fontStyle: 'bold',
         color: '#ffdd88',
@@ -79,7 +79,7 @@ export class CreditsScene extends Phaser.Scene {
       .setOrigin(0.5)
 
     const namePera = this.add
-      .text(cx + 40, cy - 10, 'Pera', {
+      .text(cx + 40, cy - 40, 'Pera', {
         fontSize: '24px',
         fontStyle: 'bold',
         color: '#88ddff',
@@ -91,7 +91,7 @@ export class CreditsScene extends Phaser.Scene {
       .setOrigin(0.5)
 
     const arrowPera = this.add
-      .text(cx + 40, cy + 18, '↓', {
+      .text(cx + 40, cy - 20, '↓', {
         fontSize: '26px',
         fontStyle: 'bold',
         color: '#88ddff',
@@ -103,7 +103,7 @@ export class CreditsScene extends Phaser.Scene {
 
 
     const caption = this.add
-      .text(cx, cy + 180, 'as protagonistas são essas gatas endeotas', {
+      .text(cx, cy + 130, 'as protagonistas são essas gatas endeotas', {
         fontSize: '22px',
         color: '#ffffff',
         fontFamily: FONT_FAMILY,
@@ -112,14 +112,32 @@ export class CreditsScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
 
+    const musicLabel = this.add
+      .text(cx, cy + 200, '♫ Música', {
+        fontSize: '16px',
+        color: '#aaaaaa',
+        fontFamily: FONT_FAMILY,
+        align: 'center',
+      })
+      .setOrigin(0.5)
+
+    const musicName = this.add
+      .text(cx, cy + 222, 'Jeremy Black - Helios', {
+        fontSize: '18px',
+        color: '#ffffff',
+        fontFamily: FONT_FAMILY,
+        align: 'center',
+      })
+      .setOrigin(0.5)
+
     const btnBack = this.add
-      .image(cx, cy + 265, 'btn-home')
+      .image(cx, cy + 275, 'btn-home')
       .setDisplaySize(64, 64)
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
     const labelBack = this.add
-      .text(cx, cy + 245 + 32 + 10, 'Início', {
+      .text(cx, cy + 255 + 32 + 10, 'Início', {
         fontSize: '16px',
         color: '#ffffff',
         fontFamily: FONT_FAMILY,
@@ -128,7 +146,7 @@ export class CreditsScene extends Phaser.Scene {
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
-    const elements: SceneObject[] = [title, devText, btnGithub, repoText, gatas, nameChinela, arrowChinela, namePera, arrowPera, caption, btnBack, labelBack]
+    const elements: SceneObject[] = [title, devText, btnGithub, repoText, gatas, nameChinela, arrowChinela, namePera, arrowPera, caption, musicLabel, musicName, btnBack, labelBack]
 
     const openRepo = () => window.open('https://github.com/Deustavo/chinela-destroyer', '_blank')
 
@@ -154,7 +172,9 @@ export class CreditsScene extends Phaser.Scene {
     dropInFloat(this, namePera,     { delay: 240, amplitude: 6, floatDuration: 1400 })
     dropInFloat(this, arrowPera,    { delay: 240, amplitude: 6, floatDuration: 1400 })
     dropIn(this, caption,      320)
-    dropIn(this, btnBack,   400)
-    dropIn(this, labelBack, 450)
+    dropIn(this, musicLabel,   370)
+    dropIn(this, musicName,    400)
+    dropIn(this, btnBack,   460)
+    dropIn(this, labelBack, 510)
   }
 }

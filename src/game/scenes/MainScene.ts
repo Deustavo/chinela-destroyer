@@ -177,7 +177,7 @@ export class MainScene extends Phaser.Scene {
 
     if (this.player.isWingsOwned() && this.player.getWingMaxCooldown() > 0) {
       this.wingsHUD = this.add
-        .text(16, 68, 'Asas: prontas', {
+        .text(16, 44, 'Asas: prontas', {
           fontSize: '18px',
           color: '#00ff88',
           fontFamily: FONT_FAMILY,
