@@ -15,7 +15,7 @@ export class PauseScene extends Phaser.Scene {
     const cx = WORLD.width / 2
     const cy = WORLD.height / 2
 
-    addModalOverlay(this)
+    addModalOverlay(this, 0, 0.75)
 
     this.add
       .text(cx, cy - 80, 'PAUSADO', { fontSize: '42px', color: '#ffffff', fontStyle: 'bold', fontFamily: FONT_FAMILY })

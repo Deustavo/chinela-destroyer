@@ -158,6 +158,7 @@ export class Player {
     if (config.stunDuration) proj.setData('stunDuration', config.stunDuration)
 
     this.projectiles.add(proj)
+    this.scene.sound.play('laser', { volume: 0.5 })
 
     const projBody = proj.body as Phaser.Physics.Arcade.Body
     projBody.setAllowGravity(false)
@@ -297,6 +298,7 @@ export class Player {
       } else {
         body.setVelocityY(PLAYER.jumpVelocity)
         this.jumpsRemaining--
+        this.scene.sound.play('jump', { volume: 0.6 })
         if (isDoubleJump && this.wingsSprite) {
           this.wingCooldown = this.wingMaxCooldown
           this.wingsSprite.setVisible(true)
