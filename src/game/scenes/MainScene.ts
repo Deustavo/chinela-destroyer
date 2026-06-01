@@ -567,6 +567,7 @@ export class MainScene extends Phaser.Scene {
           vital.circle.setFillStyle(0x333333).setStrokeStyle(0)
           this.tweens.killTweensOf(vital.circle)
           if (this.bossVitalArrows.length > 0) this.clearBossVitalArrows()
+          playSfx(this, 'hit-vital-point', 0.9)
           this.playShotImpact(proj)
           this.tryAwardCoin()
           if (this.bossVitals.every(v => v.hit)) this.defeatBoss()
