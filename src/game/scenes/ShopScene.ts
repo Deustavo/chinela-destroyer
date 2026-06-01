@@ -346,13 +346,8 @@ export class ShopScene extends Phaser.Scene {
         .image(cx, cy, item.iconKey, item.iconFrame)
         .setDisplaySize(CARD_SZ * 0.65, CARD_SZ * 0.65)
 
-      const nameTxt = this.add.text(cx, CARD_SZ + 7, t(`item.${item.id}.name`), {
-        fontSize: '13px', color: '#ffffff',
-        fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
-      }).setOrigin(0.5, 0)
-
       const owned = PurchaseManager.has(item.id)
-      const priceTxt = this.add.text(0, CARD_SZ + 32, `${item.price}`, {
+      const priceTxt = this.add.text(0, CARD_SZ + 7, `${item.price}`, {
         fontSize: '13px', color: '#ffd700',
         fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
       }).setOrigin(0, 0.5).setVisible(!owned)
@@ -361,7 +356,7 @@ export class ShopScene extends Phaser.Scene {
       const priceGroupW = priceTxt.width + priceGap + priceIconW
       priceTxt.setX(cx - priceGroupW / 2)
       const coinIco = this.add
-        .image(cx - priceGroupW / 2 + priceTxt.width + priceGap + priceIconW / 2, CARD_SZ + 33, 'shop-coin')
+        .image(cx - priceGroupW / 2 + priceTxt.width + priceGap + priceIconW / 2, CARD_SZ + 7, 'shop-coin')
         .setDisplaySize(priceIconW, priceIconW)
         .setVisible(!owned)
       this.shopCardCoinIcons.push(coinIco)
@@ -370,10 +365,17 @@ export class ShopScene extends Phaser.Scene {
       const rawLevel = owned ? UpgradeManager.getLevel(item.id) : 0
       const lvl = rawLevel > 0 ? rawLevel : (owned ? 1 : 0)
       const starsStr = (owned && item.levelStats) ? ('★'.repeat(lvl) + '☆'.repeat(3 - lvl)) : ''
-      const starTxt = this.add.text(cx, CARD_SZ + 33, starsStr, {
+      const starTxt = this.add.text(cx, CARD_SZ + 7, starsStr, {
         fontSize: '13px', color: '#ffd700',
         fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
       }).setOrigin(0.5, 0.5).setVisible(owned && !!item.levelStats)
+
+      const nameTxt = this.add.text(cx, CARD_SZ + 14, t(`item.${item.id}.name`), {
+        fontSize: '12px', color: '#ffffff',
+        fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
+        wordWrap: { width: CARD_SZ - 2, useAdvancedWrap: true },
+        align: 'center',
+      }).setOrigin(0.5, 0)
       this.shopCardStarTxts.push(starTxt)
 
       const hit = this.add
@@ -487,19 +489,21 @@ export class ShopScene extends Phaser.Scene {
         .setVisible(owned)
       this.invCardIcons.push(icon)
 
-      const nameTxt = this.add.text(cx, CARD_SZ + 7, t(`item.${item.id}.name`), {
-        fontSize: '13px', color: '#ffffff',
-        fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
-      }).setOrigin(0.5, 0).setVisible(owned)
-      this.invCardNames.push(nameTxt)
-
       const rawLvl = owned ? UpgradeManager.getLevel(item.id) : 0
       const lvl = rawLvl > 0 ? rawLvl : (owned ? 1 : 0)
       const starsStr = (owned && item.levelStats) ? ('★'.repeat(lvl) + '☆'.repeat(3 - lvl)) : ''
-      const starTxt = this.add.text(cx, CARD_SZ + 28, starsStr, {
+      const starTxt = this.add.text(cx, CARD_SZ + 7, starsStr, {
         fontSize: '13px', color: '#ffd700',
         fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
-      }).setOrigin(0.5, 0).setVisible(owned && !!item.levelStats)
+      }).setOrigin(0.5, 0.5).setVisible(owned && !!item.levelStats)
+
+      const nameTxt = this.add.text(cx, CARD_SZ + 14, t(`item.${item.id}.name`), {
+        fontSize: '12px', color: '#ffffff',
+        fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
+        wordWrap: { width: CARD_SZ - 2, useAdvancedWrap: true },
+        align: 'center',
+      }).setOrigin(0.5, 0).setVisible(owned)
+      this.invCardNames.push(nameTxt)
       this.invCardStarTxts.push(starTxt)
 
       const hit = this.add
