@@ -13,6 +13,7 @@ import { EquipManager } from '../utils/EquipManager'
 import { PlayerLoadout } from '../items/PlayerLoadout'
 import { playSfx } from '../utils/AudioManager'
 import { storageSet } from '../utils/storage'
+import { t } from '../lang'
 
 export class MainScene extends Phaser.Scene {
   private player!: Player
@@ -193,7 +194,7 @@ export class MainScene extends Phaser.Scene {
     const STAGE_START_HEIGHTS = [0, 1000, 2000]
     const initialHeight = STAGE_START_HEIGHTS[this.startStage] ?? 0
     this.scoreText = this.add
-      .text(16, 16, `Altura: ${initialHeight}`, { fontSize: '22px', color: '#ffffff', fontFamily: FONT_FAMILY })
+      .text(16, 16, t('height', initialHeight), { fontSize: '22px', color: '#ffffff', fontFamily: FONT_FAMILY })
       .setScrollFactor(0)
 
     // Coin counter — positioned to the left of the pause button (pause btn center = WORLD.width-36)
@@ -201,7 +202,7 @@ export class MainScene extends Phaser.Scene {
 
     if (this.player.isShieldOwned()) {
       this.shieldHUD = this.add
-        .text(16, 44, 'Escudo: pronto', {
+        .text(16, 44, t('shield_ready'), {
           fontSize: '18px',
           color: '#00ff88',
           fontFamily: FONT_FAMILY,
@@ -214,7 +215,7 @@ export class MainScene extends Phaser.Scene {
 
     if (this.player.isWingsOwned() && this.player.getWingMaxCooldown() > 0) {
       this.wingsHUD = this.add
-        .text(16, 44, 'Asas: prontas', {
+        .text(16, 44, t('wings_ready'), {
           fontSize: '18px',
           color: '#00ff88',
           fontFamily: FONT_FAMILY,
@@ -787,7 +788,7 @@ export class MainScene extends Phaser.Scene {
 
     const msgText = this.add.text(
       cx, cy - panelH / 2 + 20,
-      'Parabéns!\nVocê conseguiu eliminar a nave mãe.\n\nAgora você pode jogar o modo\nSem Fim para pegar\npontuações mais altas.\n\nObrigado por jogar <3',
+      t('victory_msg'),
       {
         fontSize: '16px',
         color: '#ffffff',
@@ -803,7 +804,7 @@ export class MainScene extends Phaser.Scene {
       .setScrollFactor(0).setDepth(depth + 2).setAlpha(0)
       .setInteractive({ useHandCursor: true })
 
-    const btnTxt = this.add.text(cx, btnY, 'Continuar', {
+    const btnTxt = this.add.text(cx, btnY, t('continue'), {
       fontSize: '18px',
       color: '#111111',
       fontFamily: FONT_FAMILY,
@@ -930,23 +931,23 @@ export class MainScene extends Phaser.Scene {
     this.enemy.update(delta, this.cameras.main.scrollY, px, py, this.score)
 
     this.score = Math.floor(-this.cameras.main.scrollY / 10)
-    this.scoreText.setText(`Altura: ${this.score}`)
+    this.scoreText.setText(t('height', this.score))
 
     if (this.shieldHUD) {
       const cd = this.player.getShieldCooldown()
       if (cd > 0) {
-        this.shieldHUD.setText(`Escudo: ${Math.ceil(cd)}s`).setColor('#ff8800')
+        this.shieldHUD.setText(t('shield_cooldown', Math.ceil(cd))).setColor('#ff8800')
       } else {
-        this.shieldHUD.setText('Escudo: pronto').setColor('#00ff88')
+        this.shieldHUD.setText(t('shield_ready')).setColor('#00ff88')
       }
     }
 
     if (this.wingsHUD) {
       const cd = this.player.getWingCooldown()
       if (cd > 0) {
-        this.wingsHUD.setText(`Asas: ${Math.ceil(cd)}s`).setColor('#ff8800')
+        this.wingsHUD.setText(t('wings_cooldown', Math.ceil(cd))).setColor('#ff8800')
       } else {
-        this.wingsHUD.setText('Asas: prontas').setColor('#00ff88')
+        this.wingsHUD.setText(t('wings_ready')).setColor('#00ff88')
       }
     }
 

@@ -38,6 +38,13 @@ const pt: Record<string, string> = {
   shop_tutorial_body: 'Vá à loja e compre o Pomodoro',
   go_to_shop: 'Ir à Loja →',
 
+  // ── Main Scene HUD ──────────────────────────────────────────────────────────
+  shield_ready: 'Escudo: pronto',
+  shield_cooldown: 'Escudo: {0}s',
+  wings_ready: 'Asas: prontas',
+  wings_cooldown: 'Asas: {0}s',
+  victory_msg: 'Parabéns!\nVocê conseguiu eliminar a nave mãe.\n\nAgora você pode jogar o modo\nSem Fim para pegar\npontuações mais altas.\n\nObrigado por jogar <3',
+
   // ── Pause ───────────────────────────────────────────────────────────────────
   paused: 'PAUSADO',
   continue: 'Continuar',

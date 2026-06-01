@@ -38,6 +38,13 @@ const en: Record<string, string> = {
   shop_tutorial_body: 'Go to the shop and buy the Pomodoro',
   go_to_shop: 'Go to Shop →',
 
+  // ── Main Scene HUD ──────────────────────────────────────────────────────────
+  shield_ready: 'Shield: ready',
+  shield_cooldown: 'Shield: {0}s',
+  wings_ready: 'Wings: ready',
+  wings_cooldown: 'Wings: {0}s',
+  victory_msg: 'Congrats!\nYou defeated the mothership.\n\nNow you can play\nEndless mode to get\nhigher scores.\n\nThank you for playing <3',
+
   // ── Pause ───────────────────────────────────────────────────────────────────
   paused: 'PAUSED',
   continue: 'Continue',
