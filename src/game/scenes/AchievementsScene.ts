@@ -3,6 +3,7 @@ import { WORLD, FONT_FAMILY } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
 import type { Achievement } from '../achievements/achievements'
 import { addBackground, addModalOverlay, wireButtonLabel, addCoinCounter, bindEscapeKey, createSecondaryButton, applySceneMuffle } from '../utils/uiHelpers'
+import { NotificationManager } from '../utils/NotificationManager'
 import { playSfx } from '../utils/AudioManager'
 import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 
@@ -31,6 +32,7 @@ export class AchievementsScene extends Phaser.Scene {
   private playClick() { playSfx(this, 'button-click') }
 
   create() {
+    NotificationManager.clearNewAchievement()
     const cx = WORLD.width / 2
     const unlocked = AchievementManager.getUnlocked()
     const all = AchievementManager.getAll()

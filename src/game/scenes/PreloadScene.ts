@@ -35,6 +35,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('menu-logo', '/assets/homeScreen/logo.png')
     this.load.image('menu-chinela', '/assets/homeScreen/chinela.png')
     this.load.image('menu-pera', '/assets/homeScreen/pera.png')
+    this.load.image('menu-lock', '/assets/homeScreen/lock.png')
     this.load.image('menu-play-btn', '/assets/homeScreen/play.png')
     this.load.image('menu-credits-btn', '/assets/homeScreen/credits.png')
     this.load.image('btn-secondary', '/assets/buttons/buttonSecondary.png')
@@ -87,6 +88,8 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('modal-bg', '/assets/modal/modalBG.png')
     this.load.image('modal-bg2', '/assets/modal/modalBG2.png')
     this.load.image('modal-bg3', '/assets/modal/modalBG3.png')
+    this.load.image('modal-large-bg1', '/assets/modal/modalLargeBG1.png')
+    this.load.image('modal-large-bg2', '/assets/modal/modalLargeBG2.png')
 
     this.load.spritesheet(SHIELD.spriteKey, SHIELD.spritesheet.path, {
       frameWidth: SHIELD.spritesheet.frameWidth,
@@ -117,6 +120,8 @@ export class PreloadScene extends Phaser.Scene {
     this.load.audio('throwBolinbolacho', '/audio/throwBolinbolacho.mp3')
     this.load.audio('explosion-ship', '/audio/explosionShip.mp3')
     this.load.audio('hit-vital-point', '/audio/hitVitalPoint.mp3')
+    this.load.audio('error', '/audio/error.mp3')
+    this.load.audio('unlock', '/audio/unlock.mp3')
 
     // Load assets for all registered shop items
     for (const item of ITEM_REGISTRY) {

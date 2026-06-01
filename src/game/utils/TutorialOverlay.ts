@@ -5,7 +5,7 @@ import type { Player } from '../entities/Player'
 
 const TUTORIAL_KEY = 'tutorialSeen'
 
-const PANEL_W = 210
+const PANEL_W = 250
 const MIN_STEP_MS = 800
 const COMPLETE_PAUSE_MS = 1000
 
@@ -83,7 +83,7 @@ const ARROW_Y = WORLD.height / 2  // vertical center of screen (screen space)
 
 export class TutorialOverlay {
   private container: Phaser.GameObjects.Container
-  private bg: Phaser.GameObjects.Rectangle
+  private bg: Phaser.GameObjects.Image
   private bodyText: Phaser.GameObjects.Text
   private hintText: Phaser.GameObjects.Text
   private skipText: Phaser.GameObjects.Text
@@ -110,8 +110,8 @@ export class TutorialOverlay {
     const cy = WORLD.height * 0.25
 
     this.bg = scene.add
-      .rectangle(0, 0, PANEL_W, this.panelHeightFor(STEPS[0].lines.length), 0x000000, 0.8)
-      .setStrokeStyle(2, 0xffffff, 0.5)
+      .image(0, 0, 'modal-bg2')
+      .setDisplaySize(PANEL_W, this.panelHeightFor(STEPS[0].lines.length))
 
     this.bodyText = scene.add
       .text(0, -8, '', {
@@ -184,7 +184,6 @@ export class TutorialOverlay {
   private markComplete(): void {
     this.completing = true
     this.completeMs = 0
-    this.bg.setStrokeStyle(2, 0x00ff88, 1)
     this.hideWrapArrows()
     this.hideButtonCircles()
   }
@@ -217,11 +216,10 @@ export class TutorialOverlay {
     const h = this.panelHeightFor(step.lines.length)
 
     this.bodyText.setText(step.lines.join('\n'))
-    this.bg.setSize(PANEL_W, h)
-    this.bg.setStrokeStyle(2, 0xffffff, 0.5)
+    this.bg.setDisplaySize(PANEL_W, h)
     this.hintText.setText(`${idx + 1} / ${STEPS.length}`)
-    this.hintText.setPosition(-PANEL_W / 2 + 8, h / 2 - 6)
-    this.skipText.setPosition(PANEL_W / 2 - 8, h / 2 - 6)
+    this.hintText.setPosition(-PANEL_W / 2 + 22, h / 2 - 16)
+    this.skipText.setPosition(PANEL_W / 2 - 22, h / 2 - 16)
 
     if (idx === WRAP_STEP_INDEX) {
       resetWrapDetector()
@@ -239,7 +237,7 @@ export class TutorialOverlay {
   }
 
   private panelHeightFor(lineCount: number): number {
-    return Math.max(80, lineCount * 22 + 42)
+    return Math.max(95, lineCount * 24 + 56)
   }
 
   // Draw two arrows: one pointing left at the right edge, one pointing right at the left edge.

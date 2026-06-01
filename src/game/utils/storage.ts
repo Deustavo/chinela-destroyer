@@ -13,9 +13,13 @@ export const STORAGE_KEYS = [
   'newItemNotification',
   'unlockedAchievements',
   'highScore',
+  'highScoreSemFim',
   'tutorialSeen',
   'shopTutorialSeen',
   'item-levels',
+  'normalStagesUnlocked',
+  'normalModeCompleted',
+  'newAchievementNotification',
 ] as const
 
 let cryptoKey: CryptoKey | null = null

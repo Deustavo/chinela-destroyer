@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 import { Player } from '../entities/Player'
 import { Enemy } from '../entities/Enemy'
 import { TouchControls } from '../entities/TouchControls'
-import { WORLD, PLATFORMS, BOSS_SHIP, BOSSES, ENEMY, FONT_FAMILY } from '../config/constants'
+import { WORLD, PLATFORMS, BOSS_SHIP, BOSSES, ENEMY, FONT_FAMILY, PLAYER } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
 import { CoinManager } from '../utils/CoinManager'
 import { addCoinCounter, showFloatingPopup } from '../utils/uiHelpers'
@@ -12,6 +12,7 @@ import { TutorialOverlay } from '../utils/TutorialOverlay'
 import { EquipManager } from '../utils/EquipManager'
 import { PlayerLoadout } from '../items/PlayerLoadout'
 import { playSfx } from '../utils/AudioManager'
+import { storageSet } from '../utils/storage'
 
 export class MainScene extends Phaser.Scene {
   private player!: Player
@@ -51,9 +52,16 @@ export class MainScene extends Phaser.Scene {
   private tutorialActive: boolean = false
   private collectibleCoins!: Phaser.Physics.Arcade.Group
   private platformSpawnCount: number = 0
+  private gameMode: 'normal' | 'semFim' = 'normal'
+  private startStage: number = 0
 
   constructor() {
     super('main-scene')
+  }
+
+  init(data: { gameMode?: string; startStage?: number }) {
+    this.gameMode = data.gameMode === 'semFim' ? 'semFim' : 'normal'
+    this.startStage = data.startStage ?? 0
   }
 
   create() {
@@ -79,6 +87,18 @@ export class MainScene extends Phaser.Scene {
     this.platformSpawnCount = 0
     this.bossVitalArrows = []
 
+    const STAGE_HEIGHTS = [0, 1000, 2000]
+    const startHeight = STAGE_HEIGHTS[this.startStage] ?? 0
+    const targetScrollY = -(startHeight * 10)
+
+    if (this.startStage > 0) {
+      this.lastPlatformY = targetScrollY + PLAYER.startY + 120
+      this.lastCoinWorldY = targetScrollY + PLAYER.startY + 120
+      this.lastPlatformX = WORLD.width / 2
+      for (let i = 0; i < this.startStage; i++) this.bossesDefeated.add(i)
+      this.nextBossArenaIdx = this.startStage
+    }
+
     this.bgTile = this.add.tileSprite(0, 0, WORLD.width, WORLD.height, 'bg')
       .setOrigin(0, 0)
       .setScrollFactor(0)
@@ -92,11 +112,22 @@ export class MainScene extends Phaser.Scene {
 
     this.spawnGround()
 
+    if (this.startStage > 0) {
+      const startPlatform = this.platforms.create(WORLD.width / 2, this.lastPlatformY, PLATFORMS.textureKey) as Phaser.Physics.Arcade.Image
+      this.configurePlatformBody(startPlatform)
+    }
+
     for (let i = 0; i < PLATFORMS.initialCount; i++) {
       this.spawnPlatform()
     }
 
     this.player = new Player(this)
+
+    if (this.startStage > 0) {
+      this.cameras.main.scrollY = targetScrollY
+      this.player.gameObject.setPosition(PLAYER.startX, targetScrollY + PLAYER.startY)
+    }
+
     this.enemy = new Enemy(this)
     const activeShotConfig = PlayerLoadout.getActiveShotConfig()
     this.touchControls = new TouchControls(this, () => this.player.requestShot(), activeShotConfig.spriteKey, activeShotConfig.flyFrames[0])
@@ -159,8 +190,10 @@ export class MainScene extends Phaser.Scene {
       },
     )
 
+    const STAGE_START_HEIGHTS = [0, 1000, 2000]
+    const initialHeight = STAGE_START_HEIGHTS[this.startStage] ?? 0
     this.scoreText = this.add
-      .text(16, 16, 'Altura: 0', { fontSize: '22px', color: '#ffffff', fontFamily: FONT_FAMILY })
+      .text(16, 16, `Altura: ${initialHeight}`, { fontSize: '22px', color: '#ffffff', fontFamily: FONT_FAMILY })
       .setScrollFactor(0)
 
     // Coin counter — positioned to the left of the pause button (pause btn center = WORLD.width-36)
@@ -242,7 +275,7 @@ export class MainScene extends Phaser.Scene {
     this.dead = true
     playSfx(this, 'laugh')
     this.player.die(() => {
-      this.scene.start('game-over-scene', { score: this.score, newAchievements: this.newlyUnlockedThisRun })
+      this.scene.start('game-over-scene', { score: this.score, newAchievements: this.newlyUnlockedThisRun, gameMode: this.gameMode })
     }, bounceUp)
   }
 
@@ -617,6 +650,16 @@ export class MainScene extends Phaser.Scene {
     this.clearBossVitalArrows()
     this.mothershipTraps.clear(true, true)
 
+    if (this.gameMode === 'normal') {
+      if (this.activeBossIdx === 0) {
+        storageSet('normalStagesUnlocked', JSON.stringify([0, 1]))
+      } else if (this.activeBossIdx === 1) {
+        storageSet('normalStagesUnlocked', JSON.stringify([0, 1, 2]))
+      } else if (this.activeBossIdx === 2) {
+        storageSet('normalModeCompleted', 'true')
+      }
+    }
+
     if (this.activeBossIdx === 2) {
       playSfx(this, 'explosion-ship')
       this.defeatFinalBoss()
@@ -709,7 +752,13 @@ export class MainScene extends Phaser.Scene {
             this.bossVitals.forEach(v => v.circle.destroy())
             this.bossVitals = []
             this.activeBossIdx = -1
-            this.showFinalVictoryModal()
+            if (this.gameMode === 'semFim') {
+              this.onBossDefeated()
+              this.bossDeathAnimating = false
+              this.enemy.flyBack()
+            } else {
+              this.showFinalVictoryModal()
+            }
           },
         })
         return
@@ -772,9 +821,7 @@ export class MainScene extends Phaser.Scene {
         duration: 300,
         onComplete: () => {
           all.forEach(o => o.destroy())
-          this.onBossDefeated()
-          this.bossDeathAnimating = false
-          this.enemy.flyBack()
+          this.scene.start('menu-scene')
         },
       })
     })
@@ -951,7 +998,10 @@ export class MainScene extends Phaser.Scene {
       this.newlyUnlockedThisRun.push({ iconKey: achievement.unlockedIconKey, name: achievement.name })
       this.toastQueue.push({ iconKey: achievement.unlockedIconKey })
     }
-    if (newlyUnlocked.length > 0 && !this.toastActive) this.showNextToast()
+    if (newlyUnlocked.length > 0) {
+      this.sound.play('unlock', { volume: 0.8 })
+      if (!this.toastActive) this.showNextToast()
+    }
   }
 
   private showNextToast() {

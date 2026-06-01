@@ -1,6 +1,7 @@
 import { ACHIEVEMENTS } from './achievements'
 import type { Achievement } from './achievements'
 import { storageGet, storageSet, parseJson } from '../utils/storage'
+import { NotificationManager } from '../utils/NotificationManager'
 
 const STORAGE_KEY = 'unlockedAchievements'
 
@@ -27,6 +28,7 @@ export class AchievementManager {
 
     if (newlyUnlocked.length > 0) {
       storageSet(STORAGE_KEY, JSON.stringify([...unlocked]))
+      NotificationManager.setNewAchievement()
     }
 
     return newlyUnlocked

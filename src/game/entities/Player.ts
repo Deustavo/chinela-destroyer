@@ -206,6 +206,8 @@ export class Player {
 
   die(onComplete: () => void, bounceUp = true) {
     this.body.enable = false
+    this.shieldSprite?.setVisible(false)
+    this.wingsSprite?.setVisible(false)
 
     const driftX = Phaser.Math.Between(-120, 120)
 

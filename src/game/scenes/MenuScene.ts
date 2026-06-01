@@ -5,6 +5,7 @@ import { dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions
 import { NotificationManager } from '../utils/NotificationManager'
 import { AudioVolumePanel } from '../utils/AudioVolumePanel'
 import { playSfx } from '../utils/AudioManager'
+import { storageGet } from '../utils/storage'
 
 export class MenuScene extends Phaser.Scene {
   private audioPanel?: AudioVolumePanel
@@ -42,18 +43,48 @@ export class MenuScene extends Phaser.Scene {
     const btnRow1Y = cy + 180
     const btnRow2Y = btnRow1Y + 54
 
+    // — Normal and Sem Fim buttons (both green, same size, side by side)
     const PRIMARY_SCALE = 1.3
-    const primaryBg = this.add.image(0, 0, 'btn-primary').setScale(2)
-    const primaryTxt = this.add.text(0, 0, 'Jogar!', {
+    const primaryBtnTex = this.textures.get('btn-primary').getSourceImage()
+    const PRIMARY_BTN_HALF_W = (primaryBtnTex as HTMLImageElement).width * 2 * PRIMARY_SCALE / 2
+    const btnPlayY = cy + 115
+    const playColLeft  = cx - PRIMARY_BTN_HALF_W - 8
+    const playColRight = cx + PRIMARY_BTN_HALF_W + 8
+
+    const normalBg = this.add.image(0, 0, 'btn-primary').setScale(2)
+    const normalTxt = this.add.text(0, 0, 'Normal', {
       fontFamily: FONT_FAMILY,
-      fontSize: '28px',
+      fontSize: '24px',
       color: '#000000',
     }).setOrigin(0.5)
-    const btn = this.add.container(cx, cy + 116, [primaryBg, primaryTxt])
-      .setSize(primaryBg.width * 2, primaryBg.height * 2)
+    const btnNormal = this.add.container(playColLeft, btnPlayY, [normalBg, normalTxt])
+      .setSize(normalBg.width * 2, normalBg.height * 2)
       .setScale(PRIMARY_SCALE)
       .setDepth(3)
       .setInteractive({ useHandCursor: true })
+
+    const semFimUnlocked = storageGet('normalModeCompleted') === 'true'
+    const semFimBg = this.add.image(0, 0, 'btn-primary').setScale(2)
+    const semFimTxt = this.add.text(semFimUnlocked ? 0 : 6, 0, 'Sem Fim', {
+      fontFamily: FONT_FAMILY,
+      fontSize: '20px',
+      color: '#000000',
+    }).setOrigin(0.5)
+    const semFimChildren: Phaser.GameObjects.GameObject[] = [semFimBg, semFimTxt]
+    if (!semFimUnlocked) {
+      const lockIcon = this.add.image(-40, 0, 'menu-lock').setDisplaySize(18, 18).setOrigin(0.5)
+      semFimChildren.push(lockIcon)
+    }
+    const btnSemFim = this.add.container(playColRight, btnPlayY, semFimChildren)
+      .setSize(semFimBg.width * 2, semFimBg.height * 2)
+      .setScale(PRIMARY_SCALE)
+      .setDepth(3)
+      .setInteractive({ useHandCursor: true })
+
+    if (!semFimUnlocked) {
+      btnSemFim.setAlpha(0.45)
+      btnSemFim.on('pointerdown', () => playSfx(this, 'error', 3))
+    }
 
     const colLeft  = cx - (BTN_W / 2 + BTN_GAP / 2)
     const colRight = cx + (BTN_W / 2 + BTN_GAP / 2)
@@ -81,18 +112,18 @@ export class MenuScene extends Phaser.Scene {
     // Audio volume panel (built once, shown on demand)
     this.audioPanel = new AudioVolumePanel(this)
 
-    const all: SceneObject[] = [logo, chinela, pera, btn, btnShop, btnInventory, btnConquistas, btnCredits, audioBtn]
+    const all: SceneObject[] = [logo, chinela, pera, btnNormal, btnSemFim, btnShop, btnInventory, btnConquistas, btnCredits, audioBtn]
 
-    if (NotificationManager.hasNewItem()) {
-      const dotX = btnInventory.x + BTN_W / 2 - 10
-      const dotY  = btnInventory.y - 12
+    const addNotificationDot = (btn: Phaser.GameObjects.Container, delay: number) => {
+      const dotX = btn.x + BTN_W / 2 - 10
+      const dotY  = btn.y - 12
       const dot = this.add.circle(dotX, dotY, 8, 0xff0000).setDepth(5).setScale(0)
       all.push(dot as unknown as SceneObject)
       this.tweens.add({
         targets: dot,
         scale: 1,
         duration: 320,
-        delay: 1120,
+        delay,
         ease: 'Back.Out',
         onComplete: () => {
           this.tweens.add({
@@ -107,29 +138,41 @@ export class MenuScene extends Phaser.Scene {
       })
     }
 
+    if (NotificationManager.hasNewItem()) {
+      addNotificationDot(btnInventory, 1120)
+    }
+
+    if (NotificationManager.hasNewAchievement()) {
+      addNotificationDot(btnConquistas, 1200)
+    }
+
     const playClick = () => playSfx(this, 'button-click')
 
-    btn.on('pointerover', () => btn.setScale(PRIMARY_SCALE + 0.12))
-    btn.on('pointerout', () => btn.setScale(PRIMARY_SCALE))
-    btn.on('pointerdown', () => { playClick(); exitTo(this, 'main-scene', all) })
+    btnNormal.on('pointerover', () => btnNormal.setScale(PRIMARY_SCALE + 0.12))
+    btnNormal.on('pointerout', () => btnNormal.setScale(PRIMARY_SCALE))
+    btnNormal.on('pointerdown', () => { playClick(); exitTo(this, 'stage-select-scene', all) })
+
+    if (semFimUnlocked) {
+      btnSemFim.on('pointerover', () => btnSemFim.setScale(PRIMARY_SCALE + 0.12))
+      btnSemFim.on('pointerout', () => btnSemFim.setScale(PRIMARY_SCALE))
+      btnSemFim.on('pointerdown', () => { playClick(); exitTo(this, 'main-scene', all, { gameMode: 'semFim' }) })
+    }
 
     btnShop.on('pointerdown',       () => { playClick(); exitTo(this, 'shop-scene', all, { tab: 'shop' }) })
     btnInventory.on('pointerdown',  () => { playClick(); exitTo(this, 'shop-scene', all, { tab: 'inventory' }) })
     btnConquistas.on('pointerdown', () => { playClick(); exitTo(this, 'achievements-scene', all) })
     btnCredits.on('pointerdown',    () => { playClick(); exitTo(this, 'credits-scene', all) })
 
-    this.input.keyboard?.once('keydown-SPACE', () => exitTo(this, 'main-scene', all))
-    this.input.keyboard?.once('keydown-ENTER', () => exitTo(this, 'main-scene', all))
-
     dropInFloat(this, logo,          { amplitude: 8,  floatDuration: 2000, delay: 0   })
     dropInFloat(this, chinela,       { amplitude: 12, floatDuration: 1800, delay: 120 })
     dropInFloat(this, pera,          { amplitude: 10, floatDuration: 2200, delay: 240 })
-    dropInFloat(this, btn,           { amplitude: 6,  floatDuration: 1600, delay: 360 })
-    dropInFloat(this, btnShop,       { amplitude: 5,  floatDuration: 1700, delay: 440 })
-    dropInFloat(this, btnInventory,  { amplitude: 4,  floatDuration: 1900, delay: 500 })
-    dropInFloat(this, btnConquistas, { amplitude: 4,  floatDuration: 1900, delay: 560 })
-    dropInFloat(this, btnCredits,    { amplitude: 4,  floatDuration: 1800, delay: 620 })
-    dropInFloat(this, audioBtn,      { amplitude: 4,  floatDuration: 1800, delay: 680 })
+    dropInFloat(this, btnNormal,     { amplitude: 6,  floatDuration: 1600, delay: 360 })
+    dropInFloat(this, btnSemFim,     { amplitude: 5,  floatDuration: 1700, delay: 420 })
+    dropInFloat(this, btnShop,       { amplitude: 5,  floatDuration: 1700, delay: 480 })
+    dropInFloat(this, btnInventory,  { amplitude: 4,  floatDuration: 1900, delay: 540 })
+    dropInFloat(this, btnConquistas, { amplitude: 4,  floatDuration: 1900, delay: 600 })
+    dropInFloat(this, btnCredits,    { amplitude: 4,  floatDuration: 1800, delay: 660 })
+    dropInFloat(this, audioBtn,      { amplitude: 4,  floatDuration: 1800, delay: 720 })
 
     this.showMusicCredit()
   }

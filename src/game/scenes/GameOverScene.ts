@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
 import { addBackground, wireButtonLabel, addCoinCounter, bindEscapeKey, applySceneMuffle } from '../utils/uiHelpers'
 import { dropIn, dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
-import { storageGet, storageSet, storageRemove } from '../utils/storage'
+import { storageGet, storageSet, storageRemove, parseJson } from '../utils/storage'
 import { CoinManager } from '../utils/CoinManager'
 import { PurchaseManager } from '../utils/PurchaseManager'
 import { playSfx } from '../utils/AudioManager'
@@ -17,19 +17,25 @@ export class GameOverScene extends Phaser.Scene {
     super('game-over-scene')
   }
 
-  create(data: { score: number; newAchievements?: { iconKey: string; name: string }[] }) {
+  create(data: { score: number; newAchievements?: { iconKey: string; name: string }[]; gameMode?: string }) {
     this.achievementQueue = [...(data.newAchievements ?? [])]
     const cx = WORLD.width / 2
     const cy = WORLD.height / 2
 
     this.cameras.main.fadeIn(600, 0, 0, 0)
 
-    const rawBest = parseInt(storageGet('highScore') ?? '0', 10)
-    const prevBest = isNaN(rawBest) ? 0 : rawBest
-    if (isNaN(rawBest)) storageRemove('highScore')
-    const isNewBest = data.score > prevBest
-    if (isNewBest) storageSet('highScore', String(data.score))
-    const highScore = isNewBest ? data.score : prevBest
+    const isSemFim = data.gameMode === 'semFim'
+    const highScoreKey = isSemFim ? 'highScoreSemFim' : 'highScore'
+    let isNewBest = false
+    let highScore = 0
+    if (isSemFim) {
+      const rawBest = parseInt(storageGet(highScoreKey) ?? '0', 10)
+      const prevBest = isNaN(rawBest) ? 0 : rawBest
+      if (isNaN(rawBest)) storageRemove(highScoreKey)
+      isNewBest = data.score > prevBest
+      if (isNewBest) storageSet(highScoreKey, String(data.score))
+      highScore = isNewBest ? data.score : prevBest
+    }
 
     addBackground(this)
     addCoinCounter(this)
@@ -47,10 +53,13 @@ export class GameOverScene extends Phaser.Scene {
       .setOrigin(0.5)
 
     const bestColor = isNewBest ? '#ffd700' : '#aaaaaa'
-    const bestLabel = isNewBest ? `Novo recorde: ${highScore}!` : `Recorde: ${highScore}`
+    const bestLabel = isSemFim
+      ? (isNewBest ? `Novo recorde: ${highScore}!` : `Recorde: ${highScore}`)
+      : ''
     const bestText = this.add
       .text(cx, cy + 138, bestLabel, { fontSize: '18px', color: bestColor, fontFamily: FONT_FAMILY })
       .setOrigin(0.5)
+      .setVisible(isSemFim)
 
     const btnSize = 80
     const gap = 40
@@ -114,11 +123,22 @@ export class GameOverScene extends Phaser.Scene {
       this.toastTimer = this.time.delayedCall(achievementDelay, () => this.showNextAchievementToast())
     }
 
-    this.input.keyboard!.once('keydown-SPACE', () => { playSfx(this, 'button-click'); exitTo(this, 'main-scene', allElements) })
+    const playAgain = () => {
+      playSfx(this, 'button-click')
+      if (isSemFim) {
+        exitTo(this, 'main-scene', allElements, { gameMode: 'semFim' })
+      } else {
+        const unlockedStages = parseJson<number[]>(storageGet('normalStagesUnlocked'), [0])
+        const highestStage = Math.max(...unlockedStages)
+        exitTo(this, 'main-scene', allElements, { gameMode: 'normal', startStage: highestStage })
+      }
+    }
+
+    this.input.keyboard!.once('keydown-SPACE', playAgain)
     bindEscapeKey(this, () => { playSfx(this, 'button-click'); exitTo(this, 'menu-scene', allElements) })
 
     wireButtonLabel(btnHome, labelHome, () => { playSfx(this, 'button-click'); exitTo(this, 'menu-scene', allElements) })
-    wireButtonLabel(btnPlay, labelPlay, () => { playSfx(this, 'button-click'); exitTo(this, 'main-scene', allElements) })
+    wireButtonLabel(btnPlay, labelPlay, playAgain)
   }
 
   private showShopTutorialModal() {

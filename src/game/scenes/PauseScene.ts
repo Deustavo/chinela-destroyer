@@ -130,36 +130,64 @@ export class PauseScene extends Phaser.Scene {
   private goHome() {
     const cx = WORLD.width / 2
     const cy = WORLD.height / 2
+    const D = 10
 
-    const overlay = this.add.rectangle(cx, cy, WORLD.width, WORLD.height, 0x000000, 0.6).setDepth(10).setInteractive()
-    const panel = this.add.rectangle(cx, cy, 280, 160, 0x111111, 1).setStrokeStyle(2, 0x555555).setDepth(11)
-    const msg = this.add.text(cx, cy - 38, 'Sair para o Início?', {
+    const overlay = this.add.rectangle(cx, cy, WORLD.width, WORLD.height, 0x000000, 0.6)
+      .setDepth(D).setInteractive()
+
+    const panel = this.add.image(cx, cy, 'modal-bg2')
+      .setDisplaySize(300, 175).setDepth(D + 1)
+
+    const msg = this.add.text(cx, cy - 44, 'Sair para o Início?', {
       fontSize: '20px', color: '#ffffff', fontFamily: FONT_FAMILY,
-    }).setOrigin(0.5).setDepth(12)
-    const sub = this.add.text(cx, cy - 10, 'O progresso atual será perdido.', {
+    }).setOrigin(0.5).setDepth(D + 2)
+
+    const sub = this.add.text(cx, cy - 18, 'O progresso atual será perdido.', {
       fontSize: '13px', color: '#aaaaaa', fontFamily: FONT_FAMILY,
-    }).setOrigin(0.5).setDepth(12)
+    }).setOrigin(0.5).setDepth(D + 2)
 
-    const btnYes = this.add.text(cx - 54, cy + 44, 'Sair', {
-      fontSize: '18px', color: '#ff6666', fontFamily: FONT_FAMILY,
-      backgroundColor: '#2a1010', padding: { x: 18, y: 8 },
-    }).setOrigin(0.5).setDepth(12).setInteractive({ useHandCursor: true })
+    const btnW = 120
+    const btnH = 44
+    const gap = 12
+    const btnY = cy + 46
 
-    const btnNo = this.add.text(cx + 54, cy + 44, 'Cancelar', {
+    const btnYesImg = this.add.image(cx - btnW / 2 - gap / 2, btnY, 'btn-primary')
+      .setDisplaySize(btnW, btnH).setDepth(D + 2).setAlpha(0.9).setInteractive({ useHandCursor: true })
+    const btnYesTxt = this.add.text(cx - btnW / 2 - gap / 2, btnY, 'Sair', {
       fontSize: '18px', color: '#ffffff', fontFamily: FONT_FAMILY,
-      backgroundColor: '#1a1a2a', padding: { x: 18, y: 8 },
-    }).setOrigin(0.5).setDepth(12).setInteractive({ useHandCursor: true })
+    }).setOrigin(0.5).setDepth(D + 3).setInteractive({ useHandCursor: true })
 
-    btnYes.on('pointerdown', () => {
+    const btnNoImg = this.add.image(cx + btnW / 2 + gap / 2, btnY, 'btn-secondary')
+      .setDisplaySize(btnW, btnH).setDepth(D + 2).setAlpha(0.9).setInteractive({ useHandCursor: true })
+    const btnNoTxt = this.add.text(cx + btnW / 2 + gap / 2, btnY, 'Cancelar', {
+      fontSize: '18px', color: '#111111', fontFamily: FONT_FAMILY,
+    }).setOrigin(0.5).setDepth(D + 3).setInteractive({ useHandCursor: true })
+
+    const wireHover = (img: Phaser.GameObjects.Image, txt: Phaser.GameObjects.Text) => {
+      const over = () => { img.setAlpha(1); txt.setAlpha(1) }
+      const out  = () => { img.setAlpha(0.9); txt.setAlpha(0.9) }
+      img.on('pointerover', over).on('pointerout', out)
+      txt.on('pointerover', over).on('pointerout', out)
+    }
+    wireHover(btnYesImg, btnYesTxt)
+    wireHover(btnNoImg, btnNoTxt)
+
+    const confirmExit = () => {
       playSfx(this, 'button-click')
       this.scene.stop('main-scene')
       this.scene.stop()
       this.scene.start('menu-scene')
-    })
-    btnNo.on('pointerdown', () => {
+    }
+    const cancelDialog = () => {
       playSfx(this, 'button-click')
       overlay.destroy(); panel.destroy(); msg.destroy()
-      sub.destroy(); btnYes.destroy(); btnNo.destroy()
-    })
+      sub.destroy(); btnYesImg.destroy(); btnYesTxt.destroy()
+      btnNoImg.destroy(); btnNoTxt.destroy()
+    }
+
+    btnYesImg.on('pointerdown', confirmExit)
+    btnYesTxt.on('pointerdown', confirmExit)
+    btnNoImg.on('pointerdown', cancelDialog)
+    btnNoTxt.on('pointerdown', cancelDialog)
   }
 }
