@@ -111,11 +111,12 @@ export function createSecondaryButton(
   label: string,
   onClick?: () => void,
   baseScale = 1,
+  fontSize = '20px',
 ): Phaser.GameObjects.Container {
   const bg = scene.add.image(0, 0, 'btn-secondary').setScale(2)
   const txt = scene.add.text(0, 0, label, {
     fontFamily: FONT_FAMILY,
-    fontSize: '20px',
+    fontSize,
     color: '#000000',
   }).setOrigin(0.5)
   const container = scene.add.container(x, y, [bg, txt])

@@ -94,7 +94,7 @@ export class MenuScene extends Phaser.Scene {
 
     const btnShop       = createSecondaryButton(this, colLeft,  btnRow1Y, t('shop'),         undefined, BTN_SCALE)
     const btnInventory  = createSecondaryButton(this, colRight, btnRow1Y, t('inventory'),    undefined, BTN_SCALE)
-    const btnConquistas = createSecondaryButton(this, colLeft,  btnRow2Y, t('achievements'), undefined, BTN_SCALE)
+    const btnConquistas = createSecondaryButton(this, colLeft,  btnRow2Y, t('achievements'), undefined, BTN_SCALE, '18px')
     const btnCredits    = createSecondaryButton(this, colRight, btnRow2Y, t('credits'),      undefined, BTN_SCALE)
 
     // Audio button — top-left corner
