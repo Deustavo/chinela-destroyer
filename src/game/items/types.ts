@@ -14,6 +14,8 @@ export interface ShotConfig {
   soundKey?: string
   piercing?: boolean
   btnIconSize?: number
+  hitboxWidth?: number
+  hitboxHeight?: number
 }
 
 // Multiplier-based stat modifiers that stack with upgrades.

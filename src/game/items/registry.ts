@@ -123,6 +123,8 @@ export const ITEM_REGISTRY: ShopItem[] = [
       soundKey: 'laser',
       piercing: true,
       btnIconSize: 52,
+      hitboxWidth: 48,
+      hitboxHeight: 20,
     },
     levelStats: [
       { upgradeCost: 0,   description: 'Cooldown: 4s', cooldown: 4 },

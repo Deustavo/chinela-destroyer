@@ -179,7 +179,9 @@ export class Player {
     const projBody = proj.body as Phaser.Physics.Arcade.Body
     projBody.setAllowGravity(false)
     const hitSize = config.displaySize / 2
-    projBody.setSize(hitSize, hitSize)
+    const hitW = config.hitboxWidth ?? hitSize
+    const hitH = config.hitboxHeight ?? hitSize
+    projBody.setSize(hitW, hitH)
     projBody.setVelocityY(-config.speed)
 
     this.scene.time.delayedCall(3000, () => {
