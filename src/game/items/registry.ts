@@ -100,7 +100,7 @@ export const ITEM_REGISTRY: ShopItem[] = [
     id: 'incandescente-shot',
     type: 'shot',
     name: 'Incandescente',
-    price: 200,
+    price: 450,
     description: 'Atravessa projeteis e a Pena!',
     iconKey: 'player-shot-incandescente',
     iconFrame: 0,
@@ -126,8 +126,8 @@ export const ITEM_REGISTRY: ShopItem[] = [
     },
     levelStats: [
       { upgradeCost: 0,   description: 'Cooldown: 4s', cooldown: 4 },
-      { upgradeCost: 200, description: 'Cooldown: 3s', cooldown: 3 },
-      { upgradeCost: 400, description: 'Cooldown: 2s', cooldown: 2 },
+      { upgradeCost: 350, description: 'Cooldown: 3s', cooldown: 3 },
+      { upgradeCost: 250, description: 'Cooldown: 2s', cooldown: 2 },
     ],
   },
   {
