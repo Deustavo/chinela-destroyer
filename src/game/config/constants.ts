@@ -161,6 +161,14 @@ export const WINGS = {
   displaySize: 128,
 } as const
 
+export const HERMES_SANDALS = {
+  itemId: 'hermes-sandals',
+  iconKey: 'hermes-sandals-icon',
+  iconPath: '/assets/player/SpriteSheetHermesSandal.png',
+  gravityMultiplier: 0.85,
+  speedMultipliers: [1.20, 1.40, 1.60] as const,
+} as const
+
 // ── UI Typography ─────────────────────────────────────────────────────────────
 export const FONT_FAMILY = '"Comic Neue", "Comic Sans MS", cursive' as const
 

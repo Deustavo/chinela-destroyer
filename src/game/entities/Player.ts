@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { PLAYER, WORLD, SHOT, SHIELD, WINGS } from '../config/constants'
+import { PLAYER, WORLD, SHOT, SHIELD, WINGS, HERMES_SANDALS } from '../config/constants'
 import { ITEM_REGISTRY } from '../items/registry'
 import { PlayerLoadout } from '../items/PlayerLoadout'
 import { EquipManager } from '../utils/EquipManager'
@@ -27,6 +27,10 @@ export class Player {
   private shieldCooldown: number = 0
   private shieldMaxCooldown: number = SHIELD.cooldown
   private shieldSprite: Phaser.GameObjects.Image | null = null
+
+  private hermesOwned: boolean = false
+  private hermesMoveSpeedMultiplier: number = 1.0
+  private hermesGravityMultiplier: number = 1.0
 
   private wingsOwned: boolean = false
   private maxJumps: number = 1
@@ -84,6 +88,15 @@ export class Player {
         .setDisplaySize(WINGS.displaySize, WINGS.displaySize)
         .setDepth(0)
         .setVisible(false)
+    }
+
+    this.hermesOwned = EquipManager.isEquipped(HERMES_SANDALS.itemId)
+    if (this.hermesOwned) {
+      const hermesItem = ITEM_REGISTRY.find(i => i.id === HERMES_SANDALS.itemId)
+      const hermesLevel = Math.max(1, UpgradeManager.getLevel(HERMES_SANDALS.itemId))
+      const hermesLs = hermesItem?.levelStats?.[hermesLevel - 1]
+      this.hermesMoveSpeedMultiplier = hermesLs?.moveSpeedMultiplier ?? HERMES_SANDALS.speedMultipliers[0]
+      this.hermesGravityMultiplier = HERMES_SANDALS.gravityMultiplier
     }
 
     this.registerAnimations(scene)
@@ -274,13 +287,15 @@ export class Player {
     if (this.sprite.x < 0) this.sprite.x = WORLD.width
     else if (this.sprite.x > WORLD.width) this.sprite.x = 0
 
+    const moveSpeed = PLAYER.speed * this.hermesMoveSpeedMultiplier
+
     if (this.cursors.left?.isDown || this.wasd.left.isDown || touch?.left) {
-      body.setVelocityX(-PLAYER.speed)
+      body.setVelocityX(-moveSpeed)
       this.sprite.setFlipX(true)
     }
 
     if (this.cursors.right?.isDown || this.wasd.right.isDown || touch?.right) {
-      body.setVelocityX(PLAYER.speed)
+      body.setVelocityX(moveSpeed)
       this.sprite.setFlipX(false)
     }
 
@@ -320,9 +335,9 @@ export class Player {
       }
     }
 
-    const multiplier = body.velocity.y > 0
+    const multiplier = (body.velocity.y > 0
       ? PLAYER.fallGravityMultiplier
-      : PLAYER.riseGravityMultiplier
+      : PLAYER.riseGravityMultiplier) * this.hermesGravityMultiplier
     const extraGravity = WORLD.gravity * (multiplier - 1)
     body.setGravityY(extraGravity)
 

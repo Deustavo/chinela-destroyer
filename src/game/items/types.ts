@@ -30,6 +30,8 @@ export interface LevelStats {
   cooldown?: number
   /** Effective projectile display size at this level. */
   displaySize?: number
+  /** Movement speed multiplier at this level (e.g. 1.35 = +35% speed). */
+  moveSpeedMultiplier?: number
 }
 
 export interface ShopItem {

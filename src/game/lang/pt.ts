@@ -100,6 +100,12 @@ const pt: Record<string, string> = {
   'item.anjo-caido.stat.1': 'Recarga: 2s',
   'item.anjo-caido.stat.2': 'Sem recarga',
 
+  'item.hermes-sandals.name': 'Sandálias de Hermes',
+  'item.hermes-sandals.desc': '+velocidade, -gravidade\nUpgrades aumentam a velocidade',
+  'item.hermes-sandals.stat.0': 'Velocidade: +20%',
+  'item.hermes-sandals.stat.1': 'Velocidade: +40%',
+  'item.hermes-sandals.stat.2': 'Velocidade: +60%',
+
   'item.special-shot.name': 'Bolimbolacho',
   'item.special-shot.desc': 'Cooldown pela metade',
   'item.special-shot.stat.0': 'Normal',

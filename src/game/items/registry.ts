@@ -82,6 +82,21 @@ export const ITEM_REGISTRY: ShopItem[] = [
     ],
   },
   {
+    id: 'hermes-sandals',
+    type: 'ability',
+    name: 'Sandálias de Hermes',
+    price: 150,
+    description: '+velocidade, -gravidade\nUpgrades aumentam a velocidade',
+    iconKey: 'hermes-sandals-icon',
+    iconFrame: 0,
+    iconPath: '/assets/player/SpriteSheetHermesSandal.png',
+    levelStats: [
+      { upgradeCost: 0,   description: 'Velocidade: +20%', moveSpeedMultiplier: 1.20 },
+      { upgradeCost: 120, description: 'Velocidade: +40%', moveSpeedMultiplier: 1.40 },
+      { upgradeCost: 240, description: 'Velocidade: +60%', moveSpeedMultiplier: 1.60 },
+    ],
+  },
+  {
     id: 'special-shot',
     type: 'shot',
     name: 'Bolimbolacho',

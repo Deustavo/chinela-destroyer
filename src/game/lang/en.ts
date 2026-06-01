@@ -100,6 +100,12 @@ const en: Record<string, string> = {
   'item.anjo-caido.stat.1': 'Cooldown: 2s',
   'item.anjo-caido.stat.2': 'No cooldown',
 
+  'item.hermes-sandals.name': 'Hermes Sandals',
+  'item.hermes-sandals.desc': '+speed, -gravity\nUpgrades increase speed',
+  'item.hermes-sandals.stat.0': 'Speed: +20%',
+  'item.hermes-sandals.stat.1': 'Speed: +40%',
+  'item.hermes-sandals.stat.2': 'Speed: +60%',
+
   'item.special-shot.name': 'Bolimbolacho',
   'item.special-shot.desc': 'Half cooldown',
   'item.special-shot.stat.0': 'Normal',

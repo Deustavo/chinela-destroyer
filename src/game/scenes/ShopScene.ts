@@ -458,10 +458,11 @@ export class ShopScene extends Phaser.Scene {
     const totalW = ITEM_REGISTRY.length * (CARD_SZ + CARD_GAP) - CARD_GAP
     this.invMaxScroll = Math.max(0, totalW - RAIL_VW)
     this.invRail      = this.add.container(RAIL_X0, RAIL_TOP).setDepth(3)
-    this.invCardBgs     = []
-    this.invCardIcons   = []
-    this.invCardNames   = []
-    this.invCardBlocked = []
+    this.invCardBgs      = []
+    this.invCardIcons    = []
+    this.invCardNames    = []
+    this.invCardBlocked  = []
+    this.invCardStarTxts = []
 
     ITEM_REGISTRY.forEach((item, i) => {
       const cx    = i * (CARD_SZ + CARD_GAP) + CARD_SZ / 2
