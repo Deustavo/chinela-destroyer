@@ -29,7 +29,7 @@ export const PLATFORMS = {
   spawnAhead: 500,
   despawnMargin: 150,
   movingChance: 0.3,
-  movingSpeed: 160,
+  movingSpeed: 110,
 } as const
 
 export const SCROLL = {

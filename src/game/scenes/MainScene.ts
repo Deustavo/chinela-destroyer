@@ -36,6 +36,7 @@ export class MainScene extends Phaser.Scene {
   private mothershipSprite: Phaser.GameObjects.Sprite | null = null
   private mothershipFrameTimer: number = 0
   private mothershipFrame: number = 0
+  private bossDeathAnimating: boolean = false
   private currentLockedPlatforms: Phaser.Physics.Arcade.Image[] = []
   private bossVitals: Array<{ screenX: number; screenY: number; hit: boolean; circle: Phaser.GameObjects.Arc }> = []
   private bossVitalArrows: Phaser.GameObjects.Graphics[] = []
@@ -65,6 +66,7 @@ export class MainScene extends Phaser.Scene {
     this.mothershipSprite = null
     this.mothershipFrameTimer = 0
     this.mothershipFrame = 0
+    this.bossDeathAnimating = false
     this.shieldHUD = null
     this.wingsHUD = null
     this.lastPlatformY = WORLD.groundY - WORLD.groundHeight / 2
@@ -202,6 +204,7 @@ export class MainScene extends Phaser.Scene {
     this.onEscKey = (e: KeyboardEvent) => { if (e.key === 'Escape') this.pauseGame() }
     window.addEventListener('keydown', this.onEscKey)
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener('keydown', this.onEscKey))
+
   }
 
   private playShotImpact(shot: Phaser.Physics.Arcade.Sprite) {
@@ -611,24 +614,176 @@ export class MainScene extends Phaser.Scene {
 
     this.bossesDefeated.add(this.activeBossIdx)
     this.clearBossVitalArrows()
-    this.onBossDefeated()
     this.mothershipTraps.clear(true, true)
+
+    if (this.activeBossIdx === 2) {
+      playSfx(this, 'explosion-ship')
+      this.defeatFinalBoss()
+      return
+    }
+
+    this.onBossDefeated()
+
     if (this.mothershipSprite) {
+      const ship = this.mothershipSprite
+      const originX = ship.x
+      let shakeDir = 1
+      const shakeCount = 14
+      let shakesDone = 0
+
+      const doShake = () => {
+        if (shakesDone >= shakeCount) {
+          ship.x = originX
+          this.tweens.add({
+            targets: ship,
+            y: -BOSS_SHIP.displayHeight,
+            duration: 800,
+            ease: 'Cubic.easeIn',
+            onComplete: () => {
+              this.mothershipSprite?.destroy()
+              this.mothershipSprite = null
+              this.bossVitals.forEach(v => v.circle.destroy())
+              this.bossVitals = []
+              this.activeBossIdx = -1
+              this.enemy.flyBack()
+            },
+          })
+          return
+        }
+        shakesDone++
+        shakeDir *= -1
+        this.tweens.add({
+          targets: ship,
+          x: originX + shakeDir * 18,
+          duration: 55,
+          ease: 'Linear',
+          onComplete: doShake,
+        })
+      }
+
+      doShake()
+    }
+  }
+
+  private defeatFinalBoss() {
+    if (!this.mothershipSprite) return
+    const ship = this.mothershipSprite
+    this.bossDeathAnimating = true
+
+    const safetyY = this.cameras.main.scrollY + WORLD.height - 60
+    const safety = this.platforms.create(WORLD.width / 2, safetyY, 'pixel') as Phaser.Physics.Arcade.Image
+    safety.setDisplaySize(WORLD.width, 14).setTint(0x8899aa)
+    const safetyBody = safety.body as Phaser.Physics.Arcade.StaticBody
+    safetyBody.setSize(WORLD.width, 14)
+    safetyBody.checkCollision.down = false
+    safety.refreshBody()
+
+    const blinkFrames = [2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3]
+    let blinkIdx = 0
+    const originX = ship.x
+
+    const shakeTween = this.tweens.add({
+      targets: ship,
+      x: originX + 10,
+      duration: 60,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    })
+
+    const doNextBlink = () => {
+      if (blinkIdx >= blinkFrames.length) {
+        shakeTween.stop()
+        ship.x = originX
+        ship.setFrame(4)
+        this.time.delayedCall(500, () => playSfx(this, 'falling'))
+        this.tweens.add({
+          targets: ship,
+          y: WORLD.height + BOSS_SHIP.displayHeight,
+          duration: 1400,
+          ease: 'Cubic.easeIn',
+          onComplete: () => {
+            this.mothershipSprite?.destroy()
+            this.mothershipSprite = null
+            this.bossVitals.forEach(v => v.circle.destroy())
+            this.bossVitals = []
+            this.activeBossIdx = -1
+            this.showFinalVictoryModal()
+          },
+        })
+        return
+      }
+      ship.setFrame(blinkFrames[blinkIdx])
+      blinkIdx++
+      this.time.delayedCall(280, doNextBlink)
+    }
+
+    doNextBlink()
+  }
+
+  private showFinalVictoryModal() {
+    const cx = WORLD.width / 2
+    const cy = WORLD.height / 2
+    const panelW = WORLD.width - 40
+    const panelH = 280
+    const depth = 80
+
+    const overlay = this.add.rectangle(cx, cy, WORLD.width, WORLD.height, 0x000000, 0.8)
+      .setScrollFactor(0).setDepth(depth).setAlpha(0)
+
+    const panel = this.add.rectangle(cx, cy, panelW, panelH, 0x111122, 1)
+      .setStrokeStyle(2, 0xffd700, 1)
+      .setScrollFactor(0).setDepth(depth + 1).setAlpha(0)
+
+    const msgText = this.add.text(
+      cx, cy - panelH / 2 + 20,
+      'Parabéns!\nVocê conseguiu eliminar a nave mãe.\n\nAgora você pode jogar o modo\nSem Fim para pegar\npontuações mais altas.\n\nObrigado por jogar <3',
+      {
+        fontSize: '16px',
+        color: '#ffffff',
+        fontFamily: FONT_FAMILY,
+        align: 'center',
+        lineSpacing: 5,
+        wordWrap: { width: panelW - 32 },
+      },
+    ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(depth + 2).setAlpha(0)
+
+    const btnY = cy + panelH / 2 - 34
+    const btnBg = this.add.rectangle(cx, btnY, 150, 40, 0xffd700, 1)
+      .setScrollFactor(0).setDepth(depth + 2).setAlpha(0)
+      .setInteractive({ useHandCursor: true })
+
+    const btnTxt = this.add.text(cx, btnY, 'Continuar', {
+      fontSize: '18px',
+      color: '#111111',
+      fontFamily: FONT_FAMILY,
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 3).setAlpha(0)
+
+    const all = [overlay, panel, msgText, btnBg, btnTxt]
+
+    btnBg.on('pointerover', () => btnBg.setFillStyle(0xffe066))
+    btnBg.on('pointerout', () => btnBg.setFillStyle(0xffd700))
+    btnBg.on('pointerdown', () => {
+      playSfx(this, 'button-click')
       this.tweens.add({
-        targets: this.mothershipSprite,
-        y: -BOSS_SHIP.displayHeight,
-        duration: 800,
-        ease: 'Cubic.easeIn',
+        targets: all,
+        alpha: 0,
+        duration: 300,
         onComplete: () => {
-          this.mothershipSprite?.destroy()
-          this.mothershipSprite = null
-          this.bossVitals.forEach(v => v.circle.destroy())
-          this.bossVitals = []
-          this.activeBossIdx = -1
+          all.forEach(o => o.destroy())
+          this.onBossDefeated()
+          this.bossDeathAnimating = false
           this.enemy.flyBack()
         },
       })
-    }
+    })
+
+    this.tweens.add({
+      targets: all,
+      alpha: 1,
+      duration: 500,
+      ease: 'Quad.easeOut',
+    })
   }
 
   update(_time: number, delta: number) {
@@ -644,14 +799,16 @@ export class MainScene extends Phaser.Scene {
     }
 
     if (this.mothershipSprite) {
-      this.mothershipFrameTimer += delta / 1000
-      if (this.mothershipFrameTimer >= BOSS_SHIP.frameDuration) {
-        this.mothershipFrameTimer = 0
-        this.mothershipFrame = this.mothershipFrame === 0 ? 1 : 0
-        this.mothershipSprite.setFrame(this.mothershipFrame)
+      if (!this.bossDeathAnimating) {
+        this.mothershipFrameTimer += delta / 1000
+        if (this.mothershipFrameTimer >= BOSS_SHIP.frameDuration) {
+          this.mothershipFrameTimer = 0
+          this.mothershipFrame = this.mothershipFrame === 0 ? 1 : 0
+          this.mothershipSprite.setFrame(this.mothershipFrame)
+        }
       }
 
-      if (this.activeBossIdx !== -1) {
+      if (this.activeBossIdx !== -1 && !this.bossDeathAnimating) {
         const boss = BOSSES[this.activeBossIdx]
         this.mothershipThrowTimer += delta / 1000
         if (this.mothershipThrowTimer >= boss.throwInterval) {
@@ -691,8 +848,10 @@ export class MainScene extends Phaser.Scene {
 
     const cameraTop = this.cameras.main.scrollY
 
-    while (this.lastPlatformY > cameraTop - PLATFORMS.spawnAhead) {
-      this.spawnPlatform()
+    if (!this.bossDeathAnimating) {
+      while (this.lastPlatformY > cameraTop - PLATFORMS.spawnAhead) {
+        this.spawnPlatform()
+      }
     }
 
     const cameraBottom = cameraTop + WORLD.height
