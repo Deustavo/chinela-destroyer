@@ -351,13 +351,17 @@ export class ShopScene extends Phaser.Scene {
       }).setOrigin(0.5, 0)
 
       const owned = PurchaseManager.has(item.id)
-      const priceTxt = this.add.text(cx - 3, CARD_SZ + 32, `${item.price}`, {
+      const priceTxt = this.add.text(0, CARD_SZ + 32, `${item.price}`, {
         fontSize: '13px', color: '#ffd700',
         fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
-      }).setOrigin(1, 0.5).setVisible(!owned)
+      }).setOrigin(0, 0.5).setVisible(!owned)
+      const priceGap = 3
+      const priceIconW = 18
+      const priceGroupW = priceTxt.width + priceGap + priceIconW
+      priceTxt.setX(cx - priceGroupW / 2)
       const coinIco = this.add
-        .image(cx + 2, CARD_SZ + 33, 'shop-coin')
-        .setDisplaySize(18, 18)
+        .image(cx - priceGroupW / 2 + priceTxt.width + priceGap + priceIconW / 2, CARD_SZ + 33, 'shop-coin')
+        .setDisplaySize(priceIconW, priceIconW)
         .setVisible(!owned)
       this.shopCardCoinIcons.push(coinIco)
       this.shopCardPriceTxts.push(priceTxt)
