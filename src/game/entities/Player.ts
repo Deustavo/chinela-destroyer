@@ -171,6 +171,7 @@ export class Player {
     proj.anims.play(config.flyAnimKey, true)
     proj.setData('impactAnim', config.impactAnimKey)
     if (config.stunDuration) proj.setData('stunDuration', config.stunDuration)
+    if (config.piercing) proj.setData('piercing', true)
 
     this.projectiles.add(proj)
     playSfx(this.scene, config.soundKey ?? 'laser', 0.5)

@@ -12,6 +12,8 @@ export interface ShotConfig {
   cooldown: number
   stunDuration?: number
   soundKey?: string
+  piercing?: boolean
+  btnIconSize?: number
 }
 
 // Multiplier-based stat modifiers that stack with upgrades.

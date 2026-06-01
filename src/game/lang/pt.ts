@@ -106,6 +106,12 @@ const pt: Record<string, string> = {
   'item.hermes-sandals.stat.1': 'Velocidade: +40%',
   'item.hermes-sandals.stat.2': 'Velocidade: +60%',
 
+  'item.incandescente-shot.name': 'Incandescente',
+  'item.incandescente-shot.desc': 'Atravessa projeteis!',
+  'item.incandescente-shot.stat.0': 'Cooldown: 4s',
+  'item.incandescente-shot.stat.1': 'Cooldown: 3s',
+  'item.incandescente-shot.stat.2': 'Cooldown: 2s',
+
   'item.special-shot.name': 'Bolimbolacho',
   'item.special-shot.desc': 'Cooldown pela metade',
   'item.special-shot.stat.0': 'Normal',

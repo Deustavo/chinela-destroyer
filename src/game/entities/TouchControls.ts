@@ -17,7 +17,7 @@ export class TouchControls {
   private shotBtnY: number = 0
   private readonly shotBtnDisplaySize: number = 140
 
-  constructor(scene: Phaser.Scene, onShot?: () => void, shotSpriteKey?: string, shotSpriteFrame?: number) {
+  constructor(scene: Phaser.Scene, onShot?: () => void, shotSpriteKey?: string, shotSpriteFrame?: number, shotIconSize?: number) {
     const y = WORLD.height - 60
 
     if (isTouchDevice()) {
@@ -35,9 +35,10 @@ export class TouchControls {
     if (shotSpriteKey) {
       const { image: bgImage, zone: shotBtn } = this.createButton(scene, this.shotBtnX, this.shotBtnY, 'btn-shot', this.shotBtnDisplaySize, 0.7)
       bgImage.setVisible(false)
+      const iconSize = shotIconSize ?? this.shotBtnDisplaySize * 0.6
       const spriteIcon = scene.add
         .image(this.shotBtnX, this.shotBtnY, shotSpriteKey, shotSpriteFrame ?? 0)
-        .setDisplaySize(this.shotBtnDisplaySize * 0.6, this.shotBtnDisplaySize * 0.6)
+        .setDisplaySize(iconSize, iconSize)
         .setScrollFactor(0)
         .setDepth(21)
         .setAlpha(0.9)

@@ -131,7 +131,7 @@ export class MainScene extends Phaser.Scene {
 
     this.enemy = new Enemy(this)
     const activeShotConfig = PlayerLoadout.getActiveShotConfig()
-    this.touchControls = new TouchControls(this, () => this.player.requestShot(), activeShotConfig.spriteKey, activeShotConfig.flyFrames[0])
+    this.touchControls = new TouchControls(this, () => this.player.requestShot(), activeShotConfig.spriteKey, activeShotConfig.flyFrames[0], activeShotConfig.btnIconSize)
 
     this.physics.add.collider(this.player.gameObject, this.platforms)
     this.physics.add.overlap(this.player.gameObject, this.collectibleCoins, (_p, coinObj) => {
@@ -173,8 +173,9 @@ export class MainScene extends Phaser.Scene {
       this.player.projectiles,
       this.enemy.trapGroup,
       (_shot, _trap) => {
+        const shot = _shot as Phaser.Physics.Arcade.Sprite
         playSfx(this, 'coin-collected', 0.6)
-        this.playShotImpact(_shot as Phaser.Physics.Arcade.Sprite)
+        if (!shot.getData('piercing')) this.playShotImpact(shot)
         ;(_trap as Phaser.Physics.Arcade.Image).destroy()
         this.tryAwardCoin()
       },
@@ -184,8 +185,9 @@ export class MainScene extends Phaser.Scene {
       this.player.projectiles,
       this.mothershipTraps,
       (_shot, _trap) => {
+        const shot = _shot as Phaser.Physics.Arcade.Sprite
         playSfx(this, 'coin-collected', 0.6)
-        this.playShotImpact(_shot as Phaser.Physics.Arcade.Sprite)
+        if (!shot.getData('piercing')) this.playShotImpact(shot)
         ;(_trap as Phaser.Physics.Arcade.Image).destroy()
         this.tryAwardCoin()
       },
@@ -634,7 +636,7 @@ export class MainScene extends Phaser.Scene {
           this.coinCountText.setText(String(total))
           this.showCoinPopup(2)
         }
-        this.playShotImpact(proj)
+        if (!proj.getData('piercing')) this.playShotImpact(proj)
       }
     }
   }
