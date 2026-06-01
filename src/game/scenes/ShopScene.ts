@@ -242,8 +242,11 @@ export class ShopScene extends Phaser.Scene {
 
   // ── Shop panel ───────────────────────────────────────────────────────────────
   private buildShopPanel() {
-    this.shopItems   = ITEM_REGISTRY.filter(i => !i.inventoryOnly)
-    this.shopCardBgs = []
+    this.shopItems         = ITEM_REGISTRY.filter(i => !i.inventoryOnly)
+    this.shopCardBgs       = []
+    this.shopCardStarTxts  = []
+    this.shopCardCoinIcons = []
+    this.shopCardPriceTxts = []
     const first = this.shopItems[0]
 
     // Large preview block
