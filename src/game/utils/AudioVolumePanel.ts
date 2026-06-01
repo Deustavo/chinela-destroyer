@@ -6,8 +6,8 @@ import type { MusicScene } from '../scenes/MusicScene'
 const CX = WORLD.width / 2
 const CY = WORLD.height / 2
 
-const PANEL_W = 305
-const PANEL_H = 215
+const PANEL_W = 360
+const PANEL_H = 260
 const PANEL_TOP  = CY - PANEL_H / 2
 
 const SEG_W   = 21
@@ -61,11 +61,12 @@ export class AudioVolumePanel {
         .setDepth(DEPTH)
         .setInteractive()
     )
-    // Panel background
+    // Panel background — shifted up to visually center around content
+    const PANEL_BG_Y = CY - 30
     this.add(
-      s.add.rectangle(CX, CY, PANEL_W, PANEL_H, 0x1a1a2e)
+      s.add.image(CX, PANEL_BG_Y, 'modal-bg2')
+        .setDisplaySize(PANEL_W, PANEL_H)
         .setDepth(DEPTH + 1)
-        .setStrokeStyle(2, 0xffd700)
     )
 
     // Title
@@ -78,7 +79,7 @@ export class AudioVolumePanel {
 
     // Close button
     const closeBtn = this.add(
-      s.add.text(CX + PANEL_W / 2 - 16, PANEL_TOP + 16, '✕', {
+      s.add.text(CX + PANEL_W / 2 - 40, PANEL_TOP + 16, '✕', {
         fontFamily: FONT_FAMILY, fontSize: '22px', color: '#ffffff',
       }).setOrigin(0.5).setDepth(DEPTH + 2).setInteractive({ useHandCursor: true })
     )
