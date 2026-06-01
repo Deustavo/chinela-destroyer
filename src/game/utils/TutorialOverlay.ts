@@ -138,6 +138,7 @@ export class TutorialOverlay {
         fontFamily: FONT_FAMILY,
       })
       .setOrigin(1, 1)
+      .setScrollFactor(0)
       .setInteractive({ useHandCursor: true })
       .on('pointerover', () => this.skipText.setStyle({ color: '#ffffff' }))
       .on('pointerout', () => this.skipText.setStyle({ color: '#ffcc00' }))
@@ -186,6 +187,7 @@ export class TutorialOverlay {
     this.completeMs = 0
     this.hideWrapArrows()
     this.hideButtonCircles()
+    this.bg.setTexture('modal-bg3')
   }
 
   private advance(): void {
@@ -212,6 +214,7 @@ export class TutorialOverlay {
     this.stepActionSeen = false
     this.completing = false
     this.completeMs = 0
+    this.bg.setTexture('modal-bg2')
     const step = STEPS[idx]
     const h = this.panelHeightFor(step.lines.length)
 
