@@ -27,7 +27,7 @@ export class MainScene extends Phaser.Scene {
   private dead!: boolean
   private onEscKey!: (e: KeyboardEvent) => void
   private sessionUnlocked!: Set<string>
-  private newlyUnlockedThisRun!: { iconKey: string; name: string }[]
+  private newlyUnlockedThisRun!: { iconKey: string; id: string }[]
   private toastQueue!: { iconKey: string }[]
   private toastActive!: boolean
   private bgTile!: Phaser.GameObjects.TileSprite
@@ -995,7 +995,7 @@ export class MainScene extends Phaser.Scene {
     const newlyUnlocked = AchievementManager.checkHeight(this.score)
     for (const achievement of newlyUnlocked) {
       this.sessionUnlocked.add(achievement.id)
-      this.newlyUnlockedThisRun.push({ iconKey: achievement.unlockedIconKey, name: achievement.name })
+      this.newlyUnlockedThisRun.push({ iconKey: achievement.unlockedIconKey, id: achievement.id })
       this.toastQueue.push({ iconKey: achievement.unlockedIconKey })
     }
     if (newlyUnlocked.length > 0) {

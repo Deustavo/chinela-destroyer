@@ -3,6 +3,7 @@ import { WORLD, FONT_FAMILY } from '../config/constants'
 import { addBackground, wireButtonLabel, addCoinCounter, bindEscapeKey, applySceneMuffle } from '../utils/uiHelpers'
 import { playSfx } from '../utils/AudioManager'
 import { dropIn, dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
+import { t } from '../lang'
 
 export class CreditsScene extends Phaser.Scene {
   constructor() {
@@ -18,7 +19,7 @@ export class CreditsScene extends Phaser.Scene {
     applySceneMuffle(this)
 
     const title = this.add
-      .text(cx, cy - 260, 'Créditos', {
+      .text(cx, cy - 260, t('credits_title'), {
         fontSize: '48px',
         color: '#ffffff',
         fontFamily: FONT_FAMILY,
@@ -26,7 +27,7 @@ export class CreditsScene extends Phaser.Scene {
       .setOrigin(0.5)
 
     const devText = this.add
-      .text(cx, cy - 180, 'Feito por Deustavo. Siga meu github para mais projetos <3', {
+      .text(cx, cy - 180, t('credits_dev'), {
         fontSize: '20px',
         color: '#ffffff',
         fontFamily: FONT_FAMILY,
@@ -103,7 +104,7 @@ export class CreditsScene extends Phaser.Scene {
 
 
     const caption = this.add
-      .text(cx, cy + 130, 'as protagonistas são essas gatas endeotas', {
+      .text(cx, cy + 130, t('credits_caption'), {
         fontSize: '22px',
         color: '#ffffff',
         fontFamily: FONT_FAMILY,
@@ -113,7 +114,7 @@ export class CreditsScene extends Phaser.Scene {
       .setOrigin(0.5)
 
     const musicLabel = this.add
-      .text(cx, cy + 200, '♫ Música', {
+      .text(cx, cy + 200, t('credits_music_label'), {
         fontSize: '16px',
         color: '#aaaaaa',
         fontFamily: FONT_FAMILY,
@@ -137,7 +138,7 @@ export class CreditsScene extends Phaser.Scene {
       .setAlpha(0.85)
 
     const labelBack = this.add
-      .text(cx, cy + 255 + 32 + 10, 'Início', {
+      .text(cx, cy + 255 + 32 + 10, t('home'), {
         fontSize: '16px',
         color: '#ffffff',
         fontFamily: FONT_FAMILY,

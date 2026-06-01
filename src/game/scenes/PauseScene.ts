@@ -3,6 +3,7 @@ import { WORLD, FONT_FAMILY } from '../config/constants'
 import { addModalOverlay } from '../utils/uiHelpers'
 import { playSfx } from '../utils/AudioManager'
 import { AudioVolumePanel } from '../utils/AudioVolumePanel'
+import { t } from '../lang'
 
 export class PauseScene extends Phaser.Scene {
   private audioPanel?: AudioVolumePanel
@@ -18,7 +19,7 @@ export class PauseScene extends Phaser.Scene {
     addModalOverlay(this, 0, 0.75)
 
     this.add
-      .text(cx, cy - 80, 'PAUSADO', { fontSize: '42px', color: '#ffffff', fontStyle: 'bold', fontFamily: FONT_FAMILY })
+      .text(cx, cy - 80, t('paused'), { fontSize: '42px', color: '#ffffff', fontStyle: 'bold', fontFamily: FONT_FAMILY })
       .setOrigin(0.5)
       .setDepth(1)
 
@@ -34,7 +35,7 @@ export class PauseScene extends Phaser.Scene {
       .setAlpha(0.85)
 
     const labelPlay = this.add
-      .text(cx + btnSize / 2 + gap / 2, cy + btnSize / 2 + 6, 'Continuar', labelStyle)
+      .text(cx + btnSize / 2 + gap / 2, cy + btnSize / 2 + 6, t('continue'), labelStyle)
       .setOrigin(0.5, 0)
       .setDepth(1)
 
@@ -51,7 +52,7 @@ export class PauseScene extends Phaser.Scene {
       .setAlpha(0.85)
 
     const labelHome = this.add
-      .text(cx - btnSize / 2 - gap / 2, cy + btnSize / 2 + 6, 'Início', labelStyle)
+      .text(cx - btnSize / 2 - gap / 2, cy + btnSize / 2 + 6, t('home'), labelStyle)
       .setOrigin(0.5, 0)
       .setDepth(1)
 
@@ -66,7 +67,7 @@ export class PauseScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
       .setAlpha(0.85)
 
-    this.add.text(cx, cy + 132, 'Volume', labelStyle)
+    this.add.text(cx, cy + 132, t('volume'), labelStyle)
       .setOrigin(0.5, 0)
       .setDepth(1)
 
@@ -138,11 +139,11 @@ export class PauseScene extends Phaser.Scene {
     const panel = this.add.image(cx, cy, 'modal-bg2')
       .setDisplaySize(300, 175).setDepth(D + 1)
 
-    const msg = this.add.text(cx, cy - 44, 'Sair para o Início?', {
+    const msg = this.add.text(cx, cy - 44, t('quit_confirm'), {
       fontSize: '20px', color: '#ffffff', fontFamily: FONT_FAMILY,
     }).setOrigin(0.5).setDepth(D + 2)
 
-    const sub = this.add.text(cx, cy - 18, 'O progresso atual será perdido.', {
+    const sub = this.add.text(cx, cy - 18, t('progress_lost'), {
       fontSize: '13px', color: '#aaaaaa', fontFamily: FONT_FAMILY,
     }).setOrigin(0.5).setDepth(D + 2)
 
@@ -153,13 +154,13 @@ export class PauseScene extends Phaser.Scene {
 
     const btnYesImg = this.add.image(cx - btnW / 2 - gap / 2, btnY, 'btn-primary')
       .setDisplaySize(btnW, btnH).setDepth(D + 2).setAlpha(0.9).setInteractive({ useHandCursor: true })
-    const btnYesTxt = this.add.text(cx - btnW / 2 - gap / 2, btnY, 'Sair', {
+    const btnYesTxt = this.add.text(cx - btnW / 2 - gap / 2, btnY, t('quit'), {
       fontSize: '18px', color: '#ffffff', fontFamily: FONT_FAMILY,
     }).setOrigin(0.5).setDepth(D + 3).setInteractive({ useHandCursor: true })
 
     const btnNoImg = this.add.image(cx + btnW / 2 + gap / 2, btnY, 'btn-secondary')
       .setDisplaySize(btnW, btnH).setDepth(D + 2).setAlpha(0.9).setInteractive({ useHandCursor: true })
-    const btnNoTxt = this.add.text(cx + btnW / 2 + gap / 2, btnY, 'Cancelar', {
+    const btnNoTxt = this.add.text(cx + btnW / 2 + gap / 2, btnY, t('cancel'), {
       fontSize: '18px', color: '#111111', fontFamily: FONT_FAMILY,
     }).setOrigin(0.5).setDepth(D + 3).setInteractive({ useHandCursor: true })
 

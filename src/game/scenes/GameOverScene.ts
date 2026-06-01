@@ -6,18 +6,19 @@ import { storageGet, storageSet, storageRemove, parseJson } from '../utils/stora
 import { CoinManager } from '../utils/CoinManager'
 import { PurchaseManager } from '../utils/PurchaseManager'
 import { playSfx } from '../utils/AudioManager'
+import { t } from '../lang'
 
 const SCALE = 3
 
 export class GameOverScene extends Phaser.Scene {
-  private achievementQueue!: { iconKey: string; name: string }[]
+  private achievementQueue!: { iconKey: string; id: string }[]
   private toastTimer: Phaser.Time.TimerEvent | null = null
 
   constructor() {
     super('game-over-scene')
   }
 
-  create(data: { score: number; newAchievements?: { iconKey: string; name: string }[]; gameMode?: string }) {
+  create(data: { score: number; newAchievements?: { iconKey: string; id: string }[]; gameMode?: string }) {
     this.achievementQueue = [...(data.newAchievements ?? [])]
     const cx = WORLD.width / 2
     const cy = WORLD.height / 2
@@ -49,12 +50,12 @@ export class GameOverScene extends Phaser.Scene {
     const labelStyle = { fontSize: '16px', color: '#ffffff', fontFamily: FONT_FAMILY }
 
     const scoreText = this.add
-      .text(cx, cy + 105, `Altura: ${data.score}`, { fontSize: '26px', color: '#ffffff', fontFamily: FONT_FAMILY })
+      .text(cx, cy + 105, t('height', data.score), { fontSize: '26px', color: '#ffffff', fontFamily: FONT_FAMILY })
       .setOrigin(0.5)
 
     const bestColor = isNewBest ? '#ffd700' : '#aaaaaa'
     const bestLabel = isSemFim
-      ? (isNewBest ? `Novo recorde: ${highScore}!` : `Recorde: ${highScore}`)
+      ? (isNewBest ? t('new_record', highScore) : t('record', highScore))
       : ''
     const bestText = this.add
       .text(cx, cy + 138, bestLabel, { fontSize: '18px', color: bestColor, fontFamily: FONT_FAMILY })
@@ -77,20 +78,20 @@ export class GameOverScene extends Phaser.Scene {
       .setAlpha(0.85)
 
     const labelHome = this.add
-      .text(cx - btnSize / 2 - gap / 2, cy + 180 + btnSize / 2 + 10, 'Início', labelStyle)
+      .text(cx - btnSize / 2 - gap / 2, cy + 180 + btnSize / 2 + 10, t('home'), labelStyle)
       .setOrigin(0.5, 0)
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
     const labelPlay = this.add
-      .text(cx + btnSize / 2 + gap / 2, cy + 180 + btnSize / 2 + 10, 'Jogar novamente', labelStyle)
+      .text(cx + btnSize / 2 + gap / 2, cy + 180 + btnSize / 2 + 10, t('play_again'), labelStyle)
       .setOrigin(0.5, 0)
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
     const isMobile = this.sys.game.device.input.touch
     const spaceHint = this.add
-      .text(cx, cy + 300, 'Pressione ESPAÇO para jogar novamente', { fontSize: '14px', color: '#aaaaaa', fontFamily: FONT_FAMILY })
+      .text(cx, cy + 300, t('space_hint'), { fontSize: '14px', color: '#aaaaaa', fontFamily: FONT_FAMILY })
       .setOrigin(0.5)
       .setVisible(!isMobile)
 
@@ -158,7 +159,7 @@ export class GameOverScene extends Phaser.Scene {
       .setDepth(161)
 
     const titleTxt = this.add
-      .text(cx, cy - 72, 'Compre um aprimoramento', {
+      .text(cx, cy - 72, t('shop_tutorial_title'), {
         fontSize: '20px', color: '#ffd700',
         fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 4,
       })
@@ -166,7 +167,7 @@ export class GameOverScene extends Phaser.Scene {
       .setDepth(162)
 
     const bodyTxt = this.add
-      .text(cx, cy - 43, 'Vá à loja e compre o Pomodoro', {
+      .text(cx, cy - 43, t('shop_tutorial_body'), {
         fontSize: '15px', color: '#ffffff', align: 'center',
         fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
       })
@@ -190,7 +191,7 @@ export class GameOverScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
 
     const btnTxt = this.add
-      .text(cx, cy + 82, 'Ir à Loja →', {
+      .text(cx, cy + 82, t('go_to_shop'), {
         fontSize: '17px', color: '#ffffff',
         fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
       })
@@ -240,9 +241,9 @@ export class GameOverScene extends Phaser.Scene {
     const container = this.add.container(startX, panelY).setDepth(100)
     const panel = this.add.rectangle(0, 0, panelW, panelH, 0x222222, 0.92).setStrokeStyle(2, 0xffd700)
     const icon = this.add.image(-panelW / 2 + 36, 0, next.iconKey).setDisplaySize(42, 42)
-    const label = this.add.text(-panelW / 2 + 64, -14, 'Conquista desbloqueada!', { fontSize: '10px', color: '#ffd700', fontFamily: FONT_FAMILY })
-    const nameText = this.add.text(-panelW / 2 + 64, 2, next.name, { fontSize: '15px', color: '#ffffff', fontFamily: FONT_FAMILY })
-    const hint = this.add.text(panelW / 2 - 8, panelH / 2 - 12, 'ver ›', { fontSize: '10px', color: '#ffd700', fontFamily: FONT_FAMILY }).setOrigin(1, 1)
+    const label = this.add.text(-panelW / 2 + 64, -14, t('achievement_unlocked'), { fontSize: '10px', color: '#ffd700', fontFamily: FONT_FAMILY })
+    const nameText = this.add.text(-panelW / 2 + 64, 2, t(`achievement.${next.id}.name`), { fontSize: '15px', color: '#ffffff', fontFamily: FONT_FAMILY })
+    const hint = this.add.text(panelW / 2 - 8, panelH / 2 - 12, t('see'), { fontSize: '10px', color: '#ffd700', fontFamily: FONT_FAMILY }).setOrigin(1, 1)
     container.add([panel, icon, label, nameText, hint])
 
     container.setSize(panelW, panelH)

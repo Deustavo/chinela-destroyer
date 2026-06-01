@@ -6,6 +6,7 @@ import { addBackground, addModalOverlay, wireButtonLabel, addCoinCounter, bindEs
 import { NotificationManager } from '../utils/NotificationManager'
 import { playSfx } from '../utils/AudioManager'
 import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
+import { t } from '../lang'
 
 const COLS = 3
 const ICON_SIZE = 90
@@ -42,7 +43,7 @@ export class AchievementsScene extends Phaser.Scene {
     applySceneMuffle(this)
 
     const title = this.add
-      .text(cx, 60, 'Conquistas', {
+      .text(cx, 60, t('achievements_title'), {
         fontSize: '32px',
         color: '#ffd700',
         fontFamily: FONT_FAMILY,
@@ -81,7 +82,7 @@ export class AchievementsScene extends Phaser.Scene {
       icon.on('pointerdown', () => { this.playClick(); this.openModal(achievement, isUnlocked) })
 
       const label = this.add
-        .text(x, y + ICON_SIZE / 2 + 6, isUnlocked ? achievement.name : '???', {
+        .text(x, y + ICON_SIZE / 2 + 6, isUnlocked ? t(`achievement.${achievement.id}.name`) : t('locked_name'), {
           fontSize: '13px',
           color: isUnlocked ? '#ffffff' : '#888888',
           fontFamily: FONT_FAMILY,
@@ -102,7 +103,7 @@ export class AchievementsScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
 
     const labelBack = this.add
-      .text(cx, WORLD.height - 30, 'Início', {
+      .text(cx, WORLD.height - 30, t('home'), {
         fontSize: '16px',
         color: '#ffffff',
         fontFamily: FONT_FAMILY,
@@ -150,7 +151,7 @@ export class AchievementsScene extends Phaser.Scene {
       .setDepth(DEPTH + 2)
       .setAlpha(0)
 
-    const nameText = this.add.text(cx, cy + 20, isUnlocked ? achievement.name : '???', {
+    const nameText = this.add.text(cx, cy + 20, isUnlocked ? t(`achievement.${achievement.id}.name`) : t('locked_name'), {
       fontSize: '22px',
       color: isUnlocked ? '#ffd700' : '#888888',
       fontFamily: FONT_FAMILY,
@@ -160,7 +161,7 @@ export class AchievementsScene extends Phaser.Scene {
       wordWrap: { width: MODAL_SIZE - 40 },
     }).setOrigin(0.5).setDepth(DEPTH + 2)
 
-    const descText = this.add.text(cx, cy + 64, isUnlocked ? achievement.description : 'Conquista bloqueada', {
+    const descText = this.add.text(cx, cy + 64, isUnlocked ? t(`achievement.${achievement.id}.desc`) : t('locked_desc'), {
       fontSize: '15px',
       color: isUnlocked ? '#cccccc' : '#666666',
       fontFamily: FONT_FAMILY,
@@ -168,7 +169,7 @@ export class AchievementsScene extends Phaser.Scene {
       wordWrap: { width: MODAL_SIZE - 48 },
     }).setOrigin(0.5).setDepth(DEPTH + 2)
 
-    const closeBtn = createSecondaryButton(this, cx, cy + 124, 'Fechar', () => { this.playClick(); this.closeModal() })
+    const closeBtn = createSecondaryButton(this, cx, cy + 124, t('close'), () => { this.playClick(); this.closeModal() })
       .setDepth(DEPTH + 2)
 
     this.modal = { overlay, panel, icon, nameText, descText, closeBtn }

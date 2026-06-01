@@ -4,11 +4,12 @@ import { addBackground, addCoinCounter, bindEscapeKey } from '../utils/uiHelpers
 import { playSfx } from '../utils/AudioManager'
 import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 import { storageGet, parseJson } from '../utils/storage'
+import { t } from '../lang'
 
 const STAGES = [
-  { label: 'Estágio 1', sub: 'Começa na altura 0',    startStage: 0 },
-  { label: 'Estágio 2', sub: 'Começa na altura 1000', startStage: 1 },
-  { label: 'Estágio 3', sub: 'Começa na altura 2000', startStage: 2 },
+  { startStage: 0, labelKey: 'stage_1', subKey: 'stage_1_sub' },
+  { startStage: 1, labelKey: 'stage_2', subKey: 'stage_2_sub' },
+  { startStage: 2, labelKey: 'stage_3', subKey: 'stage_3_sub' },
 ]
 
 export class StageSelectScene extends Phaser.Scene {
@@ -25,7 +26,7 @@ export class StageSelectScene extends Phaser.Scene {
 
     const unlockedStages = parseJson<number[]>(storageGet('normalStagesUnlocked'), [0])
 
-    const title = this.add.text(cx, cy - 260, 'Modo Normal', {
+    const title = this.add.text(cx, cy - 260, t('normal_mode'), {
       fontSize: '40px',
       color: '#ffffff',
       fontFamily: FONT_FAMILY,
@@ -45,13 +46,13 @@ export class StageSelectScene extends Phaser.Scene {
       const bg = this.add.image(cx, cardY, unlocked ? 'modal-large-bg1' : 'modal-large-bg2')
         .setDisplaySize(CARD_W, CARD_H)
 
-      const labelText = this.add.text(cx, cardY - 12, stage.label, {
+      const labelText = this.add.text(cx, cardY - 12, t(stage.labelKey), {
         fontSize: '22px',
         color: unlocked ? '#ffffff' : '#888888',
         fontFamily: FONT_FAMILY,
       }).setOrigin(0.5)
 
-      const subText = this.add.text(cx, cardY + 16, unlocked ? stage.sub : 'Bloqueado', {
+      const subText = this.add.text(cx, cardY + 16, unlocked ? t(stage.subKey) : t('blocked'), {
         fontSize: '14px',
         color: unlocked ? '#aaaaaa' : '#666666',
         fontFamily: FONT_FAMILY,
@@ -80,7 +81,7 @@ export class StageSelectScene extends Phaser.Scene {
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
-    const labelBack = this.add.text(cx, cy + 292 , 'Início', {
+    const labelBack = this.add.text(cx, cy + 292, t('home'), {
       fontSize: '16px',
       color: '#ffffff',
       fontFamily: FONT_FAMILY,
