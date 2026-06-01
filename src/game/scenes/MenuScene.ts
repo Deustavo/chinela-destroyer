@@ -112,6 +112,15 @@ export class MenuScene extends Phaser.Scene {
       this.audioPanel?.show()
     })
 
+    // Label below the audio button
+    const audioLabel = this.add.text(28, 52, 'volume', {
+      fontFamily: FONT_FAMILY,
+      fontSize: '11px',
+      color: '#ffffff',
+    }).setOrigin(0.5)
+      .setDepth(6)
+      .setScrollFactor(0)
+
     // Language button — top-left, right of audio button
     const currentLang = getLang()
     const langLabel = currentLang === 'pt' ? '🇧🇷 PT' : '🇺🇸 EN'
@@ -143,7 +152,7 @@ export class MenuScene extends Phaser.Scene {
     this.audioPanel = new AudioVolumePanel(this)
     this.langPanel  = new LangSelectPanel(this)
 
-    const all: SceneObject[] = [logo, chinela, pera, btnNormal, btnSemFim, btnShop, btnInventory, btnConquistas, btnCredits, audioBtn, langBtnBg, langBtnTxt]
+    const all: SceneObject[] = [logo, chinela, pera, btnNormal, btnSemFim, btnShop, btnInventory, btnConquistas, btnCredits, audioBtn, audioLabel, langBtnBg, langBtnTxt]
 
     const addNotificationDot = (btn: Phaser.GameObjects.Container, delay: number) => {
       const dotX = btn.x + BTN_W / 2 - 10
@@ -204,6 +213,7 @@ export class MenuScene extends Phaser.Scene {
     dropInFloat(this, btnConquistas, { amplitude: 4,  floatDuration: 1900, delay: 600 })
     dropInFloat(this, btnCredits,    { amplitude: 4,  floatDuration: 1800, delay: 660 })
     dropInFloat(this, audioBtn,      { amplitude: 4,  floatDuration: 1800, delay: 720 })
+    dropInFloat(this, audioLabel,    { amplitude: 4,  floatDuration: 1800, delay: 720 })
     dropInFloat(this, langBtnBg,     { amplitude: 4,  floatDuration: 1800, delay: 760 })
     dropInFloat(this, langBtnTxt,    { amplitude: 4,  floatDuration: 1800, delay: 760 })
 
