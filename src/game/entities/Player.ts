@@ -248,13 +248,17 @@ export class Player {
     this.shotCooldown = tick(this.shotCooldown)
 
     if (this.shieldOwned && this.shieldSprite) {
+      const prevShield = this.shieldCooldown
       this.shieldCooldown = tick(this.shieldCooldown)
+      if (prevShield > 0 && this.shieldCooldown === 0) playSfx(this.scene, 'item-cooldown', 0.6)
       this.shieldSprite.setPosition(this.sprite.x, this.sprite.y - 4)
       this.shieldSprite.setAlpha(this.shieldCooldown > 0 ? 0 : 0.9)
     }
 
     if (this.wingsOwned) {
+      const prevWings = this.wingCooldown
       this.wingCooldown = tick(this.wingCooldown)
+      if (prevWings > 0 && this.wingCooldown === 0) playSfx(this.scene, 'item-cooldown', 0.6)
       if (this.wingsSprite) {
         this.wingsSprite.setPosition(this.sprite.x, this.sprite.y - 16)
       }

@@ -122,6 +122,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.audio('hit-vital-point', '/audio/hitVitalPoint.mp3')
     this.load.audio('error', '/audio/error.mp3')
     this.load.audio('unlock', '/audio/unlock.mp3')
+    this.load.audio('item-cooldown', '/audio/itemCooldown.mp3')
 
     // Load assets for all registered shop items
     for (const item of ITEM_REGISTRY) {
