@@ -97,6 +97,7 @@ export class ShopScene extends Phaser.Scene {
   private invCardNames:   Phaser.GameObjects.Text[]  = []
   private invCardBlocked: Phaser.GameObjects.Image[] = []
   private invCardStarTxts: Phaser.GameObjects.Text[] = []
+  private invCardBadges: (Phaser.GameObjects.Container | null)[] = []
   private invScrollX   = 0
   private invMaxScroll = 0
 
@@ -235,6 +236,23 @@ export class ShopScene extends Phaser.Scene {
     if (this.shopTutorial) {
       this.time.delayedCall(900, () => this.startTutorialBuyStep())
     }
+  }
+
+  // Small category badge in the top-left corner of a card:
+  //   🎯 = tiro (type 'shot')   🛡 = equipável (shield / ability / upgrade)
+  // Returns null for the 'none' placeholder item (no badge).
+  private makeCategoryBadge(cx: number, cy: number, item: ShopItem): Phaser.GameObjects.Container | null {
+    if (item.type === 'none') return null
+    const isShot = item.type === 'shot'
+    const bx = cx - CARD_SZ / 2 + 15
+    const by = cy - CARD_SZ / 2 + 15
+    const circle = this.add
+      .circle(0, 0, 12, isShot ? 0x3a7bd5 : 0x3fae4f)
+      .setStrokeStyle(2, 0x000000, 0.6)
+    const emoji = this.add
+      .text(0, -2, isShot ? '🎯' : '🛡', { fontSize: '13px', fontFamily: FONT_FAMILY })
+      .setOrigin(0.5)
+    return this.add.container(bx, by, [circle, emoji])
   }
 
   // ── Shop panel ───────────────────────────────────────────────────────────────
@@ -383,7 +401,10 @@ export class ShopScene extends Phaser.Scene {
         .setInteractive({ useHandCursor: true })
       hit.on('pointerdown', () => { this.playClick(); this.shopSelectItem(i) })
 
-      this.shopRail.add([bg, icon, nameTxt, coinIco, priceTxt, starTxt, hit])
+      const badge = this.makeCategoryBadge(cx, cy, item)
+      const children: Phaser.GameObjects.GameObject[] = [bg, icon, nameTxt, coinIco, priceTxt, starTxt, hit]
+      if (badge) children.push(badge)
+      this.shopRail.add(children)
     })
 
     const maskGfx = this.make.graphics()
@@ -466,6 +487,7 @@ export class ShopScene extends Phaser.Scene {
     this.invCardNames    = []
     this.invCardBlocked  = []
     this.invCardStarTxts = []
+    this.invCardBadges   = []
 
     ITEM_REGISTRY.forEach((item, i) => {
       const cx    = i * (CARD_SZ + CARD_GAP) + CARD_SZ / 2
@@ -516,7 +538,13 @@ export class ShopScene extends Phaser.Scene {
         if (!!reg.alwaysOwned || PurchaseManager.has(reg.id)) this.invEquipItem(i)
       })
 
-      this.invRail.add([bg, blocked, icon, nameTxt, starTxt, hit])
+      const badge = this.makeCategoryBadge(cx, cy, item)
+      if (badge) badge.setVisible(owned)
+      this.invCardBadges.push(badge)
+
+      const children: Phaser.GameObjects.GameObject[] = [bg, blocked, icon, nameTxt, starTxt, hit]
+      if (badge) children.push(badge)
+      this.invRail.add(children)
     })
 
     const maskGfx = this.make.graphics()
@@ -869,6 +897,7 @@ export class ShopScene extends Phaser.Scene {
       this.invCardBlocked[i].setVisible(!owned)
       this.invCardIcons[i].setVisible(owned)
       this.invCardNames[i].setVisible(owned)
+      this.invCardBadges[i]?.setVisible(owned)
       const starTxt = this.invCardStarTxts[i]
       if (starTxt) {
         if (owned && item.levelStats) {
