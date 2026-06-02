@@ -5,7 +5,7 @@ import { playSfx } from '../utils/AudioManager'
 import { dropIn, exitTo, type SceneObject } from '../utils/sceneTransitions'
 import { CoinManager } from '../utils/CoinManager'
 import { PurchaseManager } from '../utils/PurchaseManager'
-import { EquipManager } from '../utils/EquipManager'
+import { EquipManager, MAX_EQUIP_SLOTS } from '../utils/EquipManager'
 import { UpgradeManager } from '../utils/UpgradeManager'
 import { NotificationManager } from '../utils/NotificationManager'
 import { ITEM_REGISTRY } from '../items/registry'
@@ -33,15 +33,16 @@ const PREV_SZ = 160
 const PREV_X  = CX
 const PREV_Y  = 200   // center of the block
 
-// ── Inventory layout (player left | item right) ──────────────────────────────
-const INV_SZ  = 152
-const INV_L_X = Math.round(W * 0.27)  // 109 — player
-const INV_R_X = Math.round(W * 0.73)  // 296 — selected item
-const INV_CY  = 292
+// ── Inventory layout — small cat above two large equipped-loadout blocks ──────
+const INV_CHINELA_Y  = 162   // center of the (shrunk) cat
+const INV_CHINELA_SZ = 100
 
-const INV_NAME_Y    = INV_CY + INV_SZ / 2 + 10  // 378
-const INV_LEVEL_Y   = INV_NAME_Y + 24            // 402
-const INV_LSTAT_Y   = INV_LEVEL_Y + 18           // 420
+const BLOCK_SZ     = 132
+const BLOCK_GAP    = 22
+const BLOCK_CY     = 324                            // center of the two blocks (lowered 20px)
+const BLOCK_DX     = (BLOCK_SZ + BLOCK_GAP) / 2     // each block's x-offset from center
+const BLOCK_LBL_Y  = 242                            // "Equipados" label (kept in place)
+const BLOCK_NAME_Y = BLOCK_CY + BLOCK_SZ / 2 + 4    // 394 — item name (lowered 12px from before)
 
 type Showable = { setVisible(v: boolean): unknown }
 
@@ -98,15 +99,11 @@ export class ShopScene extends Phaser.Scene {
   private invCardStarTxts: Phaser.GameObjects.Text[] = []
   private invScrollX   = 0
   private invMaxScroll = 0
-  private invSelectedIdx = 0
 
-  private invPreviewBg!:   Phaser.GameObjects.Image
-  private invPreviewImg!:  Phaser.GameObjects.Image
-  private invPreviewName!: Phaser.GameObjects.Text
-
-  // ── Level display (inside inventory tab, read-only) ──────────────────────
-  private invLevelTxt!:      Phaser.GameObjects.Text
-  private invLevelStatTxt!:  Phaser.GameObjects.Text
+  // ── Equipped-loadout blocks (two large slots) ────────────────────────────
+  private equipSlotBgs:   Phaser.GameObjects.Image[] = []
+  private equipSlotIcons: Phaser.GameObjects.Image[] = []
+  private equipSlotNames: Phaser.GameObjects.Text[]  = []
 
   private invNotifDot!: Phaser.GameObjects.Arc
   private invNotifDotBaseY = 0
@@ -423,41 +420,42 @@ export class ShopScene extends Phaser.Scene {
 
   // ── Inventory panel ──────────────────────────────────────────────────────────
   private buildInvPanel() {
-    // Left block — player image
+    // Small cat sitting above the loadout
     this.invPlayerImg = this.add
-      .image(INV_L_X, INV_CY - 20, 'chinela', 0)
-      .setDisplaySize(INV_SZ * 1.1, INV_SZ * 1.1).setDepth(3)
+      .image(CX, INV_CHINELA_Y, 'chinela', 0)
+      .setDisplaySize(INV_CHINELA_SZ, INV_CHINELA_SZ).setDepth(3)
       .setInteractive({ useHandCursor: true })
     this.invPlayerImg.on('pointerdown', () => this.jumpInvPlayer())
 
-    // Right block — selected item preview
-    const invSelLabel = this.add.text(INV_R_X, INV_CY - INV_SZ / 2 - 14, t('selected'), {
-      fontSize: '14px', color: '#ffd700',
+    // "Equipados" label above the two blocks
+    const slotsLabel = this.add.text(CX, BLOCK_LBL_Y, t('equipped_slots'), {
+      fontSize: '16px', color: '#ffd700',
       fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
-    }).setOrigin(0.5, 1).setDepth(2)
+    }).setOrigin(0.5).setDepth(2)
 
-    this.invPreviewBg = this.add
-      .image(INV_R_X, INV_CY, 'modal-bg2')
-      .setDisplaySize(INV_SZ, INV_SZ).setDepth(2)
-    this.invPreviewImg = this.add
-      .image(INV_R_X, INV_CY, 'pixel')
-      .setDisplaySize(0, 0).setDepth(3)
-
-    this.invPreviewName = this.add.text(INV_R_X, INV_NAME_Y, '', {
-      fontSize: '16px', color: '#ffffff', align: 'center',
-      fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
-    }).setOrigin(0.5, 0).setDepth(2)
-
-    // Level display
-    this.invLevelTxt = this.add.text(INV_R_X, INV_LEVEL_Y, '', {
-      fontSize: '13px', color: '#ffd700', align: 'center',
-      fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
-    }).setOrigin(0.5, 0).setDepth(2).setVisible(false)
-
-    this.invLevelStatTxt = this.add.text(INV_R_X, INV_LSTAT_Y, '', {
-      fontSize: '12px', color: '#aaaaaa', align: 'center',
-      fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 2,
-    }).setOrigin(0.5, 0).setDepth(2).setVisible(false)
+    // Two large equipped-loadout blocks side by side; tap a block to unequip it.
+    this.equipSlotBgs   = []
+    this.equipSlotIcons = []
+    this.equipSlotNames = []
+    for (let s = 0; s < MAX_EQUIP_SLOTS; s++) {
+      const bx = CX + (s === 0 ? -BLOCK_DX : BLOCK_DX)
+      const bg = this.add
+        .image(bx, BLOCK_CY, 'modal-bg2')
+        .setDisplaySize(BLOCK_SZ, BLOCK_SZ).setDepth(2)
+        .setInteractive({ useHandCursor: true })
+      const icon = this.add
+        .image(bx, BLOCK_CY, 'pixel')
+        .setDisplaySize(0, 0).setDepth(3)
+      const nameTxt = this.add.text(bx, BLOCK_NAME_Y, '', {
+        fontSize: '15px', color: '#ffffff', align: 'center',
+        fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
+        wordWrap: { width: BLOCK_SZ, useAdvancedWrap: true },
+      }).setOrigin(0.5, 0).setDepth(2)
+      bg.on('pointerdown', () => this.unequipSlot(s))
+      this.equipSlotBgs.push(bg)
+      this.equipSlotIcons.push(icon)
+      this.equipSlotNames.push(nameTxt)
+    }
 
     // Scrollable card rail
     const totalW = ITEM_REGISTRY.length * (CARD_SZ + CARD_GAP) - CARD_GAP
@@ -545,20 +543,12 @@ export class ShopScene extends Phaser.Scene {
     })
 
     this.invObjs = [
-      this.invPlayerImg, invSelLabel,
-      this.invPreviewBg, this.invPreviewImg, this.invPreviewName,
-      this.invLevelTxt, this.invLevelStatTxt,
+      this.invPlayerImg, slotsLabel,
+      ...this.equipSlotBgs, ...this.equipSlotIcons, ...this.equipSlotNames,
       invArrowL, invArrowR,
     ]
 
-    // Default to 'nada' if nothing is equipped yet
-    if (!EquipManager.getEquipped()) EquipManager.equip('nada')
-
-    const eqId = EquipManager.getEquipped()!
-    const eqIdx = ITEM_REGISTRY.findIndex(it => it.id === eqId)
-    const startIdx = eqIdx !== -1 ? eqIdx : 0
-    this.invSelectedIdx = startIdx
-    this.invShowPreview(startIdx)
+    this.refreshEquipSlots()
   }
 
   // ── Tab switching ────────────────────────────────────────────────────────────
@@ -582,7 +572,7 @@ export class ShopScene extends Phaser.Scene {
     } else {
       this.shopOwnedTxt.setVisible(false)
       this.refreshInvCards()
-      this.refreshInvLevel()
+      this.refreshEquipSlots()
       NotificationManager.clearNewItem()
       this.hideInvNotifDot()
       if (this.tutorialStep === 'equip') this.startTutorialInvItemStep()
@@ -781,24 +771,59 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private invEquipItem(idx: number) {
-    this.invSelectedIdx = idx
-    EquipManager.equip(ITEM_REGISTRY[idx].id)
-    this.invShowPreview(idx)
+    const id = ITEM_REGISTRY[idx].id
+    EquipManager.toggle(id)
     this.refreshInvCards()
-    this.jumpInvPreview()
+    this.refreshEquipSlots()
+    const slot = EquipManager.getEquipped().indexOf(id)
+    if (slot !== -1) this.jumpEquipSlot(slot)
     this.centerRailOnIndex(idx, 'inventory')
 
-    if (this.tutorialStep === 'equip' && ITEM_REGISTRY[idx].id === 'pomodoro-shot') {
+    if (this.tutorialStep === 'equip' && EquipManager.isEquipped('pomodoro-shot')) {
       this.tutorialStep = null
       this.completeTutorial()
     }
   }
 
+  // Reflect the current loadout in the two equipped-slot blocks.
+  private refreshEquipSlots() {
+    const equipped = EquipManager.getEquipped()
+    for (let s = 0; s < MAX_EQUIP_SLOTS; s++) {
+      const id   = equipped[s]
+      const bg   = this.equipSlotBgs[s]
+      const icon = this.equipSlotIcons[s]
+      const name = this.equipSlotNames[s]
+      if (!bg || !icon || !name) continue
+      const item = id ? ITEM_REGISTRY.find(i => i.id === id) : undefined
+      if (item) {
+        bg.setTexture('modal-bg3')
+        icon.setTexture(item.iconKey, item.iconFrame)
+          .setDisplaySize(BLOCK_SZ * 0.6, BLOCK_SZ * 0.6)
+          .setVisible(true)
+        name.setText(t(`item.${item.id}.name`)).setVisible(true)
+      } else {
+        bg.setTexture('modal-bg2')
+        icon.setVisible(false)
+        name.setVisible(false)
+      }
+    }
+  }
+
+  // Tap a filled block to unequip that slot.
+  private unequipSlot(slot: number) {
+    const id = EquipManager.getEquipped()[slot]
+    if (!id) return
+    this.playClick()
+    EquipManager.unequip(id)
+    this.refreshEquipSlots()
+    this.refreshInvCards()
+  }
+
   private jumpInvPlayer() {
-    const baseY = INV_CY - 20
+    const baseY = INV_CHINELA_Y
     this.tweens.add({
       targets: this.invPlayerImg,
-      y: baseY - 30,
+      y: baseY - 26,
       duration: 130,
       ease: 'Cubic.Out',
       onComplete: () => {
@@ -815,54 +840,25 @@ export class ShopScene extends Phaser.Scene {
     playSfx(this, key, 0.7)
   }
 
-  private jumpInvPreview() {
-    const baseY = INV_CY
+  // Bounce the icon of a slot when an item is equipped into it.
+  private jumpEquipSlot(slot: number) {
+    const icon = this.equipSlotIcons[slot]
+    if (!icon) return
+    const baseY = BLOCK_CY
     this.tweens.add({
-      targets: this.invPreviewImg,
-      y: baseY - 28,
+      targets: icon,
+      y: baseY - 24,
       duration: 140,
       ease: 'Cubic.Out',
       onComplete: () => {
         this.tweens.add({
-          targets: this.invPreviewImg,
+          targets: icon,
           y: baseY,
           duration: 180,
           ease: 'Bounce.Out',
         })
       },
     })
-  }
-
-  private invShowPreview(idx: number) {
-    const item     = ITEM_REGISTRY[idx]
-    const equipped = EquipManager.isEquipped(item.id)
-    this.invPreviewBg.setTexture(equipped ? 'modal-bg3' : 'modal-bg')
-    if (item.alwaysOwned) {
-      this.invPreviewImg.setDisplaySize(0, 0)
-    } else {
-      this.invPreviewImg
-        .setTexture(item.iconKey, item.iconFrame)
-        .setDisplaySize(INV_SZ * 0.62, INV_SZ * 0.62)
-    }
-    this.invPreviewName.setText(t(`item.${item.id}.name`))
-    this.refreshInvLevel()
-  }
-
-  // ── Inventory level display (read-only; upgrades happen in the shop) ──────────
-  private refreshInvLevel() {
-    const item = ITEM_REGISTRY[this.invSelectedIdx]
-    if (!item || !item.levelStats || item.alwaysOwned || !PurchaseManager.has(item.id)) {
-      this.invLevelTxt.setVisible(false)
-      this.invLevelStatTxt.setVisible(false)
-      return
-    }
-
-    const rawLevel = UpgradeManager.getLevel(item.id)
-    const level = rawLevel > 0 ? rawLevel : 1
-
-    const stars = '★'.repeat(level) + '☆'.repeat(3 - level)
-    this.invLevelTxt.setText(t('level', level, stars)).setVisible(true)
-    this.invLevelStatTxt.setText(t(`item.${item.id}.stat.${level - 1}`)).setVisible(true)
   }
 
   private refreshInvCards() {

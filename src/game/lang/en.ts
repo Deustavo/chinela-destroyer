@@ -17,6 +17,7 @@ const en: Record<string, string> = {
   no_coins: 'No coins',
   owned: 'owned',
   selected: 'Selected',
+  equipped_slots: 'Equipped',
   max_level: 'Max level',
   level: 'Level {0}  {1}',
 

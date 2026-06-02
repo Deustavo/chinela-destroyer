@@ -24,9 +24,9 @@ export class PlayerLoadout {
   // Picks the equipped shot item, applies level overrides, then folds in upgrade multipliers.
   static getActiveShotConfig(): ShotConfig {
     const equipped = EquipManager.getEquipped()
-    const equippedItem = equipped
-      ? ITEM_REGISTRY.find(item => item.id === equipped && item.type === 'shot' && item.shotConfig)
-      : undefined
+    const equippedItem = ITEM_REGISTRY.find(
+      item => equipped.includes(item.id) && item.type === 'shot' && item.shotConfig,
+    )
 
     const base = equippedItem?.shotConfig ?? BASE_SHOT
 
@@ -49,8 +49,9 @@ export class PlayerLoadout {
 
   static getActiveEffects(): UpgradeEffect[] {
     const equipped = EquipManager.getEquipped()
-    if (!equipped) return []
-    const item = ITEM_REGISTRY.find(i => i.id === equipped && i.type === 'upgrade' && i.effect)
-    return item?.effect ? [item.effect] : []
+    if (equipped.length === 0) return []
+    return ITEM_REGISTRY
+      .filter(i => equipped.includes(i.id) && i.type === 'upgrade' && i.effect)
+      .map(i => i.effect!)
   }
 }

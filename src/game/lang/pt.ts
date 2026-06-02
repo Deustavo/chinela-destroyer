@@ -17,6 +17,7 @@ const pt: Record<string, string> = {
   no_coins: 'Sem moedas',
   owned: 'adquirido',
   selected: 'Selecionado',
+  equipped_slots: 'Equipados',
   max_level: 'Nível máx.',
   level: 'Nível {0}  {1}',
 

@@ -630,7 +630,7 @@ export class MainScene extends Phaser.Scene {
         const stunDuration = proj.getData('stunDuration') as number | undefined
         if (stunDuration) this.enemy.applyStun(stunDuration)
         else this.enemy.showHit()
-        if (EquipManager.getEquipped() === 'pomodoro-shot') {
+        if (EquipManager.isEquipped('pomodoro-shot')) {
           playSfx(this, 'coin-collected', 0.6)
           const total = CoinManager.add(2)
           this.coinCountText.setText(String(total))
