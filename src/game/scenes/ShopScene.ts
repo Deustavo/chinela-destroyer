@@ -34,8 +34,15 @@ const PREV_X  = CX
 const PREV_Y  = 200   // center of the block
 
 // ── Inventory layout — small cat above two large equipped-loadout blocks ──────
+const INV_CHINELA_X  = 66    // pulled to the left edge to make room for the balloon
 const INV_CHINELA_Y  = 162   // center of the (shrunk) cat
-const INV_CHINELA_SZ = 100
+const INV_CHINELA_SZ = 96
+
+// ── Speech balloon (modalLargeBG1, 390×84) shown to the right of the cat ──────
+const BALLOON_W = 270
+const BALLOON_H = Math.round((BALLOON_W * 84) / 390)   // keep the art's aspect ratio
+const BALLOON_X = W - BALLOON_W / 2 - 13                // hugs the right edge
+const BALLOON_Y = INV_CHINELA_Y
 
 const BLOCK_SZ     = 132
 const BLOCK_GAP    = 22
@@ -87,6 +94,10 @@ export class ShopScene extends Phaser.Scene {
 
   // ── Inventory tab ─────────────────────────────────────────────────────────
   private invPlayerImg!: Phaser.GameObjects.Image
+  private catBalloonBg!: Phaser.GameObjects.Image
+  private catBalloonTxt!: Phaser.GameObjects.Text
+  private catLineIdx = 0
+  private catLineTimer?: Phaser.Time.TimerEvent
   private blinkTimer?: Phaser.Time.TimerEvent
   private lickTimers: Phaser.Time.TimerEvent[] = []
   private wagTimers: Phaser.Time.TimerEvent[] = []
@@ -441,12 +452,26 @@ export class ShopScene extends Phaser.Scene {
 
   // ── Inventory panel ──────────────────────────────────────────────────────────
   private buildInvPanel() {
-    // Small cat sitting above the loadout
+    // Small cat sitting to the left, above the loadout
     this.invPlayerImg = this.add
-      .image(CX, INV_CHINELA_Y, 'chinela', 0)
+      .image(INV_CHINELA_X, INV_CHINELA_Y, 'chinela', 0)
       .setDisplaySize(INV_CHINELA_SZ, INV_CHINELA_SZ).setDepth(3)
       .setInteractive({ useHandCursor: true })
     this.invPlayerImg.on('pointerdown', () => this.jumpInvPlayer())
+
+    // Speech balloon next to the cat — cycles through her chatter lines
+    this.catBalloonBg = this.add
+      .image(BALLOON_X, BALLOON_Y, 'modal-large-bg1')
+      .setDisplaySize(BALLOON_W, BALLOON_H).setDepth(3)
+    this.catBalloonTxt = this.add
+      .text(BALLOON_X, BALLOON_Y, '', {
+        fontSize: '12px', color: '#ffffff', align: 'center',
+        fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3,
+        wordWrap: { width: BALLOON_W - 44, useAdvancedWrap: true },
+        lineSpacing: 2,
+      })
+      .setOrigin(0.5).setDepth(4)
+    this.showCatLine(0)
 
     // "Equipados" label above the two blocks
     const slotsLabel = this.add.text(CX, BLOCK_LBL_Y, t('equipped_slots'), {
@@ -571,7 +596,7 @@ export class ShopScene extends Phaser.Scene {
     })
 
     this.invObjs = [
-      this.invPlayerImg, slotsLabel,
+      this.invPlayerImg, this.catBalloonBg, this.catBalloonTxt, slotsLabel,
       ...this.equipSlotBgs, ...this.equipSlotIcons, ...this.equipSlotNames,
       invArrowL, invArrowR,
     ]
@@ -596,6 +621,7 @@ export class ShopScene extends Phaser.Scene {
 
     if (isShop) {
       this.stopBlinkLoop()
+      this.stopCatChatter()
       this.refreshBuyBtn()
     } else {
       this.shopOwnedTxt.setVisible(false)
@@ -605,6 +631,7 @@ export class ShopScene extends Phaser.Scene {
       this.hideInvNotifDot()
       if (this.tutorialStep === 'equip') this.startTutorialInvItemStep()
       this.startBlinkLoop()
+      this.startCatChatter()
     }
   }
 
@@ -847,7 +874,55 @@ export class ShopScene extends Phaser.Scene {
     this.refreshInvCards()
   }
 
+  // ── Chinela speech balloon ─────────────────────────────────────────────────
+  private static readonly CAT_LINE_KEYS = ['cat_line_1', 'cat_line_2', 'cat_line_3', 'cat_line_4']
+
+  // True once the player owns at least one purchasable (non-default) item.
+  private hasAnyPurchase(): boolean {
+    return ITEM_REGISTRY.some(i => !i.alwaysOwned && PurchaseManager.has(i.id))
+  }
+
+  private showCatLine(idx: number) {
+    // With an empty inventory she only nudges the player toward the shop.
+    if (!this.hasAnyPurchase()) {
+      this.catLineIdx = 0
+      this.popCatBalloon(t('cat_empty'))
+      return
+    }
+    const keys = ShopScene.CAT_LINE_KEYS
+    this.catLineIdx = ((idx % keys.length) + keys.length) % keys.length
+    this.popCatBalloon(t(keys[this.catLineIdx]))
+  }
+
+  // Set the balloon text with a little pop so the change is noticeable.
+  private popCatBalloon(text: string) {
+    this.catBalloonTxt.setText(text)
+    this.catBalloonTxt.setScale(0.9)
+    this.tweens.add({ targets: this.catBalloonTxt, scale: 1, duration: 200, ease: 'Back.Out' })
+  }
+
+  private advanceCatLine() {
+    this.showCatLine(this.catLineIdx + 1)
+    if (this.catLineTimer) this.startCatChatter()   // reset the auto-cycle clock
+  }
+
+  private startCatChatter() {
+    this.stopCatChatter()
+    if (!this.hasAnyPurchase()) return   // single fixed line — no cycling needed
+    this.catLineTimer = this.time.addEvent({
+      delay: 10000,
+      loop: true,
+      callback: () => this.showCatLine(this.catLineIdx + 1),
+    })
+  }
+
+  private stopCatChatter() {
+    this.catLineTimer?.remove()
+    this.catLineTimer = undefined
+  }
+
   private jumpInvPlayer() {
+    this.advanceCatLine()
     const baseY = INV_CHINELA_Y
     this.tweens.add({
       targets: this.invPlayerImg,

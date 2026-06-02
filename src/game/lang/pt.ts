@@ -21,6 +21,13 @@ const pt: Record<string, string> = {
   max_level: 'Nível máx.',
   level: 'Nível {0}  {1}',
 
+  // ── Chinela inventory chatter ─────────────────────────────────────────────────
+  cat_line_1: 'Os itens com ícone 🎯 são tiros, e os 🛡 são secundários!',
+  cat_line_2: 'Você não pode equipar 2 itens de tiro 🎯 ao mesmo tempo!',
+  cat_line_3: 'Miau miau miau',
+  cat_line_4: 'Você pode deixar seus itens mais fortes na loja',
+  cat_empty: 'Está meio vazio aqui. Você precisa comprar novos itens na loja',
+
   // ── Achievements ────────────────────────────────────────────────────────────
   achievements_title: 'Conquistas',
   close: 'Fechar',

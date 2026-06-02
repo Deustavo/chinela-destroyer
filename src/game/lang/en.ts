@@ -21,6 +21,13 @@ const en: Record<string, string> = {
   max_level: 'Max level',
   level: 'Level {0}  {1}',
 
+  // ── Chinela inventory chatter ─────────────────────────────────────────────────
+  cat_line_1: 'Items marked 🎯 are shots, and 🛡 ones are secondary!',
+  cat_line_2: "You can't equip 2 shot items 🎯 at the same time!",
+  cat_line_3: 'Meow meow meow',
+  cat_line_4: 'You can make your items stronger in the shop',
+  cat_empty: "It's a bit empty here. You need to buy new items in the shop",
+
   // ── Achievements ────────────────────────────────────────────────────────────
   achievements_title: 'Achievements',
   close: 'Close',
