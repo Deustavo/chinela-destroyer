@@ -27,6 +27,7 @@ const pt: Record<string, string> = {
   cat_line_3: 'Miau miau miau',
   cat_line_4: 'Você pode deixar seus itens mais fortes na loja',
   cat_empty: 'Está meio vazio aqui. Você precisa comprar novos itens na loja',
+  inventory_full: 'Você precisa liberar espaço no inventário para equipar um novo item',
 
   // ── Achievements ────────────────────────────────────────────────────────────
   achievements_title: 'Conquistas',

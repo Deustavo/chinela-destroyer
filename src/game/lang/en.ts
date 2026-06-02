@@ -27,6 +27,7 @@ const en: Record<string, string> = {
   cat_line_3: 'Meow meow meow',
   cat_line_4: 'You can make your items stronger in the shop',
   cat_empty: "It's a bit empty here. You need to buy new items in the shop",
+  inventory_full: 'You need to free up an inventory slot to equip a new item',
 
   // ── Achievements ────────────────────────────────────────────────────────────
   achievements_title: 'Achievements',

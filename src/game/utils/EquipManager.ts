@@ -32,18 +32,31 @@ export class EquipManager {
   // item is a no-op (use unequip / toggle to remove it).
   static equip(itemId: string): void {
     if (itemId === 'nada') { this.save([]); return }
+    // Only one shot may be active at a time, and we never silently swap it out.
+    if (this.hasShotConflict(itemId)) return
 
-    let list = this.getEquipped().filter(id => id !== itemId)
-
-    if (this.isShot(itemId)) {
-      // Only one shot may be active — drop any other equipped shot.
-      list = list.filter(id => !this.isShot(id))
-    }
-
+    const list = this.getEquipped().filter(id => id !== itemId)
     list.push(itemId)
     while (list.length > MAX_EQUIP_SLOTS) list.shift() // drop the oldest
 
     this.save(list)
+  }
+
+  // True if equipping itemId would have to push an already-equipped item out of
+  // the loadout (i.e. there's no free slot for it). Re-equipping something
+  // already on or equipping 'nada' are never "full".
+  static isFullFor(itemId: string): boolean {
+    if (itemId === 'nada') return false
+    if (this.isEquipped(itemId)) return false
+    return this.getEquipped().filter(id => id !== itemId).length >= MAX_EQUIP_SLOTS
+  }
+
+  // True if itemId is a shot and a *different* shot is already equipped. Only
+  // one shot may be active, and equipping a second must be refused (not swapped).
+  static hasShotConflict(itemId: string): boolean {
+    if (!this.isShot(itemId)) return false
+    if (this.isEquipped(itemId)) return false
+    return this.getEquipped().some(id => this.isShot(id))
   }
 
   static unequip(itemId: string): void {

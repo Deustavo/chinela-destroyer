@@ -558,9 +558,22 @@ export class ShopScene extends Phaser.Scene {
         .rectangle(cx, cy, CARD_SZ, CARD_SZ, 0xffffff, 0)
         .setInteractive({ useHandCursor: true })
       hit.on('pointerdown', () => {
-        this.playClick()
         const reg = ITEM_REGISTRY[i]
-        if (!!reg.alwaysOwned || PurchaseManager.has(reg.id)) this.invEquipItem(i)
+        if (!reg.alwaysOwned && !PurchaseManager.has(reg.id)) { this.playClick(); return }
+        // Only one shot at a time — refuse a second one instead of swapping.
+        if (EquipManager.hasShotConflict(reg.id)) {
+          playSfx(this, 'error')
+          this.popCatBalloon(t('inventory_full'))
+          return
+        }
+        // No empty slot for this item — refuse, with the error sfx and a nudge.
+        if (EquipManager.isFullFor(reg.id)) {
+          playSfx(this, 'error')
+          this.popCatBalloon(t('inventory_full'))
+          return
+        }
+        this.playClick()
+        this.invEquipItem(i)
       })
 
       const badge = this.makeCategoryBadge(cx, cy, item)

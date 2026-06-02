@@ -4,7 +4,7 @@ const KEY = 'totalCoins'
 
 export class CoinManager {
   static getTotal(): number {
-    return parseInt(storageGet(KEY) ?? '1000000', 10)
+    return parseInt(storageGet(KEY) ?? '0', 10)
   }
 
   static add(amount: number): number {
