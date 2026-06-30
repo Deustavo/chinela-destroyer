@@ -654,6 +654,11 @@ export class MainScene extends Phaser.Scene {
     this.clearBossVitalArrows()
     this.mothershipTraps.clear(true, true)
 
+    // Bump height by 1 unit so the player crosses the achievement threshold
+    // (bosses trigger at 999/1999/2999, achievements unlock at 1000/2000/3000)
+    const achievementScrollY = -((BOSSES[this.activeBossIdx].triggerHeight + 1) * 10)
+    this.cameras.main.scrollY = Math.min(this.cameras.main.scrollY, achievementScrollY)
+
     if (this.gameMode === 'normal') {
       if (this.activeBossIdx === 0) {
         storageSet('normalStagesUnlocked', JSON.stringify([0, 1]))
