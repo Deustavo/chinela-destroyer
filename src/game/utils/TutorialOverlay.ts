@@ -62,11 +62,11 @@ const STEPS: Step[] = [
     check: (p) => checkWrap(p),
   },
   {
-    lines: ['↑ ou W para pular', '(ou botão de pulo)'],
+    lines: ['↑, W ou ESPAÇO', 'para pular', '(ou botão de pulo)'],
     check: (p) => p.body.velocity.y < -80,
   },
   {
-    lines: ['ESPAÇO para atirar', '(ou botão de tiro)'],
+    lines: ['B para atirar', '(ou botão de tiro)'],
     check: (p) => p.projectiles.getLength() > 0,
   },
   {

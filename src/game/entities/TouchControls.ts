@@ -59,7 +59,7 @@ export class TouchControls {
     if (!isTouchDevice()) {
       const labelY = this.shotBtnY + this.shotBtnDisplaySize / 2 + 16
       const label = scene.add
-        .text(this.shotBtnX, labelY, 'aperte\nespaço', {
+        .text(this.shotBtnX, labelY, ' Aperte B\npara atirar', {
           fontSize: '15px',
           color: '#ffff00',
           fontFamily: FONT_FAMILY,
@@ -87,7 +87,7 @@ export class TouchControls {
         label.destroy()
       }
 
-      scene.input.keyboard?.once('keydown-SPACE', hide)
+      scene.input.keyboard?.once('keydown-B', hide)
     }
   }
 
