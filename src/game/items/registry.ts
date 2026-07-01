@@ -57,14 +57,14 @@ export const ITEM_REGISTRY: ShopItem[] = [
     id: 'shield',
     type: 'shield',
     name: 'Segunda chance',
-    price: 50,
+    price: 30,
     description: 'Escudo absorve 1 tiro\n(recarga 10s)',
     iconKey: 'shield1',
     iconFrame: 0,
     levelStats: [
       { upgradeCost: 0,   description: 'Recarga: 12s', cooldown: 12 },
-      { upgradeCost: 80,  description: 'Recarga: 10s', cooldown: 10 },
-      { upgradeCost: 160, description: 'Recarga: 8s',  cooldown: 8  },
+      { upgradeCost: 60,  description: 'Recarga: 10s', cooldown: 10 },
+      { upgradeCost: 180, description: 'Recarga: 8s',  cooldown: 8  },
     ],
   },
   {
