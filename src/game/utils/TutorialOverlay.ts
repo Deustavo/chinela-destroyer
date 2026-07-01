@@ -28,11 +28,18 @@ const STEP_BUTTON_HINTS: Record<number, ButtonHint[]> = {
   ],
   2: [{ x: SHOT_BTN_X, y: BTN_Y, r: 58 }],
   3: [{ x: SHOT_BTN_X, y: SHOT_BTN_Y, r: 50 }],
+  4: [{ x: SHOT_BTN_X, y: SHOT_BTN_Y, r: 50 }],
 }
 
 interface Step {
   lines: string[]
-  check: (player: Player, stepMs: number) => boolean
+  check: (player: Player, stepMs: number, scene: Phaser.Scene) => boolean
+}
+
+// The last step reads this flag off the scene (set by MainScene when the player
+// destroys a Pera projectile). Structural cast avoids a circular import.
+interface TutorialSceneState {
+  tutorialTrapHit: boolean
 }
 
 // Wrap detection uses a closure to track previous x across frames
@@ -70,10 +77,12 @@ const STEPS: Step[] = [
     check: (p) => p.projectiles.getLength() > 0,
   },
   {
-    lines: ['Destrua projéteis', 'da Pera para ganhar', 'moedas!'],
-    check: (_p, ms) => ms > 3200,
+    lines: ['Acerte os projéteis', 'para ganhar', 'dinheiro'],
+    check: (_p, _ms, scene) => (scene as unknown as TutorialSceneState).tutorialTrapHit === true,
   },
 ]
+
+const LAST_STEP_INDEX = STEPS.length - 1
 
 const ARROW_COLOR = 0xffff00
 const ARROW_ALPHA = 0.85
@@ -95,6 +104,7 @@ export class TutorialOverlay {
   private _done: boolean = false
   private scene: Phaser.Scene
   private player: Player
+  private onLastStep?: () => void
   private wrapArrows: Phaser.GameObjects.Graphics | null = null
   private buttonCircles: Phaser.GameObjects.Graphics | null = null
 
@@ -102,9 +112,10 @@ export class TutorialOverlay {
     return storageGet(TUTORIAL_KEY) === null
   }
 
-  constructor(scene: Phaser.Scene, player: Player) {
+  constructor(scene: Phaser.Scene, player: Player, onLastStep?: () => void) {
     this.scene = scene
     this.player = player
+    this.onLastStep = onLastStep
 
     const cx = WORLD.width / 2
     const cy = WORLD.height * 0.25
@@ -174,7 +185,7 @@ export class TutorialOverlay {
 
     // Sample every frame so brief windows (e.g. jump velocity) are never missed
     if (!this.stepActionSeen) {
-      this.stepActionSeen = STEPS[this.stepIndex].check(this.player, this.stepMs)
+      this.stepActionSeen = STEPS[this.stepIndex].check(this.player, this.stepMs, this.scene)
     }
 
     if (this.stepMs > MIN_STEP_MS && this.stepActionSeen) {
@@ -237,6 +248,8 @@ export class TutorialOverlay {
     } else {
       this.hideButtonCircles()
     }
+
+    if (idx === LAST_STEP_INDEX) this.onLastStep?.()
   }
 
   private panelHeightFor(lineCount: number): number {

@@ -225,6 +225,8 @@ export class Enemy {
     const trapFrame = Phaser.Math.Between(0, 3)
     const trap = this.traps.create(worldX, worldY, ENEMY.trapsKey, trapFrame) as Phaser.Physics.Arcade.Image
     trap.setDisplaySize(ENEMY.trapDisplaySize, ENEMY.trapDisplaySize)
+    // Render above the tutorial modal (depth 60) so projectiles stay visible during it.
+    trap.setDepth(65)
     ;(trap.body as Phaser.Physics.Arcade.Body).setSize(ENEMY.trapHitboxSize, ENEMY.trapHitboxSize)
     trap.setVelocityX(vx)
     trap.setVelocityY(vy)

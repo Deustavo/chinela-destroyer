@@ -136,6 +136,22 @@ export class Player {
     return this.wingMaxCooldown
   }
 
+  // Tutorial helper: make the shield absorb every hit (no cooldown) so the
+  // player can't die while learning. Assumes the shield is already owned.
+  setShieldUnbreakable(): void {
+    this.shieldMaxCooldown = 0
+    this.shieldCooldown = 0
+  }
+
+  // Tutorial helper: remove the shield mid-run once the tutorial ends so normal
+  // (lethal) gameplay resumes.
+  disableShield(): void {
+    this.shieldOwned = false
+    this.shieldCooldown = 0
+    this.shieldSprite?.destroy()
+    this.shieldSprite = null
+  }
+
   tryAbsorbHit(): boolean {
     if (!this.shieldOwned || this.shieldCooldown > 0) return false
     this.shieldCooldown = this.shieldMaxCooldown

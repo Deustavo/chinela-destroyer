@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 import { Player } from '../entities/Player'
 import { Enemy } from '../entities/Enemy'
 import { TouchControls } from '../entities/TouchControls'
-import { WORLD, PLATFORMS, BOSS_SHIP, BOSSES, ENEMY, FONT_FAMILY, PLAYER } from '../config/constants'
+import { WORLD, PLATFORMS, BOSS_SHIP, BOSSES, ENEMY, FONT_FAMILY, PLAYER, SHIELD } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
 import { CoinManager } from '../utils/CoinManager'
 import { addCoinCounter, showFloatingPopup } from '../utils/uiHelpers'
@@ -51,6 +51,9 @@ export class MainScene extends Phaser.Scene {
   private wingsHUD: Phaser.GameObjects.Text | null = null
   private tutorialOverlay: TutorialOverlay | null = null
   private tutorialActive: boolean = false
+  // Read by TutorialOverlay's last step: set when the player destroys a Pera
+  // projectile with a shot during the tutorial.
+  tutorialTrapHit: boolean = false
   private collectibleCoins!: Phaser.Physics.Arcade.Group
   private platformSpawnCount: number = 0
   private gameMode: 'normal' | 'semFim' = 'normal'
@@ -78,6 +81,8 @@ export class MainScene extends Phaser.Scene {
     this.bossDeathAnimating = false
     this.shieldHUD = null
     this.wingsHUD = null
+    this.tutorialActive = false
+    this.tutorialTrapHit = false
     this.lastPlatformY = WORLD.groundY - WORLD.groundHeight / 2
     this.lastPlatformX = WORLD.width / 2
     this.sessionUnlocked = AchievementManager.getUnlocked()
@@ -121,6 +126,11 @@ export class MainScene extends Phaser.Scene {
     for (let i = 0; i < PLATFORMS.initialCount; i++) {
       this.spawnPlatform()
     }
+
+    // Equip "Segunda chance" before building the player so the tutorial run is
+    // protected by the shield (made unbreakable below). Unequipped when done.
+    const showTutorial = TutorialOverlay.shouldShow()
+    if (showTutorial) EquipManager.equip(SHIELD.itemId)
 
     this.player = new Player(this)
 
@@ -177,6 +187,7 @@ export class MainScene extends Phaser.Scene {
         playSfx(this, 'coin-collected', 0.6)
         if (!shot.getData('piercing')) this.playShotImpact(shot)
         ;(_trap as Phaser.Physics.Arcade.Image).destroy()
+        this.tutorialTrapHit = true
         this.tryAwardCoin()
       },
     )
@@ -202,7 +213,7 @@ export class MainScene extends Phaser.Scene {
     // Coin counter — positioned to the left of the pause button (pause btn center = WORLD.width-36)
     this.coinCountText = addCoinCounter(this, WORLD.width - 68, 26)
 
-    if (this.player.isShieldOwned()) {
+    if (this.player.isShieldOwned() && !showTutorial) {
       this.shieldHUD = this.add
         .text(16, 44, t('shield_ready'), {
           fontSize: '18px',
@@ -231,11 +242,16 @@ export class MainScene extends Phaser.Scene {
 
     this.addPauseButton()
 
-    if (TutorialOverlay.shouldShow()) {
+    if (showTutorial) {
       this.tutorialActive = true
+      this.player.setShieldUnbreakable()
       this.applyTutorialPlatformVisibility(true)
-      this.tutorialOverlay = new TutorialOverlay(this, this.player)
+      // Pera stays silent until the final step, then throws so the player can
+      // practice destroying a projectile.
       this.enemy.setThrowingEnabled(false)
+      this.tutorialOverlay = new TutorialOverlay(this, this.player, () => {
+        this.enemy.setThrowingEnabled(true)
+      })
     }
 
     this.onEscKey = (e: KeyboardEvent) => { if (e.key === 'Escape') this.pauseGame() }
@@ -965,6 +981,9 @@ export class MainScene extends Phaser.Scene {
         this.tutorialActive = false
         this.applyTutorialPlatformVisibility(false)
         this.enemy.setThrowingEnabled(true)
+        // Tutorial over: drop the "Segunda chance" so normal (lethal) play resumes.
+        this.player.disableShield()
+        EquipManager.unequip(SHIELD.itemId)
         this.tutorialOverlay = null
       }
     }
