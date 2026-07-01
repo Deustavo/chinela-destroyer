@@ -61,7 +61,7 @@ function checkWrap(p: Player): boolean {
 
 const STEPS: Step[] = [
   {
-    lines: ['← → para mover', '(ou botões laterais)'],
+    lines: ['Use ← → para mover', '(ou A e D)'],
     check: (p) => Math.abs(p.body.velocity.x) > 5,
   },
   {
