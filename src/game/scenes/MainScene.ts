@@ -1027,7 +1027,7 @@ export class MainScene extends Phaser.Scene {
       this.toastQueue.push({ iconKey: achievement.unlockedIconKey })
     }
     if (newlyUnlocked.length > 0) {
-      this.sound.play('unlock', { volume: 0.8 })
+      playSfx(this, 'unlock', 0.8)
       if (!this.toastActive) this.showNextToast()
     }
   }
