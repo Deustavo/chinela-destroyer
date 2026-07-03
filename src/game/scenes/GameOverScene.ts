@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
-import { addBackground, wireButtonLabel, addCoinCounter, bindEscapeKey, applySceneMuffle } from '../utils/uiHelpers'
+import { addBackground, wireButtonLabel, addCoinCounter, applySceneMuffle } from '../utils/uiHelpers'
 import { dropIn, dropInFloat, exitTo, type SceneObject } from '../utils/sceneTransitions'
 import { storageGet, storageSet, storageRemove, parseJson } from '../utils/storage'
 import { CoinManager } from '../utils/CoinManager'
@@ -134,10 +134,10 @@ export class GameOverScene extends Phaser.Scene {
     const backToMenu = () => { playSfx(this, 'button-click'); exitTo(this, 'menu-scene', allElements) }
 
     // Keyboard shortcuts are bound only after any name-entry modal is dismissed,
-    // so SPACE/ESC don't fire while the player is typing their name.
+    // so keys don't fire while the player is typing their name.
+    // Qualquer tecla reinicia a partida.
     const wireKeys = () => {
-      this.input.keyboard!.once('keydown-SPACE', playAgain)
-      bindEscapeKey(this, backToMenu)
+      this.input.keyboard!.once('keydown', playAgain)
     }
 
     wireButtonLabel(btnHome, labelHome, backToMenu)

@@ -51,7 +51,7 @@ const en: Record<string, string> = {
   submit: 'Submit',
   skip: 'skip',
   play_again: 'Play again',
-  space_hint: 'Press SPACE to play again',
+  space_hint: 'Press any key to play again',
   achievement_unlocked: 'Achievement unlocked!',
   see: 'see ›',
   shop_tutorial_title: 'Buy an upgrade',

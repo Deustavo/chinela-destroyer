@@ -51,7 +51,7 @@ const pt: Record<string, string> = {
   submit: 'Enviar',
   skip: 'pular',
   play_again: 'Jogar novamente',
-  space_hint: 'Pressione ESPAÇO para jogar novamente',
+  space_hint: 'Pressione qualquer tecla para jogar novamente',
   achievement_unlocked: 'Conquista desbloqueada!',
   see: 'ver ›',
   shop_tutorial_title: 'Compre um aprimoramento',
