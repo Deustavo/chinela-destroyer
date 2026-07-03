@@ -19,6 +19,7 @@ export class Player {
   }
   private spaceKey: Phaser.Input.Keyboard.Key
   private shootKey: Phaser.Input.Keyboard.Key
+  private shootKeyAlt: Phaser.Input.Keyboard.Key
   private shotCooldown: number = 0
   private activeShotConfig: ShotConfig
   private scene: Phaser.Scene
@@ -59,7 +60,8 @@ export class Player {
       right: scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.D),
     }
     this.spaceKey = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
-    this.shootKey = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.B)
+    this.shootKey = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E)
+    this.shootKeyAlt = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
 
     this.activeShotConfig = PlayerLoadout.getActiveShotConfig()
     this.projectiles = scene.physics.add.group({ allowGravity: false })
@@ -298,7 +300,10 @@ export class Player {
       }
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.shootKey)) {
+    if (
+      Phaser.Input.Keyboard.JustDown(this.shootKey) ||
+      Phaser.Input.Keyboard.JustDown(this.shootKeyAlt)
+    ) {
       this.requestShot()
     }
 

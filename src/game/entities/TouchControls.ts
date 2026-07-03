@@ -59,18 +59,21 @@ export class TouchControls {
     if (!isTouchDevice()) {
       const labelY = this.shotBtnY + this.shotBtnDisplaySize / 2 + 16
       const label = scene.add
-        .text(this.shotBtnX, labelY, ' Aperte B\npara atirar', {
-          fontSize: '15px',
+        .text(this.shotBtnX, labelY, 'Aperte E ou ENTER\npara atirar', {
+          fontSize: '13px',
           color: '#ffff00',
           fontFamily: FONT_FAMILY,
           fontStyle: 'bold',
           stroke: '#000000',
           strokeThickness: 4,
+          align: 'center',
         })
         .setOrigin(0.5, 0.5)
         .setScrollFactor(0)
         .setDepth(23)
         .setAlpha(1)
+      // Keep the label fully on-screen (button sits near the right edge)
+      label.x = Math.min(this.shotBtnX, WORLD.width - label.width / 2 - 6)
 
       const tween = scene.tweens.add({
         targets: label,
@@ -87,7 +90,8 @@ export class TouchControls {
         label.destroy()
       }
 
-      scene.input.keyboard?.once('keydown-B', hide)
+      scene.input.keyboard?.once('keydown-E', hide)
+      scene.input.keyboard?.once('keydown-ENTER', hide)
     }
   }
 

@@ -83,7 +83,7 @@ const STEPS: Step[] = [
     check: (p) => p.body.velocity.y < -80,
   },
   {
-    lines: ['Aperte B', 'para atirar'],
+    lines: ['Aperte E ou ENTER', 'para atirar'],
     linesTouch: ['Toque no botão', 'de tiro para atirar'],
     check: (p) => p.projectiles.getLength() > 0,
   },
