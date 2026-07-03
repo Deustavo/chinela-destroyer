@@ -14,6 +14,7 @@ const en: Record<string, string> = {
   ranking_loading: 'Loading...',
   ranking_empty: 'No scores yet.\nBe the first!',
   ranking_unconfigured: 'Online ranking is\nunavailable right now.',
+  top3_title: 'Global',
 
   // ── Shop UI ─────────────────────────────────────────────────────────────────
   shop_title: 'Items',
@@ -45,7 +46,7 @@ const en: Record<string, string> = {
   // ── Game Over ───────────────────────────────────────────────────────────────
   height: 'Height: {0}',
   new_record: 'New record: {0}!',
-  record: 'Record: {0}',
+  record: 'Your record: {0}',
   new_record_title: 'New record!',
   enter_name: 'Enter your name for\nthe ranking:',
   submit: 'Submit',

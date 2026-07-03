@@ -7,20 +7,23 @@ import { CoinManager } from '../utils/CoinManager'
 import { PurchaseManager } from '../utils/PurchaseManager'
 import { playSfx } from '../utils/AudioManager'
 import { promptForName } from '../utils/NameEntryModal'
-import { isConfigured, submitScore, type GameMode } from '../utils/Leaderboard'
+import { isConfigured, submitScore, fetchTop, type GameMode, type ScoreEntry } from '../utils/Leaderboard'
 import { t } from '../lang'
 
 const SCALE = 3
+const MEDAL_COLORS = ['#ffd700', '#c0c0c0', '#cd7f32']
 
 export class GameOverScene extends Phaser.Scene {
   private achievementQueue!: { iconKey: string; id: string }[]
   private toastTimer: Phaser.Time.TimerEvent | null = null
+  private destroyed = false
 
   constructor() {
     super('game-over-scene')
   }
 
   create(data: { score: number; newAchievements?: { iconKey: string; id: string }[]; gameMode?: string }) {
+    this.destroyed = false
     this.achievementQueue = [...(data.newAchievements ?? [])]
     const cx = WORLD.width / 2
     const cy = WORLD.height / 2
@@ -37,57 +40,66 @@ export class GameOverScene extends Phaser.Scene {
     if (isNewBest) storageSet(highScoreKey, String(data.score))
     const highScore = isNewBest ? data.score : prevBest
 
+    // When the online ranking is reachable, the score/record lines move up to make
+    // room for a compact "Global" top-3 of the played mode, and the buttons/hint
+    // shift down accordingly.
+    const showTop3 = isConfigured()
+
     addBackground(this)
     addCoinCounter(this)
     applySceneMuffle(this)
 
-    const fim  = this.add.image(cx - 65, cy - 130, 'gameover-fim').setScale(SCALE).setOrigin(0.5)
-    const cat  = this.add.image(cx + 65, cy - 150, 'gameover-chinela').setScale(SCALE).setOrigin(0.5)
-    const de   = this.add.image(cx - 85, cy - 50,  'gameover-de').setScale(SCALE).setOrigin(0.5)
-    const jogo = this.add.image(cx + 55, cy - 45,  'gameover-jogo').setScale(SCALE).setOrigin(0.5)
+    const fim  = this.add.image(cx - 65, cy - 160, 'gameover-fim').setScale(SCALE).setOrigin(0.5)
+    const cat  = this.add.image(cx + 65, cy - 180, 'gameover-chinela').setScale(SCALE).setOrigin(0.5)
+    const de   = this.add.image(cx - 85, cy - 80,  'gameover-de').setScale(SCALE).setOrigin(0.5)
+    const jogo = this.add.image(cx + 55, cy - 75,  'gameover-jogo').setScale(SCALE).setOrigin(0.5)
 
     const labelStyle = { fontSize: '16px', color: '#ffffff', fontFamily: FONT_FAMILY }
 
     const scoreText = this.add
-      .text(cx, cy + 105, t('height', data.score), { fontSize: '26px', color: '#ffffff', fontFamily: FONT_FAMILY })
+      .text(cx, cy + (showTop3 ? 40 : 75), t('height', data.score), { fontSize: '26px', color: '#ffffff', fontFamily: FONT_FAMILY })
       .setOrigin(0.5)
 
     const bestColor = isNewBest ? '#ffd700' : '#aaaaaa'
     const bestLabel = isNewBest ? t('new_record', highScore) : t('record', highScore)
     const bestText = this.add
-      .text(cx, cy + 138, bestLabel, { fontSize: '18px', color: bestColor, fontFamily: FONT_FAMILY })
+      .text(cx, cy + (showTop3 ? 70 : 108), bestLabel, { fontSize: '18px', color: bestColor, fontFamily: FONT_FAMILY })
       .setOrigin(0.5)
+
+    const btnY = cy + (showTop3 ? 221 : 150)
+    const labelY = btnY + 25
+    const hintY = cy + (showTop3 ? 310 : 270)
 
     const btnSize = 80
     const gap = 40
 
     const btnHome = this.add
-      .image(cx - btnSize / 2 - gap / 2, cy + 205, 'btn-home')
+      .image(cx - btnSize / 2 - gap / 2, btnY, 'btn-home')
       .setDisplaySize(btnSize, btnSize)
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
     const btnPlay = this.add
-      .image(cx + btnSize / 2 + gap / 2, cy + 205, 'btn-play')
+      .image(cx + btnSize / 2 + gap / 2, btnY, 'btn-play')
       .setDisplaySize(btnSize, btnSize)
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
     const labelHome = this.add
-      .text(cx - btnSize / 2 - gap / 2, cy + 180 + btnSize / 2 + 10, t('home'), labelStyle)
+      .text(cx - btnSize / 2 - gap / 2, labelY, t('home'), labelStyle)
       .setOrigin(0.5, 0)
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
     const labelPlay = this.add
-      .text(cx + btnSize / 2 + gap / 2, cy + 180 + btnSize / 2 + 10, t('play_again'), labelStyle)
+      .text(cx + btnSize / 2 + gap / 2, labelY, t('play_again'), labelStyle)
       .setOrigin(0.5, 0)
       .setInteractive({ cursor: 'pointer' })
       .setAlpha(0.85)
 
     const isMobile = this.sys.game.device.input.touch
     const spaceHint = this.add
-      .text(cx, cy + 300, t('space_hint'), { fontSize: '14px', color: '#aaaaaa', fontFamily: FONT_FAMILY })
+      .text(cx, hintY, t('space_hint'), { fontSize: '14px', color: '#aaaaaa', fontFamily: FONT_FAMILY })
       .setOrigin(0.5)
       .setVisible(!isMobile)
 
@@ -104,6 +116,8 @@ export class GameOverScene extends Phaser.Scene {
     dropIn(this, labelHome, 450)
     dropIn(this, labelPlay, 500)
     dropIn(this, spaceHint, 550)
+
+    if (showTop3) this.renderTop3(gameMode, cy + 100, allElements)
 
     const shouldShowShopTutorial =
       storageGet('shopTutorialSeen') === null &&
@@ -157,6 +171,64 @@ export class GameOverScene extends Phaser.Scene {
       storageSet('playerName', name)
       void submitScore(name, score, mode)
     }
+  }
+
+  /** Render a compact TOP 3 for the played mode below the record line. Fetches async. */
+  private renderTop3(mode: GameMode, topY: number, allElements: SceneObject[]) {
+    const cx = WORLD.width / 2
+
+    const header = this.add
+      .text(cx, topY, t('top3_title'), {
+        fontSize: '15px', color: '#ffd700', fontFamily: FONT_FAMILY,
+        stroke: '#000000', strokeThickness: 3,
+      })
+      .setOrigin(0.5)
+    allElements.push(header)
+    dropIn(this, header, 600)
+
+    fetchTop(mode, 3).then((entries) => {
+      if (this.destroyed) return
+      const left = cx - 130
+      const right = cx + 130
+
+      entries.slice(0, 3).forEach((entry: ScoreEntry, i: number) => {
+        const y = topY + 22 + i * 20
+        const color = MEDAL_COLORS[i] ?? '#ffffff'
+
+        const rank = this.add
+          .text(left, y, `${i + 1}`, { fontSize: '15px', color, fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3 })
+          .setOrigin(0, 0.5)
+        const name = this.add
+          .text(left + 26, y, this.truncateName(entry.name, 150), { fontSize: '15px', color: '#ffffff', fontFamily: FONT_FAMILY })
+          .setOrigin(0, 0.5)
+        const score = this.add
+          .text(right, y, String(entry.score), { fontSize: '15px', color, fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3 })
+          .setOrigin(1, 0.5)
+
+        allElements.push(rank, name, score)
+        ;[rank, name, score].forEach((o) => {
+          o.setAlpha(0)
+          o.y = y + 10
+          this.tweens.add({ targets: o, alpha: 1, y, duration: 260, delay: i * 60, ease: 'Cubic.easeOut' })
+        })
+      })
+    })
+  }
+
+  private truncateName(text: string, maxWidth: number): string {
+    const probe = this.add.text(0, 0, text, { fontSize: '15px', fontFamily: FONT_FAMILY }).setVisible(false)
+    let result = text
+    while (result.length > 1 && probe.width > maxWidth) {
+      result = result.slice(0, -1)
+      probe.setText(result + '…')
+    }
+    const final = probe.width > maxWidth || result !== text ? result + '…' : text
+    probe.destroy()
+    return final
+  }
+
+  shutdown() {
+    this.destroyed = true
   }
 
   private showShopTutorialModal() {
