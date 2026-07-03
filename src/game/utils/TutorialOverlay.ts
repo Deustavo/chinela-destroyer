@@ -32,8 +32,16 @@ const STEP_BUTTON_HINTS: Record<number, ButtonHint[]> = {
 }
 
 interface Step {
+  // Text for keyboard/PC players
   lines: string[]
+  // Text for touch/mobile players; falls back to `lines` when omitted
+  linesTouch?: string[]
   check: (player: Player, stepMs: number, scene: Phaser.Scene) => boolean
+}
+
+// Pick the platform-specific text for a step
+function stepLines(step: Step): string[] {
+  return isTouchDevice() && step.linesTouch ? step.linesTouch : step.lines
 }
 
 // The last step reads this flag off the scene (set by MainScene when the player
@@ -61,7 +69,8 @@ function checkWrap(p: Player): boolean {
 
 const STEPS: Step[] = [
   {
-    lines: ['Use ← → para mover', '(ou A e D)'],
+    lines: ['Use ← → ou A e D', 'para mover'],
+    linesTouch: ['Use os botões ← →', 'para se mover'],
     check: (p) => Math.abs(p.body.velocity.x) > 5,
   },
   {
@@ -69,11 +78,13 @@ const STEPS: Step[] = [
     check: (p) => checkWrap(p),
   },
   {
-    lines: ['↑, W ou ESPAÇO', 'para pular', '(ou botão de pulo)'],
+    lines: ['↑, W ou ESPAÇO', 'para pular'],
+    linesTouch: ['Toque no botão', 'de pulo para pular'],
     check: (p) => p.body.velocity.y < -80,
   },
   {
-    lines: ['B para atirar', '(ou botão de tiro)'],
+    lines: ['Aperte B', 'para atirar'],
+    linesTouch: ['Toque no botão', 'de tiro para atirar'],
     check: (p) => p.projectiles.getLength() > 0,
   },
   {
@@ -122,7 +133,7 @@ export class TutorialOverlay {
 
     this.bg = scene.add
       .image(0, 0, 'modal-bg2')
-      .setDisplaySize(PANEL_W, this.panelHeightFor(STEPS[0].lines.length))
+      .setDisplaySize(PANEL_W, this.panelHeightFor(stepLines(STEPS[0]).length))
 
     this.bodyText = scene.add
       .text(0, -8, '', {
@@ -227,9 +238,10 @@ export class TutorialOverlay {
     this.completeMs = 0
     this.bg.setTexture('modal-bg2')
     const step = STEPS[idx]
-    const h = this.panelHeightFor(step.lines.length)
+    const lines = stepLines(step)
+    const h = this.panelHeightFor(lines.length)
 
-    this.bodyText.setText(step.lines.join('\n'))
+    this.bodyText.setText(lines.join('\n'))
     this.bg.setDisplaySize(PANEL_W, h)
     this.hintText.setText(`${idx + 1} / ${STEPS.length}`)
     this.hintText.setPosition(-PANEL_W / 2 + 22, h / 2 - 16)
