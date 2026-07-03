@@ -6,7 +6,14 @@ const pt: Record<string, string> = {
   inventory: 'Inventário',
   achievements: 'Conquistas',
   credits: 'Créditos',
+  ranking: 'Ranking',
   home: 'Início',
+
+  // ── Ranking ───────────────────────────────────────────────────────────────────
+  ranking_title: 'Ranking',
+  ranking_loading: 'Carregando...',
+  ranking_empty: 'Nenhuma pontuação ainda.\nSeja o primeiro!',
+  ranking_unconfigured: 'Ranking online indisponível\nno momento.',
 
   // ── Shop UI ─────────────────────────────────────────────────────────────────
   shop_title: 'Itens',
@@ -39,6 +46,10 @@ const pt: Record<string, string> = {
   height: 'Altura: {0}',
   new_record: 'Novo recorde: {0}!',
   record: 'Recorde: {0}',
+  new_record_title: 'Novo recorde!',
+  enter_name: 'Digite seu nome para\no ranking:',
+  submit: 'Enviar',
+  skip: 'pular',
   play_again: 'Jogar novamente',
   space_hint: 'Pressione ESPAÇO para jogar novamente',
   achievement_unlocked: 'Conquista desbloqueada!',

@@ -6,6 +6,8 @@ import { storageGet, storageSet, storageRemove, parseJson } from '../utils/stora
 import { CoinManager } from '../utils/CoinManager'
 import { PurchaseManager } from '../utils/PurchaseManager'
 import { playSfx } from '../utils/AudioManager'
+import { promptForName } from '../utils/NameEntryModal'
+import { isConfigured, submitScore, type GameMode } from '../utils/Leaderboard'
 import { t } from '../lang'
 
 const SCALE = 3
@@ -26,17 +28,14 @@ export class GameOverScene extends Phaser.Scene {
     this.cameras.main.fadeIn(600, 0, 0, 0)
 
     const isSemFim = data.gameMode === 'semFim'
+    const gameMode: GameMode = isSemFim ? 'semFim' : 'normal'
     const highScoreKey = isSemFim ? 'highScoreSemFim' : 'highScore'
-    let isNewBest = false
-    let highScore = 0
-    if (isSemFim) {
-      const rawBest = parseInt(storageGet(highScoreKey) ?? '0', 10)
-      const prevBest = isNaN(rawBest) ? 0 : rawBest
-      if (isNaN(rawBest)) storageRemove(highScoreKey)
-      isNewBest = data.score > prevBest
-      if (isNewBest) storageSet(highScoreKey, String(data.score))
-      highScore = isNewBest ? data.score : prevBest
-    }
+    const rawBest = parseInt(storageGet(highScoreKey) ?? '0', 10)
+    const prevBest = isNaN(rawBest) ? 0 : rawBest
+    if (isNaN(rawBest)) storageRemove(highScoreKey)
+    const isNewBest = data.score > prevBest
+    if (isNewBest) storageSet(highScoreKey, String(data.score))
+    const highScore = isNewBest ? data.score : prevBest
 
     addBackground(this)
     addCoinCounter(this)
@@ -54,13 +53,10 @@ export class GameOverScene extends Phaser.Scene {
       .setOrigin(0.5)
 
     const bestColor = isNewBest ? '#ffd700' : '#aaaaaa'
-    const bestLabel = isSemFim
-      ? (isNewBest ? t('new_record', highScore) : t('record', highScore))
-      : ''
+    const bestLabel = isNewBest ? t('new_record', highScore) : t('record', highScore)
     const bestText = this.add
       .text(cx, cy + 138, bestLabel, { fontSize: '18px', color: bestColor, fontFamily: FONT_FAMILY })
       .setOrigin(0.5)
-      .setVisible(isSemFim)
 
     const btnSize = 80
     const gap = 40
@@ -135,11 +131,32 @@ export class GameOverScene extends Phaser.Scene {
       }
     }
 
-    this.input.keyboard!.once('keydown-SPACE', playAgain)
-    bindEscapeKey(this, () => { playSfx(this, 'button-click'); exitTo(this, 'menu-scene', allElements) })
+    const backToMenu = () => { playSfx(this, 'button-click'); exitTo(this, 'menu-scene', allElements) }
 
-    wireButtonLabel(btnHome, labelHome, () => { playSfx(this, 'button-click'); exitTo(this, 'menu-scene', allElements) })
+    // Keyboard shortcuts are bound only after any name-entry modal is dismissed,
+    // so SPACE/ESC don't fire while the player is typing their name.
+    const wireKeys = () => {
+      this.input.keyboard!.once('keydown-SPACE', playAgain)
+      bindEscapeKey(this, backToMenu)
+    }
+
+    wireButtonLabel(btnHome, labelHome, backToMenu)
     wireButtonLabel(btnPlay, labelPlay, playAgain)
+
+    if (isNewBest && data.score > 0 && isConfigured()) {
+      this.time.delayedCall(650, () => { void this.promptAndSubmit(data.score, gameMode).then(wireKeys) })
+    } else {
+      wireKeys()
+    }
+  }
+
+  private async promptAndSubmit(score: number, mode: GameMode) {
+    const defaultName = storageGet('playerName') ?? ''
+    const name = await promptForName(this, defaultName)
+    if (name) {
+      storageSet('playerName', name)
+      void submitScore(name, score, mode)
+    }
   }
 
   private showShopTutorialModal() {

@@ -97,6 +97,9 @@ export class MenuScene extends Phaser.Scene {
     const btnConquistas = createSecondaryButton(this, colLeft,  btnRow2Y, t('achievements'), undefined, BTN_SCALE, '18px')
     const btnCredits    = createSecondaryButton(this, colRight, btnRow2Y, t('credits'),      undefined, BTN_SCALE)
 
+    const btnRow3Y = btnRow2Y + 54
+    const btnRanking = createSecondaryButton(this, cx, btnRow3Y, t('ranking'), undefined, BTN_SCALE)
+
     // Audio button — top-left corner
     const audioBtn = this.add.image(28, 28, 'btn-audio')
       .setDisplaySize(38, 38)
@@ -152,7 +155,7 @@ export class MenuScene extends Phaser.Scene {
     this.audioPanel = new AudioVolumePanel(this)
     this.langPanel  = new LangSelectPanel(this)
 
-    const all: SceneObject[] = [logo, chinela, pera, btnNormal, btnSemFim, btnShop, btnInventory, btnConquistas, btnCredits, audioBtn, audioLabel, langBtnBg, langBtnTxt]
+    const all: SceneObject[] = [logo, chinela, pera, btnNormal, btnSemFim, btnShop, btnInventory, btnConquistas, btnCredits, btnRanking, audioBtn, audioLabel, langBtnBg, langBtnTxt]
 
     const addNotificationDot = (btn: Phaser.GameObjects.Container, delay: number) => {
       const dotX = btn.x + BTN_W / 2 - 10
@@ -202,6 +205,7 @@ export class MenuScene extends Phaser.Scene {
     btnInventory.on('pointerdown',  () => { playClick(); exitTo(this, 'shop-scene', all, { tab: 'inventory' }) })
     btnConquistas.on('pointerdown', () => { playClick(); exitTo(this, 'achievements-scene', all) })
     btnCredits.on('pointerdown',    () => { playClick(); exitTo(this, 'credits-scene', all) })
+    btnRanking.on('pointerdown',    () => { playClick(); exitTo(this, 'ranking-scene', all) })
 
     dropInFloat(this, logo,          { amplitude: 8,  floatDuration: 2000, delay: 0   })
     dropInFloat(this, chinela,       { amplitude: 12, floatDuration: 1800, delay: 120 })
@@ -212,6 +216,7 @@ export class MenuScene extends Phaser.Scene {
     dropInFloat(this, btnInventory,  { amplitude: 4,  floatDuration: 1900, delay: 540 })
     dropInFloat(this, btnConquistas, { amplitude: 4,  floatDuration: 1900, delay: 600 })
     dropInFloat(this, btnCredits,    { amplitude: 4,  floatDuration: 1800, delay: 660 })
+    dropInFloat(this, btnRanking,    { amplitude: 4,  floatDuration: 1750, delay: 700 })
     dropInFloat(this, audioBtn,      { amplitude: 4,  floatDuration: 1800, delay: 720 })
     dropInFloat(this, audioLabel,    { amplitude: 4,  floatDuration: 1800, delay: 720 })
     dropInFloat(this, langBtnBg,     { amplitude: 4,  floatDuration: 1800, delay: 760 })

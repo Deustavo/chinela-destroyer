@@ -20,6 +20,7 @@ export const STORAGE_KEYS = [
   'normalStagesUnlocked',
   'normalModeCompleted',
   'newAchievementNotification',
+  'playerName',
 ] as const
 
 let cryptoKey: CryptoKey | null = null

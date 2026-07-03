@@ -6,7 +6,14 @@ const en: Record<string, string> = {
   inventory: 'Inventory',
   achievements: 'Achievements',
   credits: 'Credits',
+  ranking: 'Ranking',
   home: 'Home',
+
+  // ── Ranking ───────────────────────────────────────────────────────────────────
+  ranking_title: 'Ranking',
+  ranking_loading: 'Loading...',
+  ranking_empty: 'No scores yet.\nBe the first!',
+  ranking_unconfigured: 'Online ranking is\nunavailable right now.',
 
   // ── Shop UI ─────────────────────────────────────────────────────────────────
   shop_title: 'Items',
@@ -39,6 +46,10 @@ const en: Record<string, string> = {
   height: 'Height: {0}',
   new_record: 'New record: {0}!',
   record: 'Record: {0}',
+  new_record_title: 'New record!',
+  enter_name: 'Enter your name for\nthe ranking:',
+  submit: 'Submit',
+  skip: 'skip',
   play_again: 'Play again',
   space_hint: 'Press SPACE to play again',
   achievement_unlocked: 'Achievement unlocked!',
