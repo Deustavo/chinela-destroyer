@@ -1,0 +1,12 @@
+# Supabase local/CLI config. Only the pieces the leaderboard needs are set here.
+#
+# verify_jwt = false: these functions are called from the public game with the
+# public anon key, so gateway JWT verification adds no real security — the HMAC
+# run token is what protects submit-score. Disabling it also avoids CORS
+# preflight friction from the itch.io iframe.
+
+[functions.start-run]
+verify_jwt = false
+
+[functions.submit-score]
+verify_jwt = false

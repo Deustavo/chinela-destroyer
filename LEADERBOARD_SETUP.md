@@ -27,12 +27,17 @@ create table if not exists public.scores (
   created_at timestamptz not null default now(),
   name       text not null,
   score      integer not null,
-  mode       text not null
+  mode       text not null,
+  nonce      text            -- nonce de uso único carregado pelo token da partida
 );
 
 -- Índice para ordenar rápido por modo + pontuação
 create index if not exists scores_mode_score_idx
   on public.scores (mode, score desc);
+
+-- Cada token de partida só pode inserir uma vez (bloqueia replay)
+create unique index if not exists scores_nonce_key
+  on public.scores (nonce);
 
 -- Liga o Row Level Security
 alter table public.scores enable row level security;
@@ -43,21 +48,49 @@ create policy "public read scores"
   to anon
   using (true);
 
--- Qualquer um (anon) pode INSERIR, desde que os dados sejam válidos
-create policy "public insert valid scores"
-  on public.scores for insert
-  to anon
-  with check (
-    char_length(btrim(name)) between 1 and 20
-    and score >= 0
-    and score <= 1000000
-    and mode in ('normal', 'semFim')
-  );
-
--- (Sem policies de UPDATE/DELETE => ninguém pode editar/apagar via anon.)
+-- IMPORTANTE: NÃO existe policy de INSERT para o anon. O cliente não consegue
+-- inserir direto em /rest/v1/scores — todo score passa pela Edge Function
+-- `submit-score` (seção 3), que insere com a service_role key (fura o RLS).
+-- (Sem policies de UPDATE/DELETE => ninguém edita/apaga via anon.)
 ```
 
-## 3. Pegar as credenciais
+> Se você já tinha rodado a versão antiga deste SQL (com a policy de insert do
+> anon), rode o migration [supabase/migrations/0002_gateway_scores.sql](supabase/migrations/0002_gateway_scores.sql)
+> no SQL Editor — ele remove a policy antiga e adiciona a coluna `nonce`.
+
+## 3. Publicar as Edge Functions (a proteção anti-trapaça)
+
+O que impede um usuário de forjar pontuações não é o SQL acima — é a Edge
+Function. O cliente pede um **token assinado** ao começar a partida (`start-run`)
+e devolve esse token ao enviar o score (`submit-score`). O servidor usa o
+timestamp embutido no token pra **rejeitar scores altos demais para o tempo
+decorrido**, além de bloquear replay (nonce de uso único) e valores absurdos. O
+segredo de assinatura mora só no servidor — nunca vai no bundle.
+
+Tudo roda no **plano gratuito** do Supabase (Edge Functions = serverless, sem
+servidor pra pagar/manter). Você precisa do [CLI do Supabase](https://supabase.com/docs/guides/cli):
+
+```bash
+# 1. Login e vincule o projeto (o ref está em Project Settings → General)
+supabase login
+supabase link --project-ref SEU_PROJECT_REF
+
+# 2. Defina o segredo de assinatura (uma string longa e aleatória qualquer)
+supabase secrets set SCORE_SIGNING_SECRET="$(openssl rand -hex 32)"
+
+# 3. Publique as duas functions
+supabase functions deploy start-run
+supabase functions deploy submit-score
+```
+
+As functions já vêm com `verify_jwt = false` em
+[supabase/config.toml](supabase/config.toml) (a anon key é pública, então a
+verificação de JWT não agregaria segurança — quem protege é o token HMAC). As
+variáveis `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` que a `submit-score` usa
+são injetadas automaticamente pelo Supabase no runtime — você **não** precisa
+configurá-las.
+
+## 3b. Pegar as credenciais do cliente
 
 No painel: **Project Settings → API**.
 
@@ -83,10 +116,14 @@ Reinicie o `npm run dev` para o Vite recarregar o `.env`.
 ## Notas de segurança
 
 - A anon key é pública por design (vai no bundle, igual ao `VITE_STORAGE_SECRET`).
-  A proteção real é o RLS acima: anon só lê e insere linhas válidas.
-- Como é um jogo client-side, um usuário determinado ainda consegue forjar uma
-  pontuação chamando a API na mão. As regras de `with check` limitam valores
-  absurdos, mas não impedem trapaça total. Para isso seria preciso um backend
-  próprio validando o replay da partida — fora do escopo atual.
+  Ela só permite **ler** o ranking — não dá mais pra inserir com ela.
+- Todo score passa pela Edge Function `submit-score`, que valida no servidor:
+  1. **assinatura HMAC** do token de partida (segredo só existe no servidor);
+  2. **plausibilidade tempo × score** — rejeita altura alta demais para o tempo
+     decorrido desde o início da partida (ceiling generoso de ~120 unidades/s,
+     bem acima do máximo físico do jogo, então jogador legítimo nunca é barrado);
+  3. **replay** — o `nonce` de uso único impede reenviar o mesmo token;
+  4. **valores** — nome (1–20 chars), score (0–5.000.000), modo válido.
 - Para deploy (itch.io / Vercel), configure as mesmas variáveis de ambiente no
-  ambiente de build.
+  ambiente de build. As Edge Functions você publica uma vez com o CLI (seção 3);
+  não dependem do ambiente de build do front.

@@ -64,16 +64,63 @@ export async function fetchTop(mode: GameMode, limit = 15): Promise<ScoreEntry[]
   }
 }
 
-/** Submit a score. Returns true on success. Silently fails (returns false) when offline/unconfigured. */
+// A score can no longer be inserted directly: the anon role has no insert
+// policy on `scores`. Instead the client asks `start-run` for a signed token
+// when a run begins, holds it, and hands it to `submit-score` at the end. The
+// server uses the token's start timestamp to reject implausible scores. See
+// supabase/functions/ and LEADERBOARD_SETUP.md.
+
+/** The token for the current run, set by startRun() and consumed by submitScore(). */
+let currentToken: string | null = null
+let currentTokenMode: GameMode | null = null
+
+/**
+ * Begin a run: fetch a signed token from the `start-run` Edge Function and hold
+ * it for the later submitScore() call. Safe to call unconditionally — it no-ops
+ * when the ranking is unconfigured, and any failure just leaves the run
+ * unsubmittable (same graceful degradation as before).
+ */
+export async function startRun(mode: GameMode): Promise<void> {
+  currentToken = null
+  currentTokenMode = null
+  if (!isConfigured()) return
+  try {
+    const res = await fetch(`${URL}/functions/v1/start-run`, {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify({ mode }),
+    })
+    if (!res.ok) return
+    const data = (await res.json()) as { token?: string }
+    if (typeof data.token === 'string') {
+      currentToken = data.token
+      currentTokenMode = mode
+    }
+  } catch {
+    // Offline / unreachable → no token; submitScore will simply return false.
+  }
+}
+
+/**
+ * Submit a score through the `submit-score` Edge Function using the token from
+ * startRun(). Returns true on success. Silently fails (returns false) when
+ * offline/unconfigured, when no valid token was obtained for this mode, or when
+ * the server rejects the score. The token is single-use and cleared afterwards.
+ */
 export async function submitScore(name: string, score: number, mode: GameMode): Promise<boolean> {
   if (!isConfigured()) return false
   const clean = name.trim().slice(0, 20)
   if (clean.length === 0 || score < 0) return false
+  if (!currentToken || currentTokenMode !== mode) return false
+
+  const token = currentToken
+  currentToken = null // single use, regardless of outcome
+  currentTokenMode = null
   try {
-    const res = await fetch(`${URL}/rest/v1/scores`, {
+    const res = await fetch(`${URL}/functions/v1/submit-score`, {
       method: 'POST',
-      headers: { ...headers(), Prefer: 'return=minimal' },
-      body: JSON.stringify({ name: clean, score: Math.floor(score), mode }),
+      headers: headers(),
+      body: JSON.stringify({ name: clean, score: Math.floor(score), mode, token }),
     })
     return res.ok
   } catch {

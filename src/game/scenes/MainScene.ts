@@ -14,7 +14,7 @@ import { PlayerLoadout } from '../items/PlayerLoadout'
 import { playSfx } from '../utils/AudioManager'
 import { storageGet, storageSet } from '../utils/storage'
 import { promptForName } from '../utils/NameEntryModal'
-import { isConfigured, submitScore } from '../utils/Leaderboard'
+import { isConfigured, startRun, submitScore } from '../utils/Leaderboard'
 import { t } from '../lang'
 
 export class MainScene extends Phaser.Scene {
@@ -68,6 +68,9 @@ export class MainScene extends Phaser.Scene {
   init(data: { gameMode?: string; startStage?: number }) {
     this.gameMode = data.gameMode === 'semFim' ? 'semFim' : 'normal'
     this.startStage = data.startStage ?? 0
+    // Request a signed run token up front; submitScore() consumes it at the end
+    // so the server can vet the score against the run's elapsed time.
+    void startRun(this.gameMode)
   }
 
   create() {

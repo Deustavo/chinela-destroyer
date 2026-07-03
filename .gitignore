@@ -16,6 +16,9 @@ chinela-destroyer.zip
 .env.*
 !.env.example
 
+# Supabase CLI local state (project ref, versions, etc.)
+supabase/.temp/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
