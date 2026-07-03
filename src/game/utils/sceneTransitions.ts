@@ -70,7 +70,9 @@ export function dropInFloat(
 
 /**
  * Fly all elements off the top of the screen, then start targetScene.
- * Each element is staggered 40ms apart.
+ * Elements are staggered, but the total stagger is capped so screens with
+ * many elements (e.g. a full ranking list) still exit promptly instead of
+ * dragging on for seconds.
  */
 export function exitTo(
   scene: Phaser.Scene,
@@ -87,13 +89,20 @@ export function exitTo(
     }
   })
 
+  // Ideal per-element stagger is 40ms, but cap the whole cascade at 300ms so
+  // element-heavy scenes don't wait seconds before the next scene starts.
+  const MAX_TOTAL_STAGGER = 300
+  const stagger = elements.length > 1
+    ? Math.min(40, MAX_TOTAL_STAGGER / (elements.length - 1))
+    : 0
+
   elements.forEach((el, i) => {
     scene.tweens.killTweensOf(el)
     scene.tweens.add({
       targets: el,
       y: -WORLD.height,
       duration: 600,
-      delay: i * 40,
+      delay: i * stagger,
       ease: 'Cubic.easeIn',
       onComplete:
         i === elements.length - 1
