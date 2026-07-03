@@ -17,19 +17,23 @@ export function promptForName(scene: Phaser.Scene, defaultName: string): Promise
     const cy = WORLD.height / 2
     const DEPTH = 200
 
-    const overlay = addModalOverlay(scene, DEPTH, 0.75).setInteractive()
+    // setScrollFactor(0) pins the modal to the screen. Harmless in GameOverScene
+    // (camera never scrolls) but required in MainScene, where the camera is scrolled
+    // thousands of pixels up when the classic-mode victory prompt appears.
+    const overlay = addModalOverlay(scene, DEPTH, 0.75).setScrollFactor(0).setInteractive()
     const panel = scene.add.image(cx, cy, 'modal-bg')
       .setDisplaySize(320, 280)
+      .setScrollFactor(0)
       .setDepth(DEPTH + 1)
 
     const title = scene.add.text(cx, cy - 96, t('new_record_title'), {
       fontSize: '24px', color: '#ffd700', fontFamily: FONT_FAMILY,
       stroke: '#000000', strokeThickness: 4,
-    }).setOrigin(0.5).setDepth(DEPTH + 2)
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH + 2)
 
     const prompt = scene.add.text(cx, cy - 58, t('enter_name'), {
       fontSize: '15px', color: '#ffffff', fontFamily: FONT_FAMILY, align: 'center',
-    }).setOrigin(0.5).setDepth(DEPTH + 2)
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH + 2)
 
     // ── DOM input ────────────────────────────────────────────────────────────
     const canvas = scene.game.canvas
@@ -74,11 +78,12 @@ export function promptForName(scene: Phaser.Scene, defaultName: string): Promise
     scene.time.delayedCall(50, () => { input.focus(); input.select() })
 
     const submitBtn = createSecondaryButton(scene, cx, cy + 60, t('submit'))
+      .setScrollFactor(0)
       .setDepth(DEPTH + 2)
 
     const skipTxt = scene.add.text(cx, cy + 108, t('skip'), {
       fontSize: '14px', color: '#aaaaaa', fontFamily: FONT_FAMILY,
-    }).setOrigin(0.5).setDepth(DEPTH + 2).setInteractive({ useHandCursor: true })
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH + 2).setInteractive({ useHandCursor: true })
 
     // ── Entrance animation (same feel as the achievements modal) ───────────────
     // Panel + overlay use setDisplaySize, so animate alpha only (scale would

@@ -12,7 +12,9 @@ import { TutorialOverlay } from '../utils/TutorialOverlay'
 import { EquipManager } from '../utils/EquipManager'
 import { PlayerLoadout } from '../items/PlayerLoadout'
 import { playSfx } from '../utils/AudioManager'
-import { storageSet } from '../utils/storage'
+import { storageGet, storageSet } from '../utils/storage'
+import { promptForName } from '../utils/NameEntryModal'
+import { isConfigured, submitScore } from '../utils/Leaderboard'
 import { t } from '../lang'
 
 export class MainScene extends Phaser.Scene {
@@ -846,7 +848,7 @@ export class MainScene extends Phaser.Scene {
         duration: 300,
         onComplete: () => {
           all.forEach(o => o.destroy())
-          this.scene.start('menu-scene')
+          void this.saveVictoryRanking().then(() => this.scene.start('menu-scene'))
         },
       })
     })
@@ -857,6 +859,32 @@ export class MainScene extends Phaser.Scene {
       duration: 500,
       ease: 'Quad.easeOut',
     })
+  }
+
+  /**
+   * Persist the finished classic-mode run into the ranking. Mirrors GameOverScene:
+   * updates the local high score and, when the run is a new best and the online
+   * ranking is reachable, prompts the player for a name and submits the score.
+   */
+  private async saveVictoryRanking(): Promise<void> {
+    // Only the classic (normal) mode has a victory screen worth ranking; the
+    // endless mode never reaches showFinalVictoryModal.
+    const mode: 'normal' | 'semFim' = this.gameMode === 'semFim' ? 'semFim' : 'normal'
+    const highScoreKey = mode === 'semFim' ? 'highScoreSemFim' : 'highScore'
+
+    const rawBest = parseInt(storageGet(highScoreKey) ?? '0', 10)
+    const prevBest = isNaN(rawBest) ? 0 : rawBest
+    const isNewBest = this.score > prevBest
+    if (isNewBest) storageSet(highScoreKey, String(this.score))
+
+    if (isNewBest && this.score > 0 && isConfigured()) {
+      const defaultName = storageGet('playerName') ?? ''
+      const name = await promptForName(this, defaultName)
+      if (name) {
+        storageSet('playerName', name)
+        void submitScore(name, this.score, mode)
+      }
+    }
   }
 
   update(_time: number, delta: number) {
