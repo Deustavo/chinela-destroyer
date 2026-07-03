@@ -8,16 +8,16 @@ export const WORLD = {
   groundHeight: 60,
   boundsExtent: 500000,
   floorTextureKey: 'floor',
-  floorTexturePath: '/assets/platforms/floor.png',
+  floorTexturePath: 'assets/platforms/floor.png',
 } as const
 
 export const PLATFORMS = {
   width: 80,
   height: 8,
   textureKey: 'platform-stone1',
-  texturePath: '/assets/platforms/stone1.png',
+  texturePath: 'assets/platforms/stone1.png',
   movingTextureKey: 'platform-stone2',
-  movingTexturePath: '/assets/platforms/stone2.png',
+  movingTexturePath: 'assets/platforms/stone2.png',
   textureHeight: 40,
   textureDrawingOffset: 32,
   minGapY: 140,
@@ -58,13 +58,13 @@ export const ENEMY = {
   hitDuration: 0.25,
   hitRadius: 40,
   spritesheet: {
-    path: '/assets/player/SpriteSheetPera.png',
+    path: 'assets/player/SpriteSheetPera.png',
     frameWidth: 128,
     frameHeight: 128,
   },
   trapsKey: 'traps',
   trapsSheet: {
-    path: '/assets/enemy/SpriteSheetTraps.png',
+    path: 'assets/enemy/SpriteSheetTraps.png',
     frameWidth: 128,
     frameHeight: 128,
   },
@@ -73,7 +73,7 @@ export const ENEMY = {
 export const BOSS_SHIP = {
   spriteKey: 'boss-ship',
   spritesheet: {
-    path: '/assets/enemy/SpriteSheetShip.png',
+    path: 'assets/enemy/SpriteSheetShip.png',
     frameWidth: 640,
     frameHeight: 180,
   },
@@ -94,7 +94,7 @@ export const BOSSES = [
 export const SHOT = {
   spriteKey: 'player-shot',
   spritesheet: {
-    path: '/assets/player/SpriteSheetShot1.png',
+    path: 'assets/player/SpriteSheetShot1.png',
     frameWidth: 64,
     frameHeight: 64,
   },
@@ -103,7 +103,7 @@ export const SHOT = {
   flyFrameRate: 12,
   impactFrameRate: 16,
   btnKey: 'btn-shot',
-  btnPath: '/assets/buttons/shot.png',
+  btnPath: 'assets/buttons/shot.png',
   speed: 600,
   displaySize: 48,
   cooldown: 1.0,
@@ -118,7 +118,7 @@ export const PLAYER = {
   fallGravityMultiplier: 2.5,
   spriteKey: 'chinela',
   spritesheet: {
-    path: '/assets/player/chinela.png',
+    path: 'assets/player/chinela.png',
     frameWidth: 64,
     frameHeight: 64,
   },
@@ -139,7 +139,7 @@ export const SHIELD = {
   itemId: 'shield',
   spriteKey: 'shield1',
   spritesheet: {
-    path: '/assets/player/SpriteSheetShield1.png',
+    path: 'assets/player/SpriteSheetShield1.png',
     frameWidth: 64,
     frameHeight: 64,
   },
@@ -151,7 +151,7 @@ export const WINGS = {
   itemId: 'anjo-caido',
   spriteKey: 'wings1',
   spritesheet: {
-    path: '/assets/player/SpriteSheetWings1.png',
+    path: 'assets/player/SpriteSheetWings1.png',
     frameWidth: 64,
     frameHeight: 64,
   },
@@ -164,7 +164,7 @@ export const WINGS = {
 export const HERMES_SANDALS = {
   itemId: 'hermes-sandals',
   iconKey: 'hermes-sandals-icon',
-  iconPath: '/assets/player/SpriteSheetHermesSandal.png',
+  iconPath: 'assets/player/SpriteSheetHermesSandal.png',
   gravityMultiplier: 0.85,
   speedMultipliers: [1.20, 1.40, 1.60] as const,
 } as const

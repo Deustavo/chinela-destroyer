@@ -33,7 +33,7 @@ export const ITEM_REGISTRY: ShopItem[] = [
       flyAnimKey: 'pomodoro-shot-fly',
       impactAnimKey: 'pomodoro-shot-impact',
       spritesheet: {
-        path: '/assets/player/SpriteSheetShot3.png',
+        path: 'assets/player/SpriteSheetShot3.png',
         frameWidth: 64,
         frameHeight: 64,
       },
@@ -89,7 +89,7 @@ export const ITEM_REGISTRY: ShopItem[] = [
     description: '+velocidade, -gravidade\nUpgrades aumentam a velocidade',
     iconKey: 'hermes-sandals-icon',
     iconFrame: 0,
-    iconPath: '/assets/player/SpriteSheetHermesSandal.png',
+    iconPath: 'assets/player/SpriteSheetHermesSandal.png',
     levelStats: [
       { upgradeCost: 0,   description: 'Velocidade: +20%', moveSpeedMultiplier: 1.20 },
       { upgradeCost: 120, description: 'Velocidade: +40%', moveSpeedMultiplier: 1.40 },
@@ -109,7 +109,7 @@ export const ITEM_REGISTRY: ShopItem[] = [
       flyAnimKey: 'incandescente-shot-fly',
       impactAnimKey: 'incandescente-shot-impact',
       spritesheet: {
-        path: '/assets/player/SpriteSheetIncandescente.png',
+        path: 'assets/player/SpriteSheetIncandescente.png',
         frameWidth: 64,
         frameHeight: 64,
       },
@@ -145,7 +145,7 @@ export const ITEM_REGISTRY: ShopItem[] = [
       flyAnimKey: 'special-shot-fly',
       impactAnimKey: 'special-shot-impact',
       spritesheet: {
-        path: '/assets/player/SpriteSheetShot2.png',
+        path: 'assets/player/SpriteSheetShot2.png',
         frameWidth: 64,
         frameHeight: 64,
       },
