@@ -110,7 +110,7 @@ const pt: Record<string, string> = {
   'item.pomodoro-shot.stat.2': 'Cooldown: 3s',
 
   'item.shield.name': 'Segunda chance',
-  'item.shield.desc': 'Escudo absorve 1 tiro\n(recarga 10s)',
+  'item.shield.desc': 'Escudo absorve 1 tiro',
   'item.shield.stat.0': 'Recarga: 12s',
   'item.shield.stat.1': 'Recarga: 10s',
   'item.shield.stat.2': 'Recarga: 8s',
@@ -134,7 +134,7 @@ const pt: Record<string, string> = {
   'item.incandescente-shot.stat.2': 'Cooldown: 2s',
 
   'item.special-shot.name': 'Bolimbolacho',
-  'item.special-shot.desc': 'Cooldown pela metade',
+  'item.special-shot.desc': 'Tiro mais rápido e maior',
   'item.special-shot.stat.0': 'Normal',
   'item.special-shot.stat.1': 'Maiorzinho',
   'item.special-shot.stat.2': 'GRANDÃO',

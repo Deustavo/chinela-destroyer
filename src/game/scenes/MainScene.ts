@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 import { Player } from '../entities/Player'
 import { Enemy } from '../entities/Enemy'
 import { TouchControls } from '../entities/TouchControls'
-import { WORLD, PLATFORMS, BOSS_SHIP, BOSSES, ENEMY, FONT_FAMILY, PLAYER, SHIELD } from '../config/constants'
+import { WORLD, PLATFORMS, BOSS_SHIP, BOSSES, ENEMY, FONT_FAMILY, PLAYER, SHIELD, ENDLESS_SCROLL } from '../config/constants'
 import { AchievementManager } from '../achievements/AchievementManager'
 import { CoinManager } from '../utils/CoinManager'
 import { addCoinCounter, showFloatingPopup } from '../utils/uiHelpers'
@@ -941,6 +941,13 @@ export class MainScene extends Phaser.Scene {
           this.cameras.main.scrollY -= 80 * (delta / 1000)
           break
         }
+      }
+
+      // Endless mode: gradual auto-scroll acceleration past the start height.
+      if (this.gameMode === 'semFim' && this.score >= ENDLESS_SCROLL.startHeight) {
+        const over = this.score - ENDLESS_SCROLL.startHeight
+        const pushSpeed = Math.min(ENDLESS_SCROLL.maxSpeed, over * ENDLESS_SCROLL.ratePerUnit)
+        this.cameras.main.scrollY -= pushSpeed * (delta / 1000)
       }
     }
 

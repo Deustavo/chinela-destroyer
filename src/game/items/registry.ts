@@ -58,7 +58,7 @@ export const ITEM_REGISTRY: ShopItem[] = [
     type: 'shield',
     name: 'Segunda chance',
     price: 30,
-    description: 'Escudo absorve 1 tiro\n(recarga 10s)',
+    description: 'Escudo absorve 1 tiro',
     iconKey: 'shield1',
     iconFrame: 0,
     levelStats: [
@@ -137,7 +137,7 @@ export const ITEM_REGISTRY: ShopItem[] = [
     type: 'shot',
     name: 'Bolimbolacho',
     price: 200,
-    description: 'Cooldown pela metade',
+    description: 'Tiro mais rápido e maior',
     iconKey: 'player-shot2',
     iconFrame: 0,
     shotConfig: {

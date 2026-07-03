@@ -39,6 +39,14 @@ export const SCROLL = {
   upperHalfBoostFactor: 6.0,
 } as const
 
+// Endless mode ("semFim"): from this height on, the camera starts pushing
+// upward on its own, ramping up gradually to keep raising the pressure.
+export const ENDLESS_SCROLL = {
+  startHeight: 3000,
+  ratePerUnit: 0.06, // extra px/s of upward push per height unit above startHeight
+  maxSpeed: 140, // px/s cap for the auto-scroll push
+} as const
+
 export const ENEMY = {
   screenY: 80,
   speed: 100,
