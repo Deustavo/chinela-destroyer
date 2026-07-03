@@ -29,15 +29,36 @@ function headers(): Record<string, string> {
   }
 }
 
-/** Fetch the top `limit` scores for a mode, highest first. Returns [] on any error. */
+/** Collapse duplicate names, keeping only the highest score per name.
+ *  Assumes `rows` is already ordered by score descending, so the first
+ *  occurrence of each name is its best score. Comparison is case-insensitive
+ *  and trims surrounding whitespace. */
+function dedupeByName(rows: ScoreEntry[]): ScoreEntry[] {
+  const seen = new Set<string>()
+  const result: ScoreEntry[] = []
+  for (const row of rows) {
+    const key = row.name.trim().toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    result.push(row)
+  }
+  return result
+}
+
+/** Fetch the top `limit` scores for a mode, highest first. Returns [] on any error.
+ *  In `normal` mode duplicate names are collapsed to their highest score only. */
 export async function fetchTop(mode: GameMode, limit = 15): Promise<ScoreEntry[]> {
   if (!isConfigured()) return []
+  // In normal mode we collapse duplicate names, so over-fetch to still fill `limit`
+  // unique rows even when the same player appears many times near the top.
+  const fetchLimit = mode === 'normal' ? Math.min(limit * 10, 1000) : limit
   try {
-    const query = `select=name,score,created_at&mode=eq.${mode}&order=score.desc&limit=${limit}`
+    const query = `select=name,score,created_at&mode=eq.${mode}&order=score.desc&limit=${fetchLimit}`
     const res = await fetch(`${URL}/rest/v1/scores?${query}`, { headers: headers() })
     if (!res.ok) return []
     const rows = (await res.json()) as ScoreEntry[]
-    return Array.isArray(rows) ? rows : []
+    if (!Array.isArray(rows)) return []
+    return mode === 'normal' ? dedupeByName(rows).slice(0, limit) : rows
   } catch {
     return []
   }
