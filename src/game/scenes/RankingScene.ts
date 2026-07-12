@@ -8,7 +8,9 @@ import { t } from '../lang'
 
 const LIST_TOP = 168
 const ROW_H = 34
-const MAX_ROWS = 12
+const TOP_LIMIT = 50
+const VIEWPORT_TOP = LIST_TOP - ROW_H / 2
+const VIEWPORT_BOTTOM = WORLD.height - 100
 const MEDAL_COLORS = ['#ffd700', '#c0c0c0', '#cd7f32']
 
 export class RankingScene extends Phaser.Scene {
@@ -17,6 +19,12 @@ export class RankingScene extends Phaser.Scene {
   private rowObjects: Phaser.GameObjects.GameObject[] = []
   private tabNormal!: Phaser.GameObjects.Container
   private tabSemFim!: Phaser.GameObjects.Container
+  private listContainer!: Phaser.GameObjects.Container
+  private scrollY = 0
+  private maxScroll = 0
+  private dragging = false
+  private dragStartPointerY = 0
+  private dragStartScroll = 0
   private destroyed = false
 
   constructor() {
@@ -47,6 +55,37 @@ export class RankingScene extends Phaser.Scene {
     this.tabNormal = this.makeTab(cx - 82, 118, t('normal'), 'normal')
     this.tabSemFim = this.makeTab(cx + 82, 118, t('endless'), 'semFim')
 
+    // ── Scrollable list viewport ─────────────────────────────────────────────
+    // Rows live inside listContainer; a Mask filter (GeometryMask isn't
+    // supported on WebGL game objects in Phaser 4) clips anything outside the
+    // viewport, and container.y is the (clamped) scroll offset.
+    const maskGfx = this.make.graphics(undefined, false)
+    maskGfx.fillStyle(0xffffff)
+    maskGfx.fillRect(20, VIEWPORT_TOP, WORLD.width - 40, VIEWPORT_BOTTOM - VIEWPORT_TOP)
+    this.listContainer = this.add.container(0, 0).setDepth(1)
+    this.listContainer.enableFilters()
+    this.listContainer.filters!.internal.addMask(maskGfx, false, undefined, 'world')
+
+    const scrollZone = this.add
+      .zone(cx, (VIEWPORT_TOP + VIEWPORT_BOTTOM) / 2, WORLD.width, VIEWPORT_BOTTOM - VIEWPORT_TOP)
+      .setInteractive()
+      .setDepth(4)
+
+    scrollZone.on('pointerdown', (p: Phaser.Input.Pointer) => {
+      this.dragging = true
+      this.dragStartPointerY = p.y
+      this.dragStartScroll = this.scrollY
+    })
+    this.input.on('pointermove', (p: Phaser.Input.Pointer) => {
+      if (!this.dragging || !p.isDown) return
+      this.setScroll(this.dragStartScroll + (p.y - this.dragStartPointerY))
+    })
+    this.input.on('pointerup', () => { this.dragging = false })
+    this.input.on('pointerupoutside', () => { this.dragging = false })
+    this.input.on('wheel', (_p: Phaser.Input.Pointer, _over: unknown, _dx: number, dy: number) => {
+      this.setScroll(this.scrollY - dy * 0.5)
+    })
+
     const backBtn = this.add
       .image(cx, WORLD.height - 52, 'btn-home')
       .setDisplaySize(64, 64)
@@ -66,6 +105,7 @@ export class RankingScene extends Phaser.Scene {
       // Include the current rows/message so the whole screen flies out on exit.
       const els: SceneObject[] = [
         trophy, title, this.tabNormal, this.tabSemFim,
+        this.listContainer as unknown as SceneObject,
         ...(this.rowObjects as unknown as SceneObject[]),
         backBtn, labelBack,
       ]
@@ -104,7 +144,7 @@ export class RankingScene extends Phaser.Scene {
     if (!isConfigured()) { this.renderMessage(t('ranking_unconfigured')); return }
 
     this.renderMessage(t('ranking_loading'))
-    fetchTop(mode).then((entries) => {
+    fetchTop(mode, TOP_LIMIT).then((entries) => {
       if (this.destroyed || this.mode !== mode) return
       this.scoreCache[mode] = entries
       this.renderList(entries)
@@ -139,7 +179,7 @@ export class RankingScene extends Phaser.Scene {
     const cx = WORLD.width / 2
     const left = cx - 150
     const right = cx + 150
-    const rows = entries.slice(0, MAX_ROWS)
+    const rows = entries.slice(0, TOP_LIMIT)
 
     rows.forEach((entry, i) => {
       const y = LIST_TOP + i * ROW_H
@@ -147,30 +187,35 @@ export class RankingScene extends Phaser.Scene {
 
       const stripe = this.add
         .rectangle(cx, y, WORLD.width - 40, ROW_H - 4, 0x000000, i % 2 === 0 ? 0.28 : 0.16)
-        .setDepth(1)
 
       const rank = this.add
         .text(left, y, `${i + 1}`, { fontSize: '18px', color, fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3 })
         .setOrigin(0, 0.5)
-        .setDepth(2)
 
       const name = this.add
         .text(left + 34, y, entry.name, { fontSize: '17px', color: '#ffffff', fontFamily: FONT_FAMILY })
         .setOrigin(0, 0.5)
-        .setDepth(2)
       name.setText(this.truncateToWidth(entry.name, 170))
 
       const score = this.add
         .text(right, y, String(entry.score), { fontSize: '18px', color, fontFamily: FONT_FAMILY, stroke: '#000000', strokeThickness: 3 })
         .setOrigin(1, 0.5)
-        .setDepth(2)
 
+      this.listContainer.add([stripe, rank, name, score])
       this.rowObjects.push(stripe, rank, name, score)
       // Each row slides up from a small offset and fades in, staggered top-to-bottom.
       const rowCells = [stripe, rank, name, score] as (Phaser.GameObjects.Components.Alpha & { y: number })[]
       rowCells.forEach(o => { o.setAlpha(0); o.y = y + 16 })
       this.tweens.add({ targets: rowCells, alpha: 1, y, duration: 300, delay: i * 55, ease: 'Cubic.easeOut' })
     })
+
+    this.maxScroll = Math.max(0, rows.length * ROW_H - (VIEWPORT_BOTTOM - VIEWPORT_TOP))
+    this.setScroll(0)
+  }
+
+  private setScroll(y: number) {
+    this.scrollY = Phaser.Math.Clamp(y, -this.maxScroll, 0)
+    this.listContainer.y = this.scrollY
   }
 
   private truncateToWidth(text: string, maxWidth: number): string {
