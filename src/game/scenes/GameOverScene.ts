@@ -7,7 +7,7 @@ import { CoinManager } from '../utils/CoinManager'
 import { PurchaseManager } from '../utils/PurchaseManager'
 import { playSfx } from '../utils/AudioManager'
 import { promptForName } from '../utils/NameEntryModal'
-import { isConfigured, submitScore, fetchTop, type GameMode, type ScoreEntry } from '../utils/Leaderboard'
+import { isConfigured, submitScore, fetchTop, qualifiesForTop50, type GameMode, type ScoreEntry } from '../utils/Leaderboard'
 import { t } from '../lang'
 
 const SCALE = 3
@@ -158,7 +158,12 @@ export class GameOverScene extends Phaser.Scene {
     wireButtonLabel(btnPlay, labelPlay, playAgain)
 
     if (isNewBest && data.score > 0 && isConfigured()) {
-      this.time.delayedCall(650, () => { void this.promptAndSubmit(data.score, gameMode).then(wireKeys) })
+      this.time.delayedCall(650, () => {
+        void qualifiesForTop50(data.score, gameMode).then((qualifies) => {
+          if (qualifies) return this.promptAndSubmit(data.score, gameMode).then(wireKeys)
+          wireKeys()
+        })
+      })
     } else {
       wireKeys()
     }

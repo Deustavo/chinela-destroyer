@@ -64,6 +64,18 @@ export async function fetchTop(mode: GameMode, limit = 15): Promise<ScoreEntry[]
   }
 }
 
+/** True when `score` would place within the top 50 entries for `mode` (or the
+ *  board has fewer than 50 entries yet). Used to gate the save-ranking modal so
+ *  it isn't shown for runs that wouldn't make the cut. Returns true when the
+ *  ranking is unreachable, so offline play never blocks the modal. */
+export async function qualifiesForTop50(score: number, mode: GameMode): Promise<boolean> {
+  if (!isConfigured()) return true
+  const top50 = await fetchTop(mode, 50)
+  if (top50.length < 50) return true
+  const lowest = top50[top50.length - 1].score
+  return score > lowest
+}
+
 // A score can no longer be inserted directly: the anon role has no insert
 // policy on `scores`. Instead the client asks `start-run` for a signed token
 // when a run begins, holds it, and hands it to `submit-score` at the end. The
