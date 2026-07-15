@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 chinela-destroyer.zip
+.butler
 *.local
 .env
 .env.*

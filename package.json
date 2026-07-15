@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "itch": "bash scripts/build-itch.sh"
+    "itch:build": "bash scripts/build-itch.sh",
+    "itch:deploy": "bash scripts/deploy-itch.sh"
   },
   "devDependencies": {
     "playwright": "^1.60.0",
