@@ -7,7 +7,10 @@
 //   2. Rejects scores too high for the time elapsed since the token was issued
 //      (a fresh token cannot justify a huge score).
 //   3. Rejects stale tokens and out-of-range name/score/mode values.
-//   4. Inserts with the token's nonce; a UNIQUE constraint blocks replay.
+//   4. Rejects scores that wouldn't place in the mode's global top 50 (via the
+//      `top_scores` Postgres function), so the table only ever grows with rows
+//      that matter.
+//   5. Inserts with the token's nonce; a UNIQUE constraint blocks replay.
 // The insert uses the service_role key (auto-injected by Supabase), which
 // bypasses RLS.
 //
@@ -27,11 +30,39 @@ const MAX_AGE_MS = 12 * 60 * 60 * 1000
 // Absolute sanity cap regardless of timing.
 const MAX_SCORE = 5_000_000
 
+// Number of top entries a score must reach to be worth persisting.
+const TOP_N = 50
+
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   })
+}
+
+/** True when `score` would place within the mode's current global top 50
+ *  (or the board has fewer than 50 entries yet), per the `top_scores` RPC —
+ *  the same ranking the client displays, so "qualifies" means the same thing
+ *  in both places. */
+async function qualifiesForTop50(
+  supabaseUrl: string,
+  serviceKey: string,
+  mode: string,
+  score: number,
+): Promise<boolean> {
+  const res = await fetch(`${supabaseUrl}/rest/v1/rpc/top_scores`, {
+    method: 'POST',
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ p_mode: mode, p_limit: TOP_N }),
+  })
+  if (!res.ok) throw new Error('top_scores lookup failed')
+  const rows = (await res.json()) as { score: number }[]
+  if (!Array.isArray(rows) || rows.length < TOP_N) return true
+  return score > rows[rows.length - 1].score
 }
 
 Deno.serve(async (req) => {
@@ -70,6 +101,15 @@ Deno.serve(async (req) => {
   // Plausibility: the run must have lasted at least as long as the score requires.
   const minMs = (score / MAX_UNITS_PER_SEC) * 1000
   if (elapsed + START_GRACE_MS < minMs) return json({ error: 'implausible score' }, 422)
+
+  // Only rows that would actually appear in the ranking are worth storing.
+  try {
+    if (!(await qualifiesForTop50(supabaseUrl, serviceKey, mode, score))) {
+      return json({ error: 'score not in top 50' }, 422)
+    }
+  } catch {
+    return json({ error: 'ranking check failed' }, 502)
+  }
 
   // Insert via service role (bypasses RLS). The nonce's UNIQUE constraint turns
   // a replayed token into a duplicate-key error (Postgres code 23505).

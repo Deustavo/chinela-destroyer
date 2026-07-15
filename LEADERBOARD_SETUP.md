@@ -58,6 +58,13 @@ create policy "public read scores"
 > anon), rode o migration [supabase/migrations/0002_gateway_scores.sql](supabase/migrations/0002_gateway_scores.sql)
 > no SQL Editor — ele remove a policy antiga e adiciona a coluna `nonce`.
 
+> Rode também [supabase/migrations/0003_top_scores_rpc.sql](supabase/migrations/0003_top_scores_rpc.sql)
+> — cria a função `top_scores(mode, limit)`, que devolve só as `limit` maiores
+> pontuações de um modo (já com nomes duplicados colapsados na maior pontuação,
+> no modo `normal`). É por essa função — não mais pela tabela `scores` direto —
+> que o cliente lê o ranking, e é ela que a `submit-score` usa para decidir se
+> um score deve ser gravado (seção 3).
+
 ## 3. Publicar as Edge Functions (a proteção anti-trapaça)
 
 O que impede um usuário de forjar pontuações não é o SQL acima — é a Edge
@@ -122,8 +129,11 @@ Reinicie o `npm run dev` para o Vite recarregar o `.env`.
   2. **plausibilidade tempo × score** — rejeita altura alta demais para o tempo
      decorrido desde o início da partida (ceiling generoso de ~120 unidades/s,
      bem acima do máximo físico do jogo, então jogador legítimo nunca é barrado);
-  3. **replay** — o `nonce` de uso único impede reenviar o mesmo token;
-  4. **valores** — nome (1–20 chars), score (0–5.000.000), modo válido.
+  3. **top 50** — consulta `top_scores(mode, 50)` e só grava se o score entraria
+     no top 50 global daquele modo; caso contrário retorna 422 sem inserir. Isso
+     mantém a tabela `scores` enxuta (só linhas que aparecem em algum ranking).
+  4. **replay** — o `nonce` de uso único impede reenviar o mesmo token;
+  5. **valores** — nome (1–20 chars), score (0–5.000.000), modo válido.
 - Para deploy (itch.io / Vercel), configure as mesmas variáveis de ambiente no
   ambiente de build. As Edge Functions você publica uma vez com o CLI (seção 3);
   não dependem do ambiente de build do front.
