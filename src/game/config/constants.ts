@@ -43,8 +43,7 @@ export const SCROLL = {
 // upward on its own, ramping up gradually to keep raising the pressure.
 export const ENDLESS_SCROLL = {
   startHeight: 3000,
-  ratePerUnit: 0.06, // extra px/s of upward push per height unit above startHeight
-  maxSpeed: 140, // px/s cap for the auto-scroll push
+  ratePerUnit: 0.04, // extra px/s of upward push per height unit above startHeight (no cap: grows forever)
 } as const
 
 export const ENEMY = {

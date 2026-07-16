@@ -949,7 +949,7 @@ export class MainScene extends Phaser.Scene {
       // Endless mode: gradual auto-scroll acceleration past the start height.
       if (this.gameMode === 'semFim' && this.score >= ENDLESS_SCROLL.startHeight) {
         const over = this.score - ENDLESS_SCROLL.startHeight
-        const pushSpeed = Math.min(ENDLESS_SCROLL.maxSpeed, over * ENDLESS_SCROLL.ratePerUnit)
+        const pushSpeed = over * ENDLESS_SCROLL.ratePerUnit
         this.cameras.main.scrollY -= pushSpeed * (delta / 1000)
       }
     }
