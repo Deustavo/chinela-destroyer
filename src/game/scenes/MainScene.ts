@@ -14,7 +14,7 @@ import { PlayerLoadout } from '../items/PlayerLoadout'
 import { playSfx } from '../utils/AudioManager'
 import { storageGet, storageSet } from '../utils/storage'
 import { promptForName } from '../utils/NameEntryModal'
-import { isConfigured, startRun, submitScore } from '../utils/Leaderboard'
+import { isConfigured, startRun, submitScore, qualifiesForTop50 } from '../utils/Leaderboard'
 import { t } from '../lang'
 
 export class MainScene extends Phaser.Scene {
@@ -877,8 +877,8 @@ export class MainScene extends Phaser.Scene {
 
   /**
    * Persist the finished classic-mode run into the ranking. Mirrors GameOverScene:
-   * updates the local high score and, when the run is a new best and the online
-   * ranking is reachable, prompts the player for a name and submits the score.
+   * updates the local high score and, when the score qualifies for the online
+   * top 50, prompts the player for a name and submits the score.
    */
   private async saveVictoryRanking(): Promise<void> {
     // Only the classic (normal) mode has a victory screen worth ranking; the
@@ -888,10 +888,9 @@ export class MainScene extends Phaser.Scene {
 
     const rawBest = parseInt(storageGet(highScoreKey) ?? '0', 10)
     const prevBest = isNaN(rawBest) ? 0 : rawBest
-    const isNewBest = this.score > prevBest
-    if (isNewBest) storageSet(highScoreKey, String(this.score))
+    if (this.score > prevBest) storageSet(highScoreKey, String(this.score))
 
-    if (isNewBest && this.score > 0 && isConfigured()) {
+    if (this.score > 0 && isConfigured() && (await qualifiesForTop50(this.score, mode))) {
       const defaultName = storageGet('playerName') ?? ''
       const name = await promptForName(this, defaultName)
       if (name) {

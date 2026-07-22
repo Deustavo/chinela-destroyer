@@ -93,7 +93,7 @@ const STEPS: Step[] = [
     check: (p) => p.projectiles.getLength() > 0,
   },
   {
-    lines: ['Acerte os projéteis', 'para ganhar', 'dinheiro'],
+    lines: ['Atire nos projéteis', 'para ganhar', 'dinheiro'],
     check: (_p, _ms, scene) => (scene as unknown as TutorialSceneState).tutorialTrapHit === true,
   },
   {
@@ -108,7 +108,7 @@ const STEPS: Step[] = [
 // silently drift out of sync if a step is added/removed above.
 const CLIMB_STEP_INDEX = STEPS.length - 1
 
-// Index of the shot-practice step ("Acerte os projéteis"), i.e. the step right
+// Index of the shot-practice step ("Atire nos projéteis"), i.e. the step right
 // before the climb step: Pera starts throwing when this step begins so the
 // player has a projectile to destroy.
 const THROW_ENABLE_STEP_INDEX = CLIMB_STEP_INDEX - 1

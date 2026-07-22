@@ -157,7 +157,7 @@ export class GameOverScene extends Phaser.Scene {
     wireButtonLabel(btnHome, labelHome, backToMenu)
     wireButtonLabel(btnPlay, labelPlay, playAgain)
 
-    if (isNewBest && data.score > 0 && isConfigured()) {
+    if (data.score > 0 && isConfigured()) {
       this.time.delayedCall(650, () => {
         void qualifiesForTop50(data.score, gameMode).then((qualifies) => {
           if (qualifies) return this.promptAndSubmit(data.score, gameMode).then(wireKeys)
