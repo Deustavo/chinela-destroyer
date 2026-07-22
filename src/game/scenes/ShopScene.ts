@@ -27,6 +27,11 @@ const ARROW_SIZE = 92
 const ARROW_L_X  = 40
 const ARROW_R_X  = W - 40
 const SCROLL_STEP = CARD_SZ + CARD_GAP            // one card per click
+const TAP_MAX_DRAG = 10 // px — release beyond this from press point counts as a drag, not a tap
+
+function isTap(ptr: Phaser.Input.Pointer): boolean {
+  return Phaser.Math.Distance.Between(ptr.downX, ptr.downY, ptr.upX, ptr.upY) <= TAP_MAX_DRAG
+}
 
 // ── Shop preview (large selected-item block) ─────────────────────────────────
 const PREV_SZ = 160
@@ -410,7 +415,10 @@ export class ShopScene extends Phaser.Scene {
       const hit = this.add
         .rectangle(cx, cy, CARD_SZ, CARD_SZ, 0xffffff, 0)
         .setInteractive({ useHandCursor: true })
-      hit.on('pointerdown', () => { this.playClick(); this.shopSelectItem(i) })
+      hit.on('pointerup', (ptr: Phaser.Input.Pointer) => {
+        if (!isTap(ptr)) return
+        this.playClick(); this.shopSelectItem(i)
+      })
 
       const badge = this.makeCategoryBadge(cx, cy, item)
       const children: Phaser.GameObjects.GameObject[] = [bg, icon, nameTxt, coinIco, priceTxt, starTxt, hit]
@@ -557,7 +565,8 @@ export class ShopScene extends Phaser.Scene {
       const hit = this.add
         .rectangle(cx, cy, CARD_SZ, CARD_SZ, 0xffffff, 0)
         .setInteractive({ useHandCursor: true })
-      hit.on('pointerdown', () => {
+      hit.on('pointerup', (ptr: Phaser.Input.Pointer) => {
+        if (!isTap(ptr)) return
         const reg = ITEM_REGISTRY[i]
         if (!reg.alwaysOwned && !PurchaseManager.has(reg.id)) { this.playClick(); return }
         // Only one shot at a time — refuse a second one instead of swapping.
