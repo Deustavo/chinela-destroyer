@@ -254,9 +254,20 @@ export class MainScene extends Phaser.Scene {
       // Pera stays silent until the final step, then throws so the player can
       // practice destroying a projectile.
       this.enemy.setThrowingEnabled(false)
-      this.tutorialOverlay = new TutorialOverlay(this, this.player, () => {
-        this.enemy.setThrowingEnabled(true)
-      })
+      this.tutorialOverlay = new TutorialOverlay(
+        this,
+        this.player,
+        () => {
+          this.enemy.setThrowingEnabled(true)
+        },
+        () => {
+          // Climb step: reveal real platforms and stop the practice throw early
+          // (normal height-gated throwing takes back over once tutorialActive drops).
+          this.tutorialActive = false
+          this.applyTutorialPlatformVisibility(false)
+          this.enemy.setThrowingEnabled(false)
+        },
+      )
     }
 
     this.onEscKey = (e: KeyboardEvent) => { if (e.key === 'Escape') this.pauseGame() }
@@ -1018,12 +1029,18 @@ export class MainScene extends Phaser.Scene {
       if (this.tutorialOverlay.isDone) {
         this.tutorialActive = false
         this.applyTutorialPlatformVisibility(false)
-        this.enemy.setThrowingEnabled(true)
         // Tutorial over: drop the "Segunda chance" so normal (lethal) play resumes.
         this.player.disableShield()
         EquipManager.unequip(SHIELD.itemId)
         this.tutorialOverlay = null
       }
+    }
+
+    // Shots only start once the player reaches ENEMY.startThrowingHeight; the
+    // tutorial's shot-practice step (which forces throwing on) is exempt since
+    // it drives Enemy.setThrowingEnabled directly while tutorialActive is true.
+    if (!this.tutorialActive) {
+      this.enemy.setThrowingEnabled(this.score >= ENEMY.startThrowingHeight)
     }
 
     this.checkAchievements()

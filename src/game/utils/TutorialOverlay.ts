@@ -44,11 +44,16 @@ function stepLines(step: Step): string[] {
   return isTouchDevice() && step.linesTouch ? step.linesTouch : step.lines
 }
 
-// The last step reads this flag off the scene (set by MainScene when the player
-// destroys a Pera projectile). Structural cast avoids a circular import.
+// Steps read this state off the scene (tutorialTrapHit is set by MainScene when
+// the player destroys a Pera projectile; score is the current height). Structural
+// cast avoids a circular import.
 interface TutorialSceneState {
   tutorialTrapHit: boolean
+  score: number
 }
+
+// Height the player must reach before the final "climb higher" step completes.
+const FINAL_STEP_HEIGHT = 15
 
 // Wrap detection uses a closure to track previous x across frames
 let _prevX: number | null = null
@@ -91,9 +96,22 @@ const STEPS: Step[] = [
     lines: ['Acerte os projéteis', 'para ganhar', 'dinheiro'],
     check: (_p, _ms, scene) => (scene as unknown as TutorialSceneState).tutorialTrapHit === true,
   },
+  {
+    lines: ['Suba as plataformas', 'e chegue o mais alto', 'que conseguir!'],
+    check: (_p, _ms, scene) => (scene as unknown as TutorialSceneState).score >= FINAL_STEP_HEIGHT,
+  },
 ]
 
-const LAST_STEP_INDEX = STEPS.length - 1
+// Index of the final "climb higher" step: real platforms need to be revealed
+// (they're hidden throughout the tutorial) and Pera's practice throwing turned
+// back off so the player can climb freely. Derived from STEPS.length so it can't
+// silently drift out of sync if a step is added/removed above.
+const CLIMB_STEP_INDEX = STEPS.length - 1
+
+// Index of the shot-practice step ("Acerte os projéteis"), i.e. the step right
+// before the climb step: Pera starts throwing when this step begins so the
+// player has a projectile to destroy.
+const THROW_ENABLE_STEP_INDEX = CLIMB_STEP_INDEX - 1
 
 const ARROW_COLOR = 0xffff00
 const ARROW_ALPHA = 0.85
@@ -115,7 +133,8 @@ export class TutorialOverlay {
   private _done: boolean = false
   private scene: Phaser.Scene
   private player: Player
-  private onLastStep?: () => void
+  private onThrowStep?: () => void
+  private onClimbStep?: () => void
   private wrapArrows: Phaser.GameObjects.Graphics | null = null
   private buttonCircles: Phaser.GameObjects.Graphics | null = null
 
@@ -123,10 +142,11 @@ export class TutorialOverlay {
     return storageGet(TUTORIAL_KEY) === null
   }
 
-  constructor(scene: Phaser.Scene, player: Player, onLastStep?: () => void) {
+  constructor(scene: Phaser.Scene, player: Player, onThrowStep?: () => void, onClimbStep?: () => void) {
     this.scene = scene
     this.player = player
-    this.onLastStep = onLastStep
+    this.onClimbStep = onClimbStep
+    this.onThrowStep = onThrowStep
 
     const cx = WORLD.width / 2
     const cy = WORLD.height * 0.25
@@ -261,7 +281,8 @@ export class TutorialOverlay {
       this.hideButtonCircles()
     }
 
-    if (idx === LAST_STEP_INDEX) this.onLastStep?.()
+    if (idx === THROW_ENABLE_STEP_INDEX) this.onThrowStep?.()
+    if (idx === CLIMB_STEP_INDEX) this.onClimbStep?.()
   }
 
   private panelHeightFor(lineCount: number): number {

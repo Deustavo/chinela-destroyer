@@ -53,6 +53,9 @@ export const ENEMY = {
   displayHeight: 96,
   frameDuration: 0.35,
   throwInterval: 2.2,
+  // Height (score) the player must reach before Pera starts throwing traps in normal play.
+  // The tutorial's shot-practice step is exempt from this gate.
+  startThrowingHeight: 60,
   projectileSpeed: 300,
   trapDisplaySize: 60,
   trapHitboxSize: 52,

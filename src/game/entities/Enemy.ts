@@ -19,7 +19,7 @@ export class Enemy {
   private lastPlayerX: number = 0
   private lastPlayerY: number = 0
   private isFlying: boolean = false
-  private throwingEnabled: boolean = true
+  private throwingEnabled: boolean = false
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene
