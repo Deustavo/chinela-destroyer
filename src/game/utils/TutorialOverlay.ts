@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { WORLD, FONT_FAMILY } from '../config/constants'
 import { storageGet, storageSet } from './storage'
+import { t } from '../lang'
 import type { Player } from '../entities/Player'
 
 const TUTORIAL_KEY = 'tutorialSeen'
@@ -32,16 +33,17 @@ const STEP_BUTTON_HINTS: Record<number, ButtonHint[]> = {
 }
 
 interface Step {
-  // Text for keyboard/PC players
-  lines: string[]
-  // Text for touch/mobile players; falls back to `lines` when omitted
-  linesTouch?: string[]
+  // Lang key for keyboard/PC players
+  lines: string
+  // Lang key for touch/mobile players; falls back to `lines` when omitted
+  linesTouch?: string
   check: (player: Player, stepMs: number, scene: Phaser.Scene) => boolean
 }
 
-// Pick the platform-specific text for a step
+// Pick the platform-specific text for a step, resolved through the active language
 function stepLines(step: Step): string[] {
-  return isTouchDevice() && step.linesTouch ? step.linesTouch : step.lines
+  const key = isTouchDevice() && step.linesTouch ? step.linesTouch : step.lines
+  return t(key).split('\n')
 }
 
 // Steps read this state off the scene (tutorialTrapHit is set by MainScene when
@@ -74,30 +76,30 @@ function checkWrap(p: Player): boolean {
 
 const STEPS: Step[] = [
   {
-    lines: ['Use ← → ou A e D', 'para mover'],
-    linesTouch: ['Use os botões ← →', 'para se mover'],
+    lines: 'tutorial_step_move',
+    linesTouch: 'tutorial_step_move_touch',
     check: (p) => Math.abs(p.body.velocity.x) > 5,
   },
   {
-    lines: ['Atravesse a borda', 'da tela para sair', 'pelo outro lado!'],
+    lines: 'tutorial_step_wrap',
     check: (p) => checkWrap(p),
   },
   {
-    lines: ['↑, W ou ESPAÇO', 'para pular'],
-    linesTouch: ['Toque no botão', 'de pulo para pular'],
+    lines: 'tutorial_step_jump',
+    linesTouch: 'tutorial_step_jump_touch',
     check: (p) => p.body.velocity.y < -80,
   },
   {
-    lines: ['Aperte E ou ENTER', 'para atirar'],
-    linesTouch: ['Toque no botão', 'de tiro para atirar'],
+    lines: 'tutorial_step_shoot',
+    linesTouch: 'tutorial_step_shoot_touch',
     check: (p) => p.projectiles.getLength() > 0,
   },
   {
-    lines: ['Atire nos projéteis', 'para ganhar', 'dinheiro'],
+    lines: 'tutorial_step_hit',
     check: (_p, _ms, scene) => (scene as unknown as TutorialSceneState).tutorialTrapHit === true,
   },
   {
-    lines: ['Suba as plataformas', 'e chegue o mais alto', 'que conseguir!'],
+    lines: 'tutorial_step_climb',
     check: (_p, _ms, scene) => (scene as unknown as TutorialSceneState).score >= FINAL_STEP_HEIGHT,
   },
 ]
@@ -174,7 +176,7 @@ export class TutorialOverlay {
       .setOrigin(0, 1)
 
     this.skipText = scene.add
-      .text(0, 0, 'Pular', {
+      .text(0, 0, t('tutorial_skip'), {
         fontSize: '12px',
         color: '#ffcc00',
         fontFamily: FONT_FAMILY,

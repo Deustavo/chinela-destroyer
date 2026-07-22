@@ -95,6 +95,16 @@ const en: Record<string, string> = {
   tutorial_buy: 'Select the Pomodoro\nand click Buy!',
   tutorial_equip: 'Now open Inventory\nand equip the Pomodoro!',
   tutorial_done: 'Perfect! Pomodoro equipped!',
+  tutorial_skip: 'Skip',
+  tutorial_step_move: 'Use ← → or A and D\nto move',
+  tutorial_step_move_touch: 'Use the ← → buttons\nto move',
+  tutorial_step_wrap: 'Cross the edge\nof the screen to exit\non the other side!',
+  tutorial_step_jump: '↑, W or SPACE\nto jump',
+  tutorial_step_jump_touch: 'Tap the jump\nbutton to jump',
+  tutorial_step_shoot: 'Press E or ENTER\nto shoot',
+  tutorial_step_shoot_touch: 'Tap the shoot\nbutton to shoot',
+  tutorial_step_hit: 'Shoot the projectiles\nto earn\nmoney',
+  tutorial_step_climb: 'Climb the platforms\nand get as high\nas you can!',
 
   // ── Misc ────────────────────────────────────────────────────────────────────
   music_credit: '♫ Jeremy Black - Helios ♪',
